@@ -1,0 +1,835 @@
+@startuml diagrama_clases
+
+' ============================================================
+' STRATEGY PATTERN
+' ============================================================
+
+package Strategy_Pattern{
+
+    interface UserPermissions {
+        + canManageDevices() : boolean
+        + canManageHome() : boolean
+    }
+
+    class MemberPermissions implements UserPermissions {
+        + canManageDevices() : boolean
+        + canManageHome() : boolean
+    }
+
+    class OwnerPermissions implements UserPermissions {
+        + canManageDevices() : boolean
+        + canManageHome() : boolean
+    }
+
+    note as N_StrategyPending
+        PENDIENTE DE IMPLEMENTACIÓN
+
+        Estas tres clases expresan la intención de una
+        autorización por tipo de rol para el contexto Home.
+
+        Ninguna existe todavía en el código Java. La
+        autorización real se resuelve hoy por la cadena RBAC
+        genérica de cinco tablas, consultada en vivo desde
+        CheckPermission, que no contiene lógica por rol.
+
+        El enum Role (OWNER / MEMBER) existe únicamente como
+        ENUM de MySQL en user_home, sin clase que lo mapee
+        y sin entidad, mapper ni puerto para user_home.
+    end note
+}
+
+
+' ============================================================
+' ENUMS
+' ============================================================
+
+package enums{
+
+    enum DeviceStatus{
+        ONLINE
+        OFFLINE
+    }
+
+    enum RiskConsumption {
+        LOW
+        MEDIUM
+        HIGH
+        CRITICAL
+    }
+
+    enum AlertType{
+        THRESHOLD
+        CONNECTIVITY
+    }
+
+    enum AlertStatus{
+        PENDING
+        RESOLVED
+    }
+
+    enum RecommendationType{
+        SAVING
+        PEAK_HOURS
+        HIGH_CONSUMPTION
+        HISTORICAL_COMPARISON
+        THRESHOLD
+    }
+
+    enum NotificationsStatus{
+        READ
+        UNREAD
+    }
+
+    enum NotificationChannel{
+        EMAIL
+        PUSH
+    }
+
+    enum NotificationSourceType{
+        ALERT
+        RECOMMENDATION
+    }
+
+    enum NotificationDeliveryStatus{
+        PENDING
+        SENT
+        FAILED
+    }
+
+    enum Role{
+        OWNER
+        MEMBER
+    }
+
+    enum UserStatus{
+        ACTIVE
+        INACTIVE
+        BLOCKED
+    }
+
+    enum LoginErrorType{
+        INVALID_PASSWORD
+        USER_NOT_FOUND
+        ACCOUNT_BLOCKED
+        ACCOUNT_INACTIVE
+    }
+
+    enum AuditAction{
+        CREATE
+        UPDATE
+        DELETE
+        LOGIN
+        LOGIN_FAILED
+        LOGOUT
+    }
+}
+
+
+' ============================================================
+' SECURITY DOMAIN
+' ============================================================
+
+package Domain_Security{
+
+    class Person {
+        - idPerson : String
+        - name : String
+        - lastName : String
+
+        + rename(name : String, lastName : String) : void
+    }
+
+    ' The avatar belongs to the account, not to the human, so it lives on User.
+    ' person.address was removed: home.address is the authoritative copy.
+    ' person.cellphone was removed: the account is identified by email.
+
+    class User {
+        - idUser : String
+        - personId : String
+        - passwordHash : String
+        - email : String
+        - emailVerified : boolean
+        - registrationDate : DateTime
+        - status : UserStatus
+        - failedLoginAttempts : int
+        - lastLoginAt : DateTime
+        - profileImage : String
+
+        + canAuthenticate() : boolean
+        + changePassword(newHash : PasswordHash) : void
+        + changeEmail(newEmail : Email) : void
+        + changeProfileImage(profileImage : String) : void
+        + verifyEmail() : void
+        + activate() : void
+        + deactivate() : void
+        + block() : void
+        + incrementFailedLoginAttempts() : void
+        + resetFailedLoginAttempts() : void
+        + recordSuccessfulLogin(instant : DateTime) : void
+    }
+
+    class UserConfiguration {
+        - idConfiguration : String
+        - userId : String
+        - notifyByEmail : boolean
+        - notifyByPush : boolean
+        - colorTheme : String
+        - language : String
+        - socialProvider : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + configureNotifications() : void
+        + changeColorTheme() : void
+        + changeLanguage() : void
+    }
+
+    class PasswordResetToken {
+        - idResetToken : String
+        - userId : String
+        - resetToken : String
+        - used : boolean
+        - createdAt : DateTime
+        - expirationAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + isExpired() : boolean
+        + markAsUsed() : void
+    }
+
+    class UserSession {
+        - idUserSession : String
+        - userId : String
+        - createdAt : DateTime
+        - expirationAt : DateTime
+        - ipAddress : String
+        - userAgent : String
+        - revoked : boolean
+        - revokedAt : DateTime
+        - revokedReason : RevocationReason
+        - closedAt : DateTime
+
+        + rotate(newExpiration : DateTime,
+                 rotatedAt : DateTime) : void
+        + revoke(revokedAt : DateTime,
+                 reason : RevocationReason) : void
+        + close(instant : DateTime) : void
+        + isExpired(now : DateTime) : boolean
+        + isActive(now : DateTime) : boolean
+    }
+
+    class RefreshToken {
+        - idRefreshToken : String
+        - userSessionId : String
+        - familyId : String
+        - parentId : String
+        - tokenHash : String
+        - status : RefreshTokenStatus
+        - createdAt : DateTime
+        - expiresAt : DateTime
+        - rotatedAt : DateTime
+        - revokedAt : DateTime
+        - revokedReason : RevocationReason
+
+        + isExpired(now : DateTime) : boolean
+        + isUsable(now : DateTime) : boolean
+        + isReplayed() : boolean
+        + rotate(rotatedAt : DateTime) : void
+        + revoke(revokedAt : DateTime,
+                 reason : RevocationReason) : void
+    }
+
+    enum RevocationReason {
+        REFRESH_TOKEN_REUSE
+        PASSWORD_CHANGED
+        ADMINISTRATIVE
+    }
+
+    enum RefreshTokenStatus {
+        ACTIVE
+        ROTATED
+        REVOKED
+        EXPIRED
+    }
+
+    class SecurityConfiguration {
+        - idSecurityConfiguration : String
+        - configName : String
+        - configValue : String
+        - description : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+    class PasswordPolicy {
+        - idPasswordPolicy : String
+        - minLength : int
+        - maxLength : int
+        - requireUppercase : boolean
+        - requireNumbers : boolean
+        - requireSymbols : boolean
+        - expirationDays : int
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + validate(password : String) : boolean
+    }
+
+    class LoginErrorLog {
+        - idLoginError : String
+        - userId : String
+        - errorType : LoginErrorType
+        - description : String
+        - ipAddress : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+}
+
+
+' ============================================================
+' ACCESS CONTROL DOMAIN
+' ============================================================
+
+package Domain_Access_Control{
+
+    class SystemRole {
+        - idSystemRole : String
+        - name : String
+        - description : String
+        - enabled : boolean
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+    class UserSystemRole {
+        - userId : String
+        - systemRoleId : String
+        - assignedAt : DateTime
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+    class Permission {
+        - idPermission : String
+        - code : String
+        - name : String
+        - description : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+    class SystemRolePermission {
+        - systemRoleId : String
+        - permissionId : String
+        - assignedAt : DateTime
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+    class AuditLog {
+        - idAuditLog : String
+        - userId : String
+        - action : AuditAction
+        - description : String
+        - ipAddress : String
+        - application : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+    ' CheckPermission es la única vía de autorización real. Resuelve la cadena
+    ' RBAC de cinco tablas contra el estado vivo, sin lógica por tipo de rol
+    ' y sin roles embebidos en el JWT.
+    class CheckPermission {
+        + check(idUser : String, permissionCode : String) : boolean
+    }
+}
+
+
+' ============================================================
+' HOME MANAGEMENT DOMAIN
+' ============================================================
+
+package Domain_Home_Management{
+
+    class HomeType {
+        - idHomeType : String
+        - name : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+    class HomeThresholds {
+        - idThreshold : String
+        - homeId : String
+        - dailyLimit : double
+        - monthlyLimit : double
+        - useSystemDefault : boolean
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + resetToDefaults() : void
+    }
+
+    class Home{
+        - idHome : String
+        - name : String
+        - homeTypeId : String
+        - address : String
+        - accessCode : String
+        - description : String
+        - creationDate : DateTime
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + addDevice(d : Device) : void
+        + removeDevice(d : Device) : void
+        + addUser(u : User, role : Role) : void
+        + removeUser(u : User) : void
+        + updateThresholds(daily : double, monthly : double) : void
+        + getAllDevices() : List<Device>
+    }
+
+    class UserHome {
+        - userId : String
+        - homeId : String
+        - role : Role
+        - favorite : boolean
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + toggleFavorite() : void
+        + leaveHome() : void
+        + getPermissions() : UserPermissions
+    }
+}
+
+
+' ============================================================
+' DEVICES DOMAIN
+' ============================================================
+
+package Domain_Devices{
+
+    class ApplianceType {
+        - idApplianceType : String
+        - name : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+    class Device {
+        - idDevice : String
+        - name : String
+        - applianceTypeId : String
+        - location : String
+        - description : String
+        - installationDate : DateTime
+        - deviceCode : String
+        - apiKey : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + takeMeasurement() : Measurement
+        + updateStatus(status : DeviceStatus,
+                       signal : int) : void
+        + getCurrentStatus() : DeviceStatusLog
+        + subscribe(o : MeasurementObserver) : void
+        + unsubscribe(o : MeasurementObserver) : void
+        + notify(m : Measurement) : void
+    }
+
+    class DeviceStatusLog {
+        - idDeviceStatus : String
+        - deviceId : String
+        - status : DeviceStatus
+        - signalStrength : int
+        - lastSeen : DateTime
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+    class DeviceHome {
+        - deviceId : String
+        - homeId : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+}
+
+
+' ============================================================
+' MONITORING DOMAIN
+' ============================================================
+
+package Domain_Measurements{
+
+    class Measurement {
+        - idMeasurement : String
+        - deviceId : String
+        - dateTime : DateTime
+        - voltage : double
+        - current : double
+        - activePower : double
+        - storedEnergy : double
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + getVoltage() : double
+        + getCurrent() : double
+        + getActivePower() : double
+        + getStoredEnergy() : double
+    }
+
+    class ConsumptionLevel{
+        - idConsumptionLevel : String
+        - name : RiskConsumption
+        - description : String
+        - minLimit : double
+        - maxLimit : double
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+    }
+
+
+    package Observer_Pattern{
+
+        interface MeasurementObserver {
+            + onMeasurement(m : Measurement) : void
+        }
+
+        class AlertObserver implements MeasurementObserver {
+            + onMeasurement(m : Measurement) : void
+        }
+
+        class RecommendationObserver implements MeasurementObserver {
+            + onMeasurement(m : Measurement) : void
+        }
+    }
+}
+
+
+' ============================================================
+' NOTIFICATIONS DOMAIN
+' ============================================================
+
+package Domain_Notifications{
+
+    class Alert {
+        - idAlert : String
+        - homeId : String
+        - deviceId : String
+        - type : AlertType
+        - messageKey : String
+        - dateTime : DateTime
+        - alertStatus : AlertStatus
+        - consumptionLevelId : String
+        - measurementId : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + resolveAlert() : void
+    }
+
+    class Recommendation {
+        - idRecommendation : String
+        - homeId : String
+        - deviceId : String
+        - type : RecommendationType
+        - messageKey : String
+        - dateTime : DateTime
+        - status : NotificationsStatus
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + markAsRead() : void
+        + markAsUnread() : void
+    }
+
+    ' Notification es el registro de la ENTREGA de un mensaje, no el evento
+    ' que lo originator. Por eso deja de ser la clase base de Alert y
+    ' Recommendation: son tablas independientes de sus propios contextos,
+    ' y esta los referencia por sourceType + sourceId.
+
+    class Notification {
+        - idNotification : String
+        - userId : String
+        - homeId : String
+        - channel : NotificationChannel
+        - sourceType : NotificationSourceType
+        - sourceId : String
+        - messageKey : String
+        - deliveryStatus : NotificationDeliveryStatus
+        - sentAt : DateTime
+        - readAt : DateTime
+        - failureReason : String
+        - createdAt : DateTime
+        - updatedAt : DateTime
+        - deletedAt : DateTime
+
+        + markAsSent(sentAt : DateTime) : void
+        + markAsFailed(reason : String) : void
+        + markAsRead(readAt : DateTime) : void
+    }
+
+    class RecommendationAnalyzer {
+        + analyze(
+            measurements : List<Measurement>,
+            thresholds : HomeThresholds
+          ) : List<Recommendation>
+
+        + detectPatterns(
+            measurements : List<Measurement>
+          ) : List<RecommendationType>
+
+        + generateRecommendation(
+            type : RecommendationType,
+            home : Home,
+            device : Device
+          ) : Recommendation
+    }
+
+    note as N_NotificationDelivery
+        Una notificación registra que un mensaje LLEGÓ al usuario,
+        no el hecho que lo generó.
+
+        deliveryStatus y readAt son ciclos distintos:
+        una alerta entregada no es una alerta resuelta.
+
+        channel se elige según las preferencias del destinatario
+        en UserConfiguration: notifyByEmail y notifyByPush.
+    end note
+}
+
+
+' ============================================================
+' FACTORY METHOD PATTERN
+' ============================================================
+
+package Factory_Method_Pattern{
+
+    class AlertFactory {
+        + createFromMeasurement(
+            m : Measurement,
+            risk : RiskConsumption
+          ) : Alert
+
+        + createFromDeviceStatus(
+            home : Home,
+            device : Device
+          ) : Alert
+    }
+
+    class RecommendationFactory {
+        + create(
+            type : RecommendationType,
+            home : Home,
+            device : Device
+          ) : Recommendation
+    }
+
+    class NotificationFactory {
+        + createForAlert(
+            alert : Alert,
+            recipient : User,
+            channel : NotificationChannel
+          ) : Notification
+
+        + createForRecommendation(
+            recommendation : Recommendation,
+            recipient : User,
+            channel : NotificationChannel
+          ) : Notification
+    }
+}
+
+
+' ============================================================
+' RELATIONSHIPS
+' ============================================================
+
+' ----------------------------
+' Strategy
+' ----------------------------
+
+UserHome ..> UserPermissions : use
+UserHome ..> Role : use
+
+
+' ----------------------------
+' Singleton
+' ----------------------------
+
+' SystemConfig se eliminó de este diagrama. No existe ninguna tabla ni clase
+' Java que sostenga defaultDailyLimit ni defaultMonthlyLimit. La única
+' estructura de configuración del sistema es SecurityConfiguration, un par
+' genérico nombre/valor.
+'
+' HUECO DE DISEÑO: home_thresholds.use_system_default es una bandera que
+' referencia un valor por defecto que no está definido en ninguna parte. Se
+' reporta para decisión de backend: o se siembra una fila
+' default_daily_limit en security_configuration, o se retira la bandera.
+
+
+' ----------------------------
+' Security
+' ----------------------------
+
+Person "1" -- "1" User
+
+User "1" *-- "1" UserConfiguration
+
+User "1" -- "0..*" PasswordResetToken
+User "1" -- "0..*" UserSession
+UserSession "1" *-- "1..*" RefreshToken
+RefreshToken "0..1" -- "1" RefreshToken : parent
+RefreshToken ..> RefreshTokenStatus : use
+UserSession ..> RevocationReason : use
+RefreshToken ..> RevocationReason : use
+User "0..1" -- "0..*" LoginErrorLog
+
+User ..> UserStatus : use
+LoginErrorLog ..> LoginErrorType : use
+
+
+' ----------------------------
+' Access Control
+' ----------------------------
+
+User "1" -- "0..*" UserSystemRole
+SystemRole "1" -- "0..*" UserSystemRole
+
+SystemRole "1" -- "0..*" SystemRolePermission
+Permission "1" -- "0..*" SystemRolePermission
+
+User "0..1" -- "0..*" AuditLog
+AuditLog ..> AuditAction : use
+
+CheckPermission ..> User : verifies
+CheckPermission ..> Permission : resolves
+CheckPermission ..> UserSystemRole : traverses
+CheckPermission ..> SystemRole : traverses
+CheckPermission ..> SystemRolePermission : traverses
+
+
+' ----------------------------
+' Home Management
+' ----------------------------
+
+Home "*" o-- "1" HomeType : uses
+Home "1" *-- "1" HomeThresholds
+Home "1" -- "0..*" UserHome
+
+UserHome ..> User : references
+UserHome ..> Role : use
+
+
+' ----------------------------
+' Devices
+' ----------------------------
+
+Device "*" o-- "1" ApplianceType : uses
+
+Device "1" *-- "0..*" DeviceStatusLog
+DeviceStatusLog ..> DeviceStatus : use
+
+Device "1" -- "0..*" DeviceHome
+
+
+' ----------------------------
+' Monitoring
+' ----------------------------
+
+Device ..> Measurement : references
+Measurement ..> Device : references
+
+ConsumptionLevel ..> RiskConsumption : use
+
+
+' ----------------------------
+' Observer Pattern
+' ----------------------------
+
+Device ..> MeasurementObserver : notify
+
+AlertObserver ..> AlertFactory : uses
+
+RecommendationObserver ..> RecommendationAnalyzer : uses
+
+
+' ----------------------------
+' Alerts
+' ----------------------------
+
+Alert ..> AlertType : use
+Alert ..> AlertStatus : use
+Alert ..> ConsumptionLevel : references
+Alert ..> Measurement : references
+
+
+' ----------------------------
+' Recommendations
+' ----------------------------
+
+Recommendation ..> RecommendationType : use
+Recommendation ..> NotificationsStatus : use
+
+RecommendationAnalyzer ..> Measurement : analyzes
+RecommendationAnalyzer ..> HomeThresholds : uses
+RecommendationAnalyzer ..> RecommendationFactory : uses
+
+RecommendationFactory ..> Recommendation : creates
+
+
+' ----------------------------
+' Notifications
+' ----------------------------
+
+Notification ..> NotificationChannel : use
+Notification ..> NotificationSourceType : use
+Notification ..> NotificationDeliveryStatus : use
+
+Notification ..> User : recipient
+Notification ..> Home : scoped to
+
+NotificationFactory ..> Notification : creates
+NotificationFactory ..> Alert : delivers
+NotificationFactory ..> Recommendation : delivers
+NotificationFactory ..> UserConfiguration : reads channel preference
+
+
+' ----------------------------
+' Cross-context references
+' ----------------------------
+
+Home ..> Device : references
+Home ..> Alert : references
+Home ..> Recommendation : references
+
+Device ..> Alert : references
+Device ..> Recommendation : references
+
+@enduml

@@ -1,0 +1,695 @@
+@startuml mer
+
+legend top
+    Convenciones globales del MER:
+
+    - Tables: snake_case, singular/plural según el nombre definido
+      en el esquema de persistencia.
+
+    - Columns: snake_case, descriptivos
+      → registration_date, unit_price, home_id.
+
+    - <<FK>>:
+      Se utiliza únicamente para referencias que corresponden
+      a foreign keys SQL dentro del mismo bounded context.
+
+    - Referencias entre bounded contexts:
+      Se almacenan como IDs a nivel de aplicación y NO generan
+      foreign keys SQL.
+
+    - Indexes:
+      idx_[table]_[column(s)]
+      → idx_alert_home_id
+
+    - Timestamps:
+      El proyecto utiliza TIMESTAMP en MySQL 8.4.
+      Alert mantiene TIMESTAMP según su esquema aprobado.
+
+    - Auditoría estándar:
+      - id: VARCHAR(10) <<PK>>
+      - created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+      - updated_at: TIMESTAMP <<NOT NULL>>
+        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      - deleted_at: TIMESTAMP
+
+    - Eliminación suave:
+      No se utilizan DELETE físicos por defecto.
+      deleted_at IS NOT NULL indica que el registro está eliminado.
+endlegend
+
+
+package "Security" {
+
+    enum UserStatus{
+        ACTIVE
+        INACTIVE
+        BLOCKED
+    }
+
+    entity Person{
+        + id_person: VARCHAR(10) <<PK>>
+        --
+        * name: VARCHAR(100) <<NOT NULL>>
+        * last_name: VARCHAR(100) <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity User{
+        + id_user: VARCHAR(10) <<PK>>
+        --
+        * person_id: VARCHAR(10) <<FK>> <<UNIQUE>> <<NOT NULL>>
+        * password_hash: VARCHAR(255) <<NOT NULL>>
+        * email: VARCHAR(255) <<UNIQUE>> <<NOT NULL>>
+        * email_verified: BOOLEAN <<NOT NULL>>
+        * registration_date: TIMESTAMP <<NOT NULL>>
+        * status: UserStatus <<NOT NULL>>
+        * failed_login_attempts: INT <<NOT NULL>>
+        last_login_at: TIMESTAMP
+        profile_image: VARCHAR(255)
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity UserConfiguration{
+        + id_configuration: VARCHAR(10) <<PK>>
+        --
+        * user_id: VARCHAR(10) <<FK>> <<UNIQUE>> <<NOT NULL>>
+        * notify_by_email: BOOLEAN <<NOT NULL>>
+        * notify_by_push: BOOLEAN <<NOT NULL>>
+        color_theme: VARCHAR(50)
+        language: VARCHAR(50)
+        social_provider: VARCHAR(50)
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity PasswordResetToken{
+        + id_reset_token: VARCHAR(10) <<PK>>
+        --
+        * user_id: VARCHAR(10) <<FK>> <<NOT NULL>>
+        * reset_token: VARCHAR(100) <<UNIQUE>> <<NOT NULL>>
+        * used: BOOLEAN <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * expiration_at: TIMESTAMP <<NOT NULL>>
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity UserSession{
+        + id_user_session: VARCHAR(10) <<PK>>
+        --
+        * user_id: VARCHAR(10) <<FK>> <<NOT NULL>>
+        * revoked: BOOLEAN <<NOT NULL>>
+        ip_address: VARCHAR(45)
+        user_agent: VARCHAR(150)
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * expiration_at: TIMESTAMP <<NOT NULL>>
+        closed_at: TIMESTAMP
+        revoked_at: TIMESTAMP
+        revoked_reason: RevocationReason
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity RefreshToken{
+        + id_refresh_token: VARCHAR(10) <<PK>>
+        --
+        * id_user_session: VARCHAR(10) <<FK>> <<NOT NULL>>
+        * family_id: VARCHAR(10) <<NOT NULL>>
+        parent_id: VARCHAR(10) <<FK>>
+        * token_hash: VARCHAR(64) <<UNIQUE>> <<NOT NULL>>
+        * status: RefreshTokenStatus <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * expires_at: TIMESTAMP <<NOT NULL>>
+        rotated_at: TIMESTAMP
+        revoked_at: TIMESTAMP
+        revoked_reason: RevocationReason
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity SecurityConfiguration{
+        + id_security_configuration: VARCHAR(10) <<PK>>
+        --
+        * config_name: VARCHAR(100) <<UNIQUE>> <<NOT NULL>>
+        * config_value: VARCHAR(100) <<NOT NULL>>
+        description: VARCHAR(255)
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity PasswordPolicy{
+        + id_password_policy: VARCHAR(10) <<PK>>
+        --
+        * min_length: INT <<NOT NULL>>
+        * max_length: INT <<NOT NULL>>
+        * require_uppercase: BOOLEAN <<NOT NULL>>
+        * require_numbers: BOOLEAN <<NOT NULL>>
+        * require_symbols: BOOLEAN <<NOT NULL>>
+        * expiration_days: INT <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    enum LoginErrorType{
+        INVALID_PASSWORD
+        USER_NOT_FOUND
+        ACCOUNT_BLOCKED
+        ACCOUNT_INACTIVE
+    }
+
+    entity LoginErrorLog{
+        + id_login_error: VARCHAR(10) <<PK>>
+        --
+        user_id: VARCHAR(10) <<FK>>
+        * error_type: LoginErrorType <<NOT NULL>>
+        description: VARCHAR(500)
+        ip_address: VARCHAR(45)
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity SystemRole{
+        + id_system_role: VARCHAR(10) <<PK>>
+        --
+        * name: VARCHAR(50) <<UNIQUE>> <<NOT NULL>>
+        description: VARCHAR(200)
+        * enabled: BOOLEAN <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity UserSystemRole{
+        + user_id: VARCHAR(10) <<PK>> <<FK>>
+        + system_role_id: VARCHAR(10) <<PK>> <<FK>>
+        --
+        * assigned_at: TIMESTAMP <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity Permission{
+        + id_permission: VARCHAR(10) <<PK>>
+        --
+        * code: VARCHAR(30) <<UNIQUE>> <<NOT NULL>>
+        * name: VARCHAR(50) <<NOT NULL>>
+        description: VARCHAR(100)
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity SystemRolePermission{
+        + system_role_id: VARCHAR(10) <<PK>> <<FK>>
+        + permission_id: VARCHAR(10) <<PK>> <<FK>>
+        --
+        * assigned_at: TIMESTAMP <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    enum AuditAction{
+        CREATE
+        UPDATE
+        DELETE
+        LOGIN
+        LOGIN_FAILED
+        LOGOUT
+    }
+
+    entity AuditLog{
+        + id_audit_log: VARCHAR(10) <<PK>>
+        --
+        user_id: VARCHAR(10) <<FK>>
+        * action: AuditAction <<NOT NULL>>
+        description: VARCHAR(255)
+        ip_address: VARCHAR(45)
+        application: VARCHAR(255)
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+
+    ' Internal relationships of Security context
+
+    Person ||--|| User
+
+    User ||--|| UserConfiguration
+    User --> UserStatus: uses
+
+    User ||--o{ PasswordResetToken
+    User ||--o{ UserSession
+    UserSession ||--o{ RefreshToken
+    RefreshToken |o--o{ RefreshToken: parent_id
+    User |o--o{ LoginErrorLog
+
+    User ||--o{ UserSystemRole
+    SystemRole ||--o{ UserSystemRole
+
+    SystemRole ||--o{ SystemRolePermission
+    Permission ||--o{ SystemRolePermission
+
+    User |o--o{ AuditLog
+    AuditLog --> AuditAction: uses
+}
+
+
+package "Home Management" {
+
+    enum Role{
+        OWNER
+        MEMBER
+    }
+
+    entity HomeType{
+        + id_home_type: VARCHAR(10) <<PK>>
+        --
+        * name: VARCHAR(50) <<UNIQUE>> <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity Home{
+        + id_home: VARCHAR(10) <<PK>>
+        --
+        * name: VARCHAR(50) <<NOT NULL>>
+        * home_type_id: VARCHAR(10) <<FK>> <<NOT NULL>>
+        * address: VARCHAR(200) <<NOT NULL>>
+        * access_code: VARCHAR(8) <<UNIQUE>> <<NOT NULL>>
+        description: VARCHAR(200)
+        * creation_date: TIMESTAMP <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity HomeThresholds{
+        + id_threshold: VARCHAR(10) <<PK>>
+        --
+        * home_id: VARCHAR(10) <<FK>> <<UNIQUE>> <<NOT NULL>>
+        * daily_limit: DOUBLE <<NOT NULL>>
+        * monthly_limit: DOUBLE <<NOT NULL>>
+        * use_system_default: BOOLEAN <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity UserHome{
+        + user_id: VARCHAR(10) <<PK>>
+        + home_id: VARCHAR(10) <<PK>> <<FK>>
+        --
+        * role: Role <<NOT NULL>>
+        * favorite: BOOLEAN <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    ' Internal relationships of Home Management context
+
+    Home ||--|| HomeThresholds
+    Home }o--|| HomeType: uses
+    Home ||--o{ UserHome
+
+    UserHome --> Role: uses
+
+    note right of UserHome
+        user_id referencia al User del contexto Security.
+        Se valida a nivel de aplicación.
+        No genera foreign key SQL.
+    end note
+}
+
+
+package "Devices" {
+
+    enum DeviceStatus{
+        ONLINE
+        OFFLINE
+    }
+
+    entity ApplianceType{
+        + id_appliance_type: VARCHAR(10) <<PK>>
+        --
+        * name: VARCHAR(50) <<UNIQUE>> <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity Device{
+        + id_device: VARCHAR(10) <<PK>>
+        --
+        * name: VARCHAR(50) <<NOT NULL>>
+        * appliance_type_id: VARCHAR(10) <<FK>> <<NOT NULL>>
+        location: VARCHAR(50)
+        description: VARCHAR(200)
+        * installation_date: TIMESTAMP <<NOT NULL>>
+        * device_code: VARCHAR(6) <<UNIQUE>> <<NOT NULL>>
+        * api_key: VARCHAR(100) <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity DeviceStatusLog{
+        + id_device_status: VARCHAR(10) <<PK>>
+        --
+        * device_id: VARCHAR(10) <<FK>>
+        * status: DeviceStatus <<NOT NULL>>
+        signal_strength: INT
+        * last_seen: TIMESTAMP <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity DeviceHome{
+        + device_id: VARCHAR(10) <<PK>> <<FK>>
+        + home_id: VARCHAR(10) <<PK>>
+        --
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    ' Internal relationships of Devices context
+
+    Device }o--|| ApplianceType: uses
+    Device ||--o{ DeviceStatusLog
+    Device ||--o{ DeviceHome
+    DeviceStatusLog --> DeviceStatus: uses
+
+    note right of DeviceHome
+        home_id referencia al Home del contexto
+        Home Management.
+        Se valida a nivel de aplicación.
+        No genera foreign key SQL.
+    end note
+}
+
+
+package "Monitoring and measurements" {
+
+    enum RiskConsumption{
+        LOW
+        MEDIUM
+        HIGH
+        CRITICAL
+    }
+
+    entity Measurement{
+        + id_measurement: VARCHAR(10) <<PK>>
+        --
+        * device_id: VARCHAR(10) <<NOT NULL>>
+        * date_time: TIMESTAMP <<NOT NULL>>
+        * voltage: DOUBLE <<NOT NULL>>
+        * current: DOUBLE <<NOT NULL>>
+        * active_power: DOUBLE <<NOT NULL>>
+        * stored_energy: DOUBLE <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    entity ConsumptionLevel{
+        + id_consumption_level: VARCHAR(10) <<PK>>
+        --
+        * name: RiskConsumption <<UNIQUE>> <<NOT NULL>>
+        * description: VARCHAR(200) <<NOT NULL>>
+        * min_limit: DOUBLE <<NOT NULL>>
+        * max_limit: DOUBLE <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    ConsumptionLevel --> RiskConsumption: uses
+
+    note right of Measurement
+        device_id referencia al Device del contexto
+        Devices.
+        Se valida a nivel de aplicación.
+        No genera foreign key SQL.
+    end note
+}
+
+
+package "Alerts" {
+
+    enum AlertType{
+        THRESHOLD
+        CONNECTIVITY
+    }
+
+    enum AlertStatus{
+        PENDING
+        RESOLVED
+    }
+
+    entity Alert{
+        + id_alert: VARCHAR(10) <<PK>>
+        --
+        * home_id: VARCHAR(10) <<NOT NULL>>
+        device_id: VARCHAR(10)
+        * type: AlertType <<NOT NULL>>
+        * message_key: VARCHAR(100) <<NOT NULL>>
+        * date_time: TIMESTAMP <<NOT NULL>>
+        * alert_status: AlertStatus <<NOT NULL>>
+        consumption_level_id: VARCHAR(10)
+        measurement_id: VARCHAR(10)
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    note right of Alert
+        Índice:
+        idx_alert_home_id (home_id)
+
+        Referencias de aplicación:
+        - home_id → Home
+        - device_id → Device
+        - measurement_id → Measurement
+        - consumption_level_id → ConsumptionLevel
+
+        Estas referencias NO generan foreign keys SQL.
+
+        THRESHOLD:
+        consumption_level_id y measurement_id
+        deben estar poblados.
+
+        CONNECTIVITY:
+        consumption_level_id y measurement_id
+        deben ser NULL.
+
+        Las reglas se validan en dominio/aplicación.
+    end note
+
+    Alert --> AlertType: uses
+    Alert --> AlertStatus: uses
+}
+
+
+package "Recommendations" {
+
+    enum RecommendationType{
+        SAVING
+        PEAK_HOURS
+        HIGH_CONSUMPTION
+        HISTORICAL_COMPARISON
+        THRESHOLD
+    }
+
+    enum NotificationsStatus{
+        READ
+        UNREAD
+    }
+
+    entity Recommendation{
+        + id_recommendation: VARCHAR(10) <<PK>>
+        --
+        * home_id: VARCHAR(10) <<NOT NULL>>
+        device_id: VARCHAR(10)
+        * type: RecommendationType <<NOT NULL>>
+        * message_key: VARCHAR(100) <<NOT NULL>>
+        * date_time: TIMESTAMP <<NOT NULL>>
+        * status: NotificationsStatus <<NOT NULL>>
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    ' Internal relationships of Recommendations context
+
+    Recommendation --> RecommendationType: uses
+    Recommendation --> NotificationsStatus: uses
+
+    note right of Recommendation
+        Referencias de aplicación:
+        - home_id → Home
+        - device_id → Device
+
+        Estas referencias NO generan foreign keys SQL.
+
+        Las recomendaciones son generadas automáticamente
+        mediante el análisis del historial de consumo,
+        mediciones, niveles de consumo, límites configurados
+        y patrones de consumo.
+
+        Una recomendación puede originarse a partir
+        del análisis de múltiples mediciones.
+
+        Las mediciones NO se almacenan como referencias
+        directas dentro de Recommendation.
+
+        device_id es opcional:
+        - NULL cuando la recomendación corresponde al hogar.
+        - NOT NULL cuando está relacionada con un dispositivo.
+
+        El sistema genera inicialmente las recomendaciones
+        con status UNREAD.
+
+        El usuario puede cambiar el estado entre:
+        READ y UNREAD.
+
+        RecommendationType identifica el motivo de generación:
+        - SAVING
+        - PEAK_HOURS
+        - HIGH_CONSUMPTION
+        - HISTORICAL_COMPARISON
+        - THRESHOLD
+    end note
+}
+
+
+package "Notifications" {
+
+    enum NotificationChannel{
+        EMAIL
+        PUSH
+    }
+
+    enum NotificationSourceType{
+        ALERT
+        RECOMMENDATION
+    }
+
+    enum NotificationDeliveryStatus{
+        PENDING
+        SENT
+        FAILED
+    }
+
+    entity Notification{
+        + id_notification: VARCHAR(10) <<PK>>
+        --
+        * user_id: VARCHAR(10) <<NOT NULL>>
+        home_id: VARCHAR(10)
+        * channel: NotificationChannel <<NOT NULL>>
+        * source_type: NotificationSourceType <<NOT NULL>>
+        source_id: VARCHAR(10)
+        * message_key: VARCHAR(100) <<NOT NULL>>
+        * delivery_status: NotificationDeliveryStatus <<NOT NULL>>
+        sent_at: TIMESTAMP
+        read_at: TIMESTAMP
+        failure_reason: VARCHAR(200)
+        * created_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        * updated_at: TIMESTAMP <<NOT NULL>> DEFAULT CURRENT_TIMESTAMP
+        deleted_at: TIMESTAMP
+    }
+
+    ' Una notificación registra la ENTREGA de un mensaje, no el evento
+    ' que lo originator. Alert y Recommendation siguen siendo eventos
+    ' de sus propios contextos.
+
+    Notification --> NotificationChannel: uses
+    Notification --> NotificationSourceType: uses
+    Notification --> NotificationDeliveryStatus: uses
+
+    note right of Notification
+        Una notificación es el registro de que un mensaje
+        llegó al usuario, no del hecho que lo generó.
+
+        Responde a una pregunta que Alert y Recommendation
+        no pueden responder: si el usuario lo recibió,
+        por qué canal y si lo leyó.
+
+        source_type + source_id localizan la fila origen
+        sin acoplar este contexto al esquema de los otros.
+
+        user_id → User (contexto Security)
+        home_id → Home (contexto Home Management)
+        Ninguna de las dos genera foreign key SQL.
+
+        channel se elige según las preferencias del destinatario:
+        - EMAIL cuando user_configuration.notify_by_email es verdadero
+        - PUSH cuando user_configuration.notify_by_push es verdadero
+
+        delivery_status y read_at son ciclos distintos:
+        - delivery_status: PENDING, SENT, FAILED
+        - read_at: NULL mientras no se ha leído
+
+        Una alerta entregada no es una alerta resuelta.
+        Por eso read_at es independiente de delivery_status
+        y de alert.alert_status (PENDING / RESOLVED).
+
+        source_type identifica el contexto que originó el mensaje:
+        - ALERT
+        - RECOMMENDATION
+
+        failure_reason guarda la causa del fallo cuando
+        delivery_status es FAILED.
+    end note
+}
+
+
+' ============================================================
+' CROSS-CONTEXT APPLICATION REFERENCES
+' ============================================================
+
+' Security → Home Management
+User .. UserHome: referencia de aplicación
+
+' Home Management → Devices
+Home .. DeviceHome: referencia de aplicación
+
+' Devices → Monitoring
+Device .. Measurement: referencia de aplicación
+
+' Home Management → Alerts
+Home .. Alert: referencia de aplicación
+
+' Devices → Alerts
+Device .. Alert: referencia de aplicación
+
+' Monitoring → Alerts
+Measurement .. Alert: referencia de aplicación
+ConsumptionLevel .. Alert: referencia de aplicación
+
+' Home Management → Recommendations
+Home .. Recommendation: referencia de aplicación
+
+' Devices → Recommendations
+Device .. Recommendation: referencia de aplicación
+
+' Alerts → Notifications
+Alert .. Notification: referencia de aplicación
+
+' Recommendations → Notifications
+Recommendation .. Notification: referencia de aplicación
+
+@enduml
