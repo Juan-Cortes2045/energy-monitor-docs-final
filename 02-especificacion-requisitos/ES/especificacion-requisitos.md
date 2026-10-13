@@ -1,0 +1,596 @@
+# Especificación de requisitos de software de EnergyMonitor
+
+Juan Esteban Cortés Parra y Miguel Ángel García Artunduaga
+
+Servicio Nacional de Aprendizaje (SENA)
+
+Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
+
+Versión 2.0, 10 de octubre de 2026
+
+16 de octubre de 2026
+
+## Resumen
+
+Este documento especifica lo que debe hacer EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, recibir alertas y obtener recomendaciones de ahorro. Se redacta desde la perspectiva del usuario y del negocio, sin definir cómo se construirá la solución. Presenta los requisitos funcionales, agrupados por dispositivo del sistema, los requisitos no funcionales (seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad) y 14 historias de usuario y 2 casos de uso con criterios de aceptación verificables. Los requisitos se identifican con códigos estables que son idénticos en las versiones en español e inglés. Los datos que no pudieron confirmarse en las fuentes se marcan como [POR CONFIRMAR].
+
+*Palabras clave:* especificación de requisitos, consumo eléctrico, alertas, recomendaciones de ahorro, hogares
+
+## Introducción
+
+### Propósito
+
+Este documento especifica los requisitos de EnergyMonitor: lo que el sistema debe hacer (requisitos funcionales), con qué calidad debe hacerlo (requisitos no funcionales) y cómo se verifica (historias de usuario y casos de uso con sus criterios de aceptación). La estructura sigue la práctica recomendada para la especificación de requisitos de software (Institute of Electrical and Electronics Engineers [IEEE], 1998). El documento describe necesidades del usuario y del negocio y no condiciona la tecnología con la que se construya el sistema.
+
+### Alcance
+
+EnergyMonitor mide el consumo eléctrico de cada electrodoméstico de un hogar con un dispositivo de medición que se conecta al aparato, guarda las lecturas y las presenta en una aplicación web y en una aplicación móvil para Android. Genera alertas, recomendaciones de ahorro y notificaciones. El alcance completo y lo excluido están en el acta de constitución del proyecto (sección Alcance general).
+
+### Definiciones y siglas
+
+La Tabla 1 define los términos y siglas empleados en el documento.
+
+**Tabla 1**
+
+*Definiciones y siglas*
+
+| Término | Descripción |
+|---|---|
+| ADSO | Análisis y Desarrollo de Software |
+| RF | Requisito funcional |
+| RNF | Requisito no funcional |
+| HU | Historia de usuario |
+| CU | Caso de uso |
+| CA | Criterio de aceptación |
+| Hogar | Espacio (casa, apartamento u otro) que agrupa a sus miembros y a sus dispositivos de medición |
+| Propietario | Persona que administra un hogar, sus dispositivos, sus miembros y sus límites de consumo |
+| Miembro | Persona que pertenece a un hogar y consulta su consumo, sus alertas y sus recomendaciones |
+| Dispositivo de medición | Dispositivo físico que se conecta a un electrodoméstico, mide su consumo eléctrico y envía las lecturas |
+| Umbral | Límite de consumo diario o mensual que define el propietario del hogar |
+| Alerta | Aviso que genera el sistema ante un consumo excesivo, un límite alcanzado o la desconexión de un dispositivo |
+| Recomendación | Sugerencia de ahorro que el sistema elabora a partir del consumo medido del hogar |
+
+### Convención de códigos
+
+Cada requisito tiene un código estable que es idéntico en las versiones en español e inglés. La Tabla 2 explica los prefijos.
+
+**Tabla 2**
+
+*Prefijos de los códigos*
+
+| Prefijo | Significado |
+|---|---|
+| `RF-SEC` | Requisitos funcionales del Módulo de Gestión de Usuarios y Perfiles |
+| `RF-HOM` | Requisitos funcionales del Módulo de Gestión de Hogares |
+| `RF-DEV` | Requisitos funcionales del Módulo de Gestión de Dispositivos |
+| `RF-MED` | Requisitos funcionales del Módulo de Mediciones y Consumo |
+| `RF-ALE` | Requisitos funcionales del Módulo de Alertas |
+| `RF-REC` | Requisitos funcionales del Módulo de Recomendaciones de Ahorro |
+| `RF-NOT` | Requisitos funcionales del Módulo de Notificaciones |
+| `RF-CLI` | Requisitos funcionales de las aplicaciones web y móvil |
+| `RNF-SEG`, `RNF-REN`, `RNF-DIS`, `RNF-COM`, `RNF-MAN`, `RNF-I18`, `RNF-ESC`, `RNF-USA`, `RNF-INT` | Requisitos no funcionales: seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad |
+| `HU` | Historias de usuario |
+| `CU` | Casos de uso |
+| `CA` | Criterios de aceptación |
+
+La marca `[POR CONFIRMAR]` indica un dato que no se encontró en la fuente y debe validarse con el equipo antes de la entrega.
+
+### Tipos de usuario
+
+La Tabla 3 describe los tipos de usuario del sistema. Una persona puede pertenecer a varios hogares con roles distintos.
+
+**Tabla 3**
+
+*Tipos de usuario*
+
+| Tipo | Descripción |
+|---|---|
+| Administrador del sistema | Opera la plataforma y administra los permisos generales de los usuarios. No dispone de una pantalla propia de administración |
+| Propietario del hogar | Gestiona el hogar, sus dispositivos, sus miembros y sus límites de consumo |
+| Miembro del hogar | Consulta el consumo, las alertas y las recomendaciones del hogar |
+| Dispositivo de medición | Actor técnico que envía las lecturas de consumo y su propio estado |
+
+### Supuestos y dependencias
+
+1. Los dispositivos de medición tienen Wi-Fi continuo en el lugar de instalación.
+2. El inicio de sesión con Google y el envío de correos dependen de cuentas de esos servicios configuradas para el sistema.
+3. Las notificaciones del navegador dependen de que el sistema tenga habilitado ese servicio.
+
+## Requisitos funcionales
+
+### Módulo de Gestión de Usuarios y Perfiles
+
+La Tabla 4 enumera los requisitos funcionales del Módulo de Gestión de Usuarios y Perfiles.
+
+**Tabla 4**
+
+*Requisitos funcionales del Módulo de Gestión de Usuarios y Perfiles*
+
+| Código | Requisito |
+|---|---|
+| RF-SEC-01 | El sistema debe permitir registrar una cuenta con datos personales, correo y contraseña. Si el correo ya está registrado, debe rechazar el registro e informar al usuario. |
+| RF-SEC-02 | El sistema debe enviar al correo registrado un código de verificación de seis dígitos y marcar el correo como verificado cuando el usuario lo ingrese. El usuario debe poder pedir que se le reenvíe el código. Una cuenta sin verificar puede iniciar sesión. El código dura entre 15 y 30 minutos y cambiar el correo lo invalida. |
+| RF-SEC-03 | El sistema debe permitir iniciar sesión de forma segura con correo y contraseña. |
+| RF-SEC-04 | El sistema debe mantener la sesión del usuario sin pedirle sus credenciales continuamente, permitirle cerrar la sesión y cerrarla si detecta que se intenta reutilizar una credencial de sesión ya usada. |
+| RF-SEC-05 | El sistema debe permitir registrarse e iniciar sesión con una cuenta de Google. La primera vez crea la cuenta con el nombre, el apellido (si existe), la foto y el correo de Google, y el correo queda verificado. Si el correo pertenece a una cuenta registrada con contraseña, debe rechazar el acceso e informar el conflicto. Si el servicio de Google no está disponible, debe avisar al usuario. |
+| RF-SEC-06 | El sistema debe permitir recuperar la contraseña con un código de seis dígitos enviado al correo, válido 15 minutos y de un solo uso. Debe responder igual exista o no la cuenta, y pedir un código nuevo anula los anteriores. |
+| RF-SEC-07 | El sistema debe permitir al usuario con sesión iniciada cambiar su contraseña. |
+| RF-SEC-08 | El sistema debe permitir consultar los datos de la cuenta y actualizar el perfil. |
+| RF-SEC-09 | El sistema debe permitir conocer los permisos del usuario. Los permisos generales se evalúan en cada consulta y no quedan fijados en la sesión. |
+| RF-SEC-10 | El sistema debe identificar al usuario únicamente a partir de su sesión y no debe aceptar identidades indicadas por la aplicación que realiza la solicitud. |
+| RF-SEC-11 | El sistema debe permitir al usuario eliminar su cuenta confirmando su contraseña. Con una contraseña incorrecta debe rechazar la solicitud. La eliminación es lógica y se realiza completa o no se realiza: cierra las sesiones, marca como eliminados los datos personales, libera el correo para un registro nuevo y gestiona las membresías en los hogares. Un hogar del que la cuenta es el único miembro se elimina. Si la cuenta es el único propietario de un hogar con otros miembros, el sistema rechaza la eliminación con un mensaje legible hasta que se transfiera la propiedad o se retire a los miembros. El acceso ya iniciado antes de la eliminación puede seguir vigente 15 minutos como máximo y no puede renovarse. |
+| RF-SEC-12 | El sistema debe aplicar una política de contraseñas (longitud mínima de 8 y máxima de 64 caracteres) y registrar los intentos fallidos de acceso y las acciones relevantes para la seguridad. El bloqueo de la cuenta tras intentos fallidos y la expiración de la contraseña a los 90 días figuran en la configuración inicial: `[POR CONFIRMAR]` si se aplican. |
+
+### Módulo de Gestión de Hogares
+
+La Tabla 5 enumera los requisitos funcionales del Módulo de Gestión de Hogares.
+
+**Tabla 5**
+
+*Requisitos funcionales del Módulo de Gestión de Hogares*
+
+| Código | Requisito |
+|---|---|
+| RF-HOM-01 | El sistema debe permitir crear un hogar eligiendo un tipo de hogar de un catálogo. Quien lo crea queda como propietario y el hogar recibe un código de acceso. |
+| RF-HOM-02 | El sistema debe mostrar al usuario los hogares a los que pertenece. |
+| RF-HOM-03 | El sistema debe permitir unirse a un hogar con su código de acceso, con el rol de miembro. |
+| RF-HOM-04 | El sistema debe mostrar los miembros de un hogar. |
+| RF-HOM-05 | El sistema debe distinguir los permisos generales de los usuarios de los roles de propietario y miembro dentro de cada hogar. Todo hogar debe tener un propietario. Un usuario puede tener roles distintos en hogares distintos. |
+| RF-HOM-06 | El propietario debe poder retirar a un miembro y cualquier miembro debe poder abandonar el hogar. |
+| RF-HOM-07 | El usuario debe poder marcar un hogar como favorito. |
+| RF-HOM-08 | El sistema debe permitir consultar, actualizar y restablecer a los valores del sistema los umbrales de un hogar. El propietario define el límite diario o el mensual. Los valores predeterminados son 6 kWh diarios y 180 kWh mensuales. |
+| RF-HOM-09 | Pendiente de implementación: transferencia de propiedad de un hogar, eliminación lógica de un hogar y gestión del historial de un dispositivo según el periodo de vinculación. |
+
+### Módulo de Gestión de Dispositivos
+
+La Tabla 6 enumera los requisitos funcionales del Módulo de Gestión de Dispositivos.
+
+**Tabla 6**
+
+*Requisitos funcionales del Módulo de Gestión de Dispositivos*
+
+| Código | Requisito |
+|---|---|
+| RF-DEV-01 | El sistema debe ofrecer un catálogo de tipos de electrodoméstico. |
+| RF-DEV-02 | El propietario debe poder vincular un dispositivo de medición a su hogar. El sistema registra el dispositivo, le entrega sus credenciales y la dirección del servicio al que debe enviar sus datos. Un dispositivo vinculado a otro hogar debe rechazarse. Vincular de nuevo el mismo dispositivo conserva su identidad y su historial y renueva sus credenciales. |
+| RF-DEV-03 | Los miembros deben poder ver los dispositivos de un hogar. |
+| RF-DEV-04 | El propietario debe poder editar el electrodoméstico, el nombre y la habitación de un dispositivo sin intervenir el aparato físico. |
+| RF-DEV-05 | El propietario debe poder cambiar la red Wi-Fi de un dispositivo ya vinculado. El sistema renueva las credenciales e invalida las anteriores. No se considera una vinculación nueva y no genera el aviso de dispositivo vinculado. |
+| RF-DEV-06 | El propietario debe poder desvincular un dispositivo. Al hacerlo, las credenciales dejan de ser válidas y el dispositivo recibe la orden de olvidarlas, conserva su red Wi-Fi y activa de inmediato el Bluetooth para vincularse de nuevo. Si estaba apagado, recibe la orden al reconectarse. Las credenciales anteriores pueden seguir siendo aceptadas hasta cinco minutos. Al vincularlo otra vez, la orden pendiente se borra. |
+| RF-DEV-07 | El sistema solo debe aceptar datos de dispositivos vinculados, y cada dispositivo solo puede enviar sus propios datos. |
+| RF-DEV-08 | La vinculación debe poder hacerse desde la aplicación web por Bluetooth: la aplicación muestra las redes Wi-Fi que ve el dispositivo, registra el dispositivo y le envía la configuración. Para navegadores sin Bluetooth, el dispositivo ofrece un portal de configuración propio, al que se accede conectándose a su red `EnergyMonitor-Setup`. |
+| RF-DEV-09 | El dispositivo debe reconectarse sin intervención del usuario ante la pérdida de Wi-Fi o una falla temporal del sistema, conservar hasta 30 muestras mientras no tiene conexión y no enviar nunca lecturas en cero cuando el sensor no responde. |
+
+### Módulo de Mediciones y Consumo
+
+La Tabla 7 enumera los requisitos funcionales del Módulo de Mediciones y Consumo.
+
+**Tabla 7**
+
+*Requisitos funcionales del Módulo de Mediciones y Consumo*
+
+| Código | Requisito |
+|---|---|
+| RF-MED-01 | El dispositivo debe enviar cada 60 segundos el voltaje (V), la corriente (A), la potencia activa (W) y la energía acumulada (kWh) del electrodoméstico. El sistema ignora cualquier dato adicional que no forme parte de esas magnitudes. |
+| RF-MED-02 | El sistema debe guardar cada lectura con la fecha y hora en que se tomó. Las muestras acumuladas sin conexión llegan con su hora real. Si el dispositivo no tiene hora, el sistema usa la hora de recepción. |
+| RF-MED-03 | El sistema debe descartar los mensajes que declaren pertenecer a un dispositivo distinto del que los envía. |
+| RF-MED-04 | El dispositivo debe informar su estado cada cinco minutos y al conectarse: si está en línea o sin conexión, la intensidad de su señal, la versión de su software y el tiempo que lleva encendido. |
+| RF-MED-05 | El sistema debe conservar los cambios de estado de cada dispositivo. Mientras siga en línea, cada informe solo actualiza el último estado registrado. |
+| RF-MED-06 | El sistema debe marcar un dispositivo como sin conexión cuando el dispositivo avisa que se desconecta o cuando pasan 150 segundos sin recibir noticias de él. |
+| RF-MED-07 | El sistema debe permitir consultar las mediciones, la última medición y estadísticas de consumo. |
+| RF-MED-08 | El sistema debe ofrecer el resumen y el historial de consumo de un hogar, con selección de un rango de fechas. |
+| RF-MED-09 | El sistema debe clasificar la potencia en los niveles LOW (0 a 500 W), MEDIUM (500 a 1500 W), HIGH (1500 a 3000 W) y CRITICAL (desde 3000 W), con rangos que incluyen el límite inferior y excluyen el superior, y permitir consultarlos. |
+
+### Módulo de Alertas
+
+La Tabla 8 enumera los requisitos funcionales del Módulo de Alertas.
+
+**Tabla 8**
+
+*Requisitos funcionales del Módulo de Alertas*
+
+| Código | Requisito |
+|---|---|
+| RF-ALE-01 | El sistema debe generar un aviso de dispositivo vinculado con la primera lectura que envía un dispositivo tras ser vinculado, una vez por vinculación. El usuario lo cierra marcándolo como leído. |
+| RF-ALE-02 | El sistema debe generar una alerta de desconexión cuando un dispositivo avisa que se desconecta o pasan 150 segundos sin datos. Se resuelve sola cuando el dispositivo vuelve a reportar. |
+| RF-ALE-03 | El sistema debe generar una alerta de consumo alto o crítico cuando una lectura cae en el nivel HIGH o CRITICAL. Se resuelve sola con la primera lectura en nivel LOW o MEDIUM. |
+| RF-ALE-04 | El sistema debe generar una alerta de límite diario o mensual cuando la energía del hogar desde el inicio del día o del mes alcanza el límite de sus umbrales. Día y mes se calculan en la zona horaria de Bogotá. Se resuelve sola al iniciar un nuevo periodo o al subir el límite por encima del consumo. |
+| RF-ALE-05 | El sistema debe permitir consultar las alertas, ver el detalle de una, marcarla como leída y eliminarla. Solo se pueden eliminar las alertas resueltas o leídas. |
+| RF-ALE-06 | El sistema debe generar las alertas de consumo a partir de cada nueva lectura y las de desconexión a partir de la pérdida de comunicación del dispositivo, y enviar cada alerta para su notificación. |
+
+### Módulo de Recomendaciones de Ahorro
+
+La Tabla 9 enumera los requisitos funcionales del Módulo de Recomendaciones de Ahorro.
+
+**Tabla 9**
+
+*Requisitos funcionales del Módulo de Recomendaciones de Ahorro*
+
+| Código | Requisito |
+|---|---|
+| RF-REC-01 | El sistema debe evaluar cada hora la energía por hora de los hogares cuyos dispositivos reportaron en la última semana, y guardar una recomendación cuando se cumple una regla. La primera evaluación se hace 2 minutos después de iniciar el sistema. |
+| RF-REC-02 | Regla de hora punta: al menos el 40 % de la energía de los últimos 7 días (mínimo 2 kWh) se consumió entre las 18:00 y las 22:00. |
+| RF-REC-03 | Regla de consumo en reposo: un dispositivo que no sea un refrigerador consumió en promedio 15 W o más entre la 01:00 y las 05:00 en cada una de las últimas 3 noches. |
+| RF-REC-04 | Regla de comparación semanal: los últimos 7 días superan en 25 % o más a los 7 anteriores (mínimo 1 kWh). |
+| RF-REC-05 | Regla de proyección de límite: al ritmo actual, el hogar superará su límite diario o mensual, el que haya definido el propietario. |
+| RF-REC-06 | Regla de aumento por dispositivo: la potencia media de un dispositivo en los últimos 7 días es 30 % o más superior a la de los 21 días anteriores. |
+| RF-REC-07 | La misma recomendación (hogar, tipo y dispositivo) no debe repetirse dentro de 7 días, aunque se haya eliminado. Las horas se interpretan en la zona horaria de Bogotá. |
+| RF-REC-08 | El sistema debe permitir consultar las recomendaciones de un hogar, marcarlas como leídas y eliminar las leídas, una por una o todas a la vez. Quien no es miembro del hogar no puede ver sus recomendaciones. |
+| RF-REC-09 | Las reglas requieren historial: la hora punta y el consumo en reposo funcionan tras unos días de lecturas, la comparación semanal tras dos semanas y la comparación por dispositivo tras cuatro. |
+
+### Módulo de Notificaciones
+
+La Tabla 10 enumera los requisitos funcionales del Módulo de Notificaciones.
+
+**Tabla 10**
+
+*Requisitos funcionales del Módulo de Notificaciones*
+
+| Código | Requisito |
+|---|---|
+| RF-NOT-01 | El sistema debe entregar cada alerta a todos los miembros del hogar por correo y por notificación del navegador, según las preferencias de cada usuario. Ambos canales están activos por defecto. |
+| RF-NOT-02 | El sistema debe entregar cada recomendación nueva por los mismos canales. |
+| RF-NOT-03 | El usuario debe poder consultar y modificar sus preferencias de notificación. |
+| RF-NOT-04 | El usuario debe poder activar y desactivar las notificaciones del navegador. Si el servicio no está habilitado en el sistema, el correo sigue funcionando. |
+| RF-NOT-05 | Cada intento de entrega debe quedar registrado como enviado o fallido, sin guardar el contenido del mensaje. Los intentos que sigan sin cerrarse tras 30 minutos se marcan como fallidos. |
+| RF-NOT-06 | El sistema debe enviar por correo el código de verificación y el de recuperación de contraseña. Un fallo del correo no debe cambiar lo que el usuario ve en pantalla. |
+| RF-NOT-07 | Cada correo de alerta debe incluir un enlace a la aplicación web. |
+
+### Aplicaciones web y móvil
+
+La Tabla 11 recoge los requisitos funcionales de las aplicaciones web y móvil.
+
+**Tabla 11**
+
+*Requisitos funcionales de las aplicaciones web y móvil*
+
+| Código | Requisito |
+|---|---|
+| RF-CLI-01 | La aplicación web debe ofrecer registro, inicio de sesión (incluido Google), recuperación de contraseña, cuenta, hogares, favoritos, dispositivos, umbrales, consumo, historial y notificaciones. |
+| RF-CLI-02 | La aplicación web debe mostrar una insignia con las alertas pendientes, un contador en el título de la pestaña y un aviso emergente cuando llega una alerta nueva, y actualizarse cada 30 segundos. |
+| RF-CLI-03 | La aplicación web debe vincular dispositivos por Bluetooth y permitir notificaciones del navegador, que llegan aunque la pestaña esté cerrada. |
+| RF-CLI-04 | La aplicación móvil debe estar disponible solo para Android y permitir el acceso a la cuenta, los hogares, las alertas, las recomendaciones y las preferencias de notificación. |
+| RF-CLI-05 | Ambas aplicaciones deben permitir elegir el idioma entre español, inglés, francés y portugués. |
+| RF-CLI-06 | Las aplicaciones deben permitir elegir una paleta de colores con modo oscuro. |
+
+## Requisitos no funcionales
+
+### Seguridad
+
+La Tabla 12 establece los requisitos de seguridad.
+
+**Tabla 12**
+
+*Requisitos no funcionales de seguridad*
+
+| Código | Requisito |
+|---|---|
+| RNF-SEG-01 | Cada acceso concedido a un usuario debe durar 15 minutos y renovarse automáticamente mientras la sesión siga vigente. Una sesión no debe superar los 7 días sin que el usuario vuelva a iniciar sesión. |
+| RNF-SEG-02 | Si se intenta reutilizar una credencial de renovación ya usada, el sistema debe invalidar la sesión. |
+| RNF-SEG-03 | El sistema solo debe atender las solicitudes de las aplicaciones web autorizadas. Las demás deben rechazarse. |
+| RNF-SEG-04 | Los datos que envían los dispositivos de medición deben viajar cifrados. |
+| RNF-SEG-05 | Los códigos de recuperación deben almacenarse de forma protegida, de modo que una filtración de los datos no permita usarlos. |
+| RNF-SEG-06 | El canje de códigos de recuperación debe limitarse a 10 intentos por dirección y por ventana de 15 minutos, e indicar al usuario cuánto debe esperar. La verificación de correo debe limitarse además a 5 intentos por dirección y por ventana. |
+| RNF-SEG-07 | Las funciones internas con las que se autentica a los dispositivos solo deben ser accesibles desde la red del propio sistema y nunca desde internet. |
+| RNF-SEG-08 | El sistema debe proteger la información de los usuarios conforme a la Ley 1581 de 2012 (Congreso de la República de Colombia, 2012). |
+| RNF-SEG-09 | Las credenciales de los dispositivos deben comprobarse de forma segura. Su almacenamiento protegido está pendiente. |
+| RNF-SEG-10 | Las contraseñas y claves del sistema no deben quedar expuestas en los archivos compartidos del proyecto. |
+
+### Rendimiento
+
+La Tabla 13 establece los requisitos de rendimiento.
+
+**Tabla 13**
+
+*Requisitos no funcionales de rendimiento*
+
+| Código | Requisito |
+|---|---|
+| RNF-REN-01 | Las consultas de datos y las gráficas deben responder en menos de 2 segundos. La medición de este valor con la carga prevista. |
+| RNF-REN-02 | El sistema debe procesar la información de cada dispositivo con una cadencia de una lectura cada 60 segundos. |
+| RNF-REN-03 | El envío de correos no debe dejar esperando al usuario más de 5 segundos. |
+
+### Disponibilidad y tolerancia a fallos
+
+La Tabla 14 establece los requisitos de disponibilidad y tolerancia a fallos.
+
+**Tabla 14**
+
+*Requisitos no funcionales de disponibilidad y tolerancia a fallos*
+
+| Código | Requisito |
+|---|---|
+| RNF-DIS-01 | `[POR CONFIRMAR]` porcentaje de disponibilidad objetivo. |
+| RNF-DIS-02 | El sistema debe tolerar la pérdida ocasional de lecturas. Una lectura perdida más el retardo de la red no debe provocar el estado sin conexión: el umbral es de 150 segundos. |
+| RNF-DIS-03 | Si el sistema no está disponible, el dispositivo debe seguir midiendo y conservar hasta 30 muestras (30 minutos). Si se llena, descarta la más antigua. |
+| RNF-DIS-04 | El servicio que recibe los datos de los dispositivos debe reintentar conectarse con el sistema cada 10 segundos mientras este no esté disponible. |
+| RNF-DIS-05 | Si no hay Wi-Fi durante 10 minutos, el dispositivo debe reiniciarse. Tras 5 minutos sin una red conocida, debe ofrecer la configuración por Bluetooth. |
+| RNF-DIS-06 | El sistema debe permitir consultar su estado de salud. |
+
+### Compatibilidad
+
+La Tabla 15 establece los requisitos de compatibilidad.
+
+**Tabla 15**
+
+*Requisitos no funcionales de compatibilidad*
+
+| Código | Requisito |
+|---|---|
+| RNF-COM-01 | La aplicación web debe funcionar en los navegadores actuales (Chrome, Firefox, Safari y Edge). |
+| RNF-COM-02 | La vinculación por Bluetooth desde la web solo está disponible en Chrome y Edge de escritorio y en Chrome para Android, y solo en una conexión segura. En los demás navegadores se usa el portal de configuración del dispositivo. |
+| RNF-COM-03 | La aplicación móvil debe ejecutarse en dispositivos Android. |
+| RNF-COM-04 | El dispositivo de medición debe incluir un sensor de medición eléctrica dedicado, con un solo sensor por placa, y una placa con Wi-Fi y Bluetooth. |
+
+### Mantenibilidad
+
+La Tabla 16 establece los requisitos de mantenibilidad.
+
+**Tabla 16**
+
+*Requisitos no funcionales de mantenibilidad*
+
+| Código | Requisito |
+|---|---|
+| RNF-MAN-01 | El sistema debe organizarse en módulos funcionales (Gestión de Usuarios y Perfiles, Gestión de Hogares, Gestión de Dispositivos, Mediciones y Consumo, Alertas, Recomendaciones de Ahorro y Notificaciones), de modo que cada uno pueda modificarse sin afectar a los demás. |
+| RNF-MAN-02 | Todo cambio en la estructura de los datos debe poder revertirse. |
+| RNF-MAN-03 | Los datos eliminados deben conservarse marcados como eliminados y no borrarse físicamente. |
+| RNF-MAN-04 | El sistema debe contar con pruebas automáticas que verifiquen sus funciones principales. |
+
+### Internacionalización
+
+La Tabla 17 establece los requisitos de internacionalización.
+
+**Tabla 17**
+
+*Requisitos no funcionales de internacionalización*
+
+| Código | Requisito |
+|---|---|
+| RNF-I18-01 | La aplicación web debe estar disponible en español, inglés, francés y portugués. |
+| RNF-I18-02 | La aplicación móvil debe estar disponible en español, inglés, francés y portugués. |
+| RNF-I18-03 | Las alertas y las recomendaciones deben mostrarse en el idioma que haya elegido cada usuario. |
+
+### Escalabilidad
+
+La Tabla 18 establece los requisitos de escalabilidad.
+
+**Tabla 18**
+
+*Requisitos no funcionales de escalabilidad*
+
+| Código | Requisito |
+|---|---|
+| RNF-ESC-01 | El sistema debe poder crecer en número de usuarios y de dispositivos sin afectar la experiencia del usuario. |
+| RNF-ESC-02 | Las cantidades objetivo de usuarios y dispositivos concurrentes son `[POR CONFIRMAR]`. |
+
+### Usabilidad
+
+La Tabla 19 establece los requisitos de usabilidad.
+
+**Tabla 19**
+
+*Requisitos no funcionales de usabilidad*
+
+| Código | Requisito |
+|---|---|
+| RNF-USA-01 | La interfaz debe ser clara, adaptable a distintos tamaños de pantalla y coherente, con retroalimentación inmediata. El cumplimiento de las pautas WCAG es `[POR CONFIRMAR]`. |
+
+### Interoperabilidad
+
+La Tabla 20 establece los requisitos de interoperabilidad con servicios externos y con el dispositivo de medición.
+
+**Tabla 20**
+
+*Requisitos no funcionales de interoperabilidad*
+
+| Código | Requisito |
+|---|---|
+| RNF-INT-01 | Los dispositivos de medición deben comunicarse con el sistema mediante conexiones iniciadas desde el hogar, de modo que funcionen detrás de cualquier router doméstico sin cambiar la configuración del router. |
+| RNF-INT-02 | El sistema debe enviar correos mediante una cuenta de correo configurada para ese fin. |
+| RNF-INT-03 | El sistema debe permitir el acceso con cuentas de Google solicitando únicamente el nombre, el correo y la foto del perfil. |
+| RNF-INT-04 | Las notificaciones del navegador solo deben funcionar en una conexión segura y requieren que el sistema tenga habilitado ese servicio. |
+| RNF-INT-05 | La configuración del dispositivo por Bluetooth debe estar disponible hasta 10 minutos, no debe interrumpir la medición y no debe exigir emparejamiento previo. |
+
+## Historias de usuario y casos de uso
+
+Las historias de usuario describen las interacciones desde la perspectiva de quien las usa. Cada una indica los requisitos que cubre y sus criterios de aceptación en formato Dado, Cuando, Entonces. Los casos de uso detallan los dos flujos más críticos del sistema.
+
+### Historias de usuario
+
+#### HU-01 Registrar una cuenta
+
+Como persona que quiere monitorear su consumo, quiero registrarme y verificar mi correo, para acceder al sistema.
+
+Requisitos relacionados: RF-SEC-01, RF-SEC-02.
+
+- CA-01. Dado un correo ya registrado, cuando intento registrarme con él, entonces el sistema muestra un error y no crea una segunda cuenta.
+- CA-02. Dado un registro exitoso, cuando ingreso el código de seis dígitos que llegó a mi correo dentro de su ventana de validez, entonces el correo queda verificado.
+
+#### HU-02 Iniciar y mantener la sesión
+
+Como usuario registrado, quiero iniciar sesión y mantenerla de forma segura, para consultar mis datos sin repetir mis credenciales a cada rato.
+
+Requisitos relacionados: RF-SEC-03, RF-SEC-04, RF-SEC-10, RNF-SEG-01, RNF-SEG-02.
+
+- CA-03. Dado un inicio de sesión correcto, cuando el sistema concede el acceso, entonces este dura 15 minutos y se renueva mientras la sesión siga vigente.
+- CA-04. Dada una credencial de renovación ya usada, cuando intento usarla por segunda vez, entonces el sistema invalida la sesión.
+- CA-05. Dada una solicitud que indica la identidad de otro usuario, cuando el sistema la atiende, entonces usa la identidad de mi sesión.
+
+#### HU-03 Recuperar la contraseña
+
+Como usuario que olvidó su contraseña, quiero recuperarla con un código enviado a mi correo, para volver a entrar a mi cuenta.
+
+Requisitos relacionados: RF-SEC-06, RF-NOT-06, RNF-SEG-05, RNF-SEG-06.
+
+- CA-06. Dado un correo que no existe, cuando solicito el código, entonces el sistema responde igual que si existiera. El intento número 11 en 15 minutos desde la misma dirección se rechaza e indica cuánto esperar.
+- CA-07. Dado que el envío de correo no está configurado, cuando solicito el código, entonces el sistema responde igual y la entrega queda registrada como fallida.
+
+#### HU-04 Eliminar mi cuenta
+
+Como usuario, quiero eliminar mi cuenta, para dejar de usar el servicio y liberar mi correo.
+
+Requisitos relacionados: RF-SEC-11.
+
+- CA-08. Dada una contraseña incorrecta, cuando solicito eliminar la cuenta, entonces el sistema la rechaza. Con la contraseña correcta la elimina, el correo puede registrarse de nuevo y las sesiones quedan cerradas.
+- CA-09. Dado que soy el único propietario de un hogar con otros miembros, cuando solicito eliminar la cuenta, entonces el sistema la rechaza con un mensaje legible y no modifica ningún dato.
+
+#### HU-05 Crear un hogar y definir sus umbrales
+
+Como propietario, quiero crear un hogar, invitar a sus miembros y fijar sus límites de consumo, para que el sistema me avise cuando se superen.
+
+Requisitos relacionados: RF-HOM-01 a RF-HOM-08.
+
+- CA-10. Dado un hogar nuevo, cuando restablezco sus umbrales a los valores del sistema, entonces muestra 6 kWh diarios y 180 kWh mensuales.
+- CA-11. Dado un usuario que pertenece a dos hogares, cuando consulta sus roles, entonces puede ser propietario en uno y miembro en el otro al mismo tiempo.
+
+#### HU-06 Vincular un dispositivo de medición
+
+Como propietario, quiero vincular un dispositivo de medición a mi hogar desde la web, para que empiece a enviar lecturas de un electrodoméstico.
+
+Requisitos relacionados: RF-DEV-02, RF-DEV-07, RF-DEV-08, RNF-SEG-04.
+
+- CA-12. Dado un dispositivo ya vinculado a otro hogar, cuando intento vincularlo, entonces el sistema lo rechaza. Si lo vinculo de nuevo al mismo hogar, conserva su historial y recibe credenciales nuevas.
+- CA-13. Dado un dispositivo con credenciales válidas, cuando se conecta, entonces el sistema acepta sus datos. Con credenciales incorrectas los rechaza.
+- CA-14. Dado un dispositivo vinculado, cuando intenta enviar datos como si fuera otro dispositivo, entonces el sistema lo rechaza.
+
+#### HU-07 Desvincular un dispositivo
+
+Como propietario, quiero eliminar un dispositivo de mi hogar, para que el dispositivo quede disponible de inmediato para vincularse de nuevo.
+
+Requisitos relacionados: RF-DEV-06.
+
+- CA-15. Dado un dispositivo conectado, cuando elimino el dispositivo, entonces el dispositivo olvida sus credenciales y ofrece el Bluetooth en pocos segundos.
+
+#### HU-08 Consultar el consumo de mi hogar
+
+Como miembro del hogar, quiero ver el consumo actual y el historial de cada electrodoméstico, para identificar los periodos de mayor demanda.
+
+Requisitos relacionados: RF-MED-01 a RF-MED-10.
+
+- CA-16. Dado un dispositivo en línea, cuando consulto su consumo, entonces aparece una lectura nueva cada 60 segundos con voltaje, corriente, potencia y energía.
+- CA-17. Dado un mensaje que declara pertenecer a un dispositivo distinto del que lo envía, cuando el sistema lo recibe, entonces no lo guarda.
+- CA-18. Dadas lecturas de 1499 W, 1500 W y 3000 W, cuando el sistema las clasifica, entonces son MEDIUM, HIGH y CRITICAL respectivamente.
+- CA-19. Dado que el sistema estuvo no disponible, cuando se restablece la conexión, entonces el dispositivo envía hasta 30 muestras acumuladas con su hora real.
+
+#### HU-09 Recibir alertas
+
+Como miembro del hogar, quiero que el sistema me alerte cuando el consumo sea excesivo o un dispositivo se desconecte, para reaccionar a tiempo.
+
+Requisitos relacionados: RF-ALE-01 a RF-ALE-06, RF-MED-06.
+
+- CA-20. Dado un dispositivo en línea, cuando lo desconecto, entonces el sistema lo marca sin conexión en unos 22 segundos si el dispositivo avisa, o como máximo a los 150 segundos, y genera la alerta de desconexión. Al reconectarlo, la alerta se resuelve sola.
+- CA-21. Dada una lectura en nivel HIGH, cuando el sistema la procesa, entonces genera una alerta de consumo alto. La primera lectura LOW o MEDIUM la resuelve.
+- CA-22. Dada una energía del día que alcanza el límite diario, cuando el sistema la evalúa, entonces genera la alerta de límite diario. Si subo el límite por encima del consumo, la alerta se resuelve.
+
+#### HU-10 Recibir recomendaciones de ahorro
+
+Como miembro del hogar, quiero recibir recomendaciones basadas en mi propio consumo, para ahorrar energía.
+
+Requisitos relacionados: RF-REC-01 a RF-REC-09.
+
+- CA-23. Dado que el 40 % o más de la energía de los últimos 7 días (mínimo 2 kWh) se consumió entre las 18:00 y las 22:00, cuando el sistema evalúa las reglas, entonces crea una recomendación de hora punta.
+- CA-24. Dada una recomendación que eliminé, cuando el sistema vuelve a evaluar las reglas, entonces la misma no reaparece antes de 7 días.
+- CA-25. Dado un usuario que no es miembro del hogar, cuando intenta ver sus recomendaciones, entonces el sistema no se las muestra.
+
+#### HU-11 Elegir cómo recibir las notificaciones
+
+Como usuario, quiero elegir si recibo las alertas y recomendaciones por correo, por notificación del navegador o por ambos, para enterarme por el canal que prefiero.
+
+Requisitos relacionados: RF-NOT-01 a RF-NOT-05.
+
+- CA-26. Dados ambos canales activos, cuando se genera una alerta, entonces cada miembro recibe un correo y una notificación del navegador. Con un canal desactivado, recibe solo el otro.
+- CA-27. Dado cualquier intento de entrega, cuando termina, entonces queda registrado como enviado o fallido, sin el contenido del mensaje.
+
+#### HU-12 Usar el sistema en mi idioma
+
+Como usuario, quiero cambiar el idioma de la aplicación, para entender la información.
+
+Requisitos relacionados: RF-CLI-05, RNF-I18-01, RNF-I18-02.
+
+- CA-28. Dado un idioma elegido entre español, inglés, francés y portugués, cuando lo cambio en la web o en la móvil, entonces todos los textos pasan a ese idioma.
+
+#### HU-13 Proteger los accesos
+
+Como administrador del sistema, quiero que el sistema rechace orígenes y redes no autorizados, para proteger los datos de los usuarios.
+
+Requisitos relacionados: RNF-SEG-03, RNF-SEG-07.
+
+- CA-29. Dada una solicitud de una aplicación web no autorizada, cuando el sistema responde, entonces la rechaza.
+- CA-30. Dada una solicitud a las funciones internas de autenticación de dispositivos desde una red no permitida, cuando el sistema la recibe, entonces la rechaza.
+
+#### HU-14 Evolucionar los datos sin perder información
+
+Como desarrollador, quiero que cada cambio en la estructura de los datos se pueda revertir, para poder deshacer un cambio fallido.
+
+Requisitos relacionados: RNF-MAN-02.
+
+- CA-31. Dado cualquier cambio en la estructura de los datos, cuando se revisa, entonces existe una forma de revertirlo.
+
+### Casos de uso
+
+#### CU-01 Vincular un dispositivo de medición
+
+La Tabla 21 resume el caso de uso de vinculación de un dispositivo.
+
+**Tabla 21**
+
+*Caso de uso CU-01 Vincular un dispositivo de medición*
+
+| Campo | Detalle |
+|---|---|
+| Actores | Propietario del hogar, dispositivo de medición |
+| Precondiciones | El usuario es propietario del hogar. El dispositivo está en modo de configuración (recién configurado, sin vincular, o con el botón del dispositivo pulsado 3 segundos). El navegador es Chrome o Edge en una conexión segura |
+| Postcondiciones | El dispositivo queda registrado con sus credenciales, se conecta al sistema y sale del modo de configuración |
+| Requisitos relacionados | RF-DEV-02, RF-DEV-07, RF-DEV-08, RNF-INT-05 |
+
+Flujo normal:
+
+1. El propietario abre Hogar, Dispositivos, Vincular dispositivo.
+2. La aplicación busca el dispositivo por Bluetooth y el propietario elige `EnergyMonitor-<código>`.
+3. El propietario elige el electrodoméstico, el nombre y la habitación.
+4. La aplicación lista las redes Wi-Fi que ve el dispositivo y el propietario elige la de su hogar y escribe su contraseña.
+5. La aplicación registra el dispositivo en el sistema, que le entrega sus credenciales.
+6. La aplicación envía al dispositivo, por Bluetooth, la red, la contraseña, la dirección del servicio y las credenciales, y muestra el avance real del dispositivo.
+7. El dispositivo se conecta al sistema, que verifica sus credenciales, y sale del modo de configuración.
+
+Flujos alternos:
+
+- A1. El navegador no tiene Bluetooth: el usuario se conecta a la red `EnergyMonitor-Setup`, abre la página de Energy Monitor y completa la configuración en el portal.
+- A2. El dispositivo ya está vinculado a otro hogar: el sistema rechaza la vinculación.
+- A3. La contraseña de la red Wi-Fi es incorrecta: el dispositivo lo informa y el propietario corrige la contraseña.
+
+#### CU-02 Atender una alerta de desconexión
+
+La Tabla 22 resume el caso de uso de la alerta por desconexión de un dispositivo.
+
+**Tabla 22**
+
+*Caso de uso CU-02 Atender una alerta de desconexión*
+
+| Campo | Detalle |
+|---|---|
+| Actores | Dispositivo de medición, sistema, miembros del hogar |
+| Precondiciones | El dispositivo está vinculado y en línea. Los miembros tienen activo al menos un canal de notificación |
+| Postcondiciones | La alerta queda resuelta cuando el dispositivo vuelve a reportar. El estado del dispositivo queda registrado |
+| Requisitos relacionados | RF-MED-04 a RF-MED-06, RF-ALE-02, RF-NOT-01 |
+
+Flujo normal:
+
+1. El dispositivo pierde la energía o la conexión.
+2. El sistema recibe el aviso de desconexión del dispositivo unos 22 segundos después.
+3. El sistema marca el dispositivo como sin conexión y genera la alerta de desconexión.
+4. El sistema entrega la alerta a todos los miembros del hogar por correo y por notificación del navegador, según sus preferencias.
+5. El dispositivo se reconecta de forma automática.
+6. El sistema registra el estado en línea y resuelve la alerta.
+
+Flujos alternos:
+
+- A1. No llega el aviso de desconexión: el sistema marca sin conexión tras 150 segundos sin datos.
+- A2. Los canales de un miembro están desactivados: ese miembro no recibe la notificación, pero la alerta sigue visible en la aplicación.
+
+## Referencias
+
+Congreso de la República de Colombia. (2012, 17 de octubre). *Ley 1581 de 2012: Por la cual se dictan disposiciones generales para la protección de datos personales*. Diario Oficial n.º 48.587.
+
+Institute of Electrical and Electronics Engineers. (1998). *IEEE recommended practice for software requirements specifications* (IEEE Std 830-1998). https://doi.org/10.1109/IEEESTD.1998.88286
