@@ -60,26 +60,23 @@ Los archivos se renderizan en <https://www.plantuml.com/plantuml/uml> o con el p
 | **Artefacto del punto 03** | **Qué aporta al punto 05** |
 |---|---|
 | **Mockups** (web y móvil) | Definen el aspecto visual de cada pantalla → `05.5-interfaces-graficas.md` |
-| **Wireframes** (web y móvil) | Definen la jerarquía de la información → `05.5-interfaces-graficas.md` |
 | Mapas de navegación | Definen el árbol de pantallas → `05.5-interfaces-graficas.md`, secciones 4 y 5 |
-| Flujos de interacción de usuario | Definen los pasos de cada tarea → `05.5-interfaces-graficas.md`, sección 6 |
-| Diagramas de casos de uso | Definen las funcionalidades → `05.1-modelo-arquitectonico.md`, sección 3 |
-| Diagramas de actividades | Definen los flujos → se implementan como casos de uso en el backend |
+| Historias de usuario y casos de uso (punto 02) | Definen las funcionalidades → `05.1-modelo-arquitectonico.md`, sección 3 |
 | **MER** | Define el modelo de datos → `05.2-modelo-de-datos.md` |
 | **Diagrama de clases** | Define el modelo de clases → `05.3-modelo-de-clases.md` |
 
-> **Los mockups y wireframes viven en el punto 03.** Este punto los describe y los relaciona con el código, pero no los duplica.
+> **Los mockups viven en el punto 03.** Este punto los describe y los relaciona con el código, pero no los duplica.
 
 ### 6.2 Punto 02 — Especificación de requisitos
 
 | **Requisito** | **Dónde se materializa** |
 |---|---|
-| RF1 Gestión de usuarios | Contexto `security` · pantallas de acceso y cuenta |
-| RF2 Gestión de proyectos y hogares | Contexto `home` · panel y detalle del hogar |
-| RF3 Gestión y configuración del sistema | `home_thresholds` + `user_configuration` · pantalla de configuración |
-| RF4 Registro y procesamiento del consumo | Contextos `measurement`, `alert`, `recommendation` · pestañas de consumo e historial |
-| RF5 Gestión del dispositivo de medición | Contexto `device` · pestaña de dispositivos y asistente de vinculación |
-| RNF1 a RNF7 | `05.1-modelo-arquitectonico.md`, sección 7 |
+| RF-SEC Gestión de Usuarios y Perfiles | Contexto `security` · pantallas de acceso y cuenta |
+| RF-HOM Gestión de Hogares | Contexto `home` · panel y detalle del hogar |
+| RF-HOM-08, RF-NOT-03, RF-CLI-05, RF-CLI-06 Umbrales, preferencias, idioma y colores | `home_thresholds` + `user_configuration` · pantalla de configuración |
+| RF-MED, RF-ALE, RF-REC, RF-NOT Mediciones, alertas, recomendaciones y notificaciones | Contextos `measurement`, `alert`, `recommendation` · pestañas de consumo e historial |
+| RF-DEV Gestión de Dispositivos (estado de conexión: RF-MED-04 a RF-MED-06) | Contexto `device` · pestaña de dispositivos y asistente de vinculación |
+| RNF-SEG, RNF-REN, RNF-DIS, RNF-COM, RNF-MAN, RNF-I18, RNF-ESC, RNF-USA, RNF-INT | `05.1-modelo-arquitectonico.md`, sección 7 |
 
 ### 6.3 Punto 04 — Propuesta técnica
 
@@ -111,12 +108,12 @@ Durante la construcción del software, el esquema y el modelo de clases evolucio
 
 | **#** | **Diferencia** | **Impacto** |
 |---|---|---|
-| 1 | El MER tiene 27 tablas; el esquema vigente tiene 29 | Se añadieron `notification_preference` y `push_subscription` |
+| 1 | El MER publicado no incluye todas las tablas; el esquema vigente tiene 29 | Se añadieron `notification_preference` y `push_subscription` |
 | 2 | La nota del diagrama de clases afirma que el patrón Strategy no está implementado | **Las tres clases sí existen** en `home/domain/model` |
 | 3 | El diagrama de clases modela `RecommendationAnalyzer` | El código usa `RecommendationRules` (servicio de dominio) |
 | 4 | `AlertType` tenía dos valores | El esquema vigente tiene cuatro |
 
-**Acción recomendada:** actualizar `MER.wsd` y `Diagrama_clases.wsd` en el repositorio de documentación antes de la entrega final.
+**Acción recomendada:** actualizar `MER.wsd` y `Diagrama_clases.wsd` en `05-diseno-software/ES/assets/diagramas/` antes de la entrega final.
 
 ### 7.2 Brechas de diseño registradas
 

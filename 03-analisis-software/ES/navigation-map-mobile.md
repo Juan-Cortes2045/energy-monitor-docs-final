@@ -6,7 +6,7 @@
 > **Fuente de verdad:** `src/app/` (expo-router) y `src/components/layout/`.
 > **Web:** la aplicación web es un proyecto aparte con su propio árbol —
 > ver [`navigation-map.md`](./navigation-map.md).
-> **Mockups:** [`mockup/layout/mobile/`](./mockup/layout/mobile/) — 27 pantallas, en 7 módulos.
+> **Mockups:** [`mockup/layout/mobile/`](../mockup/layout/mobile/) — 27 pantallas, en 7 módulos.
 
 ---
 

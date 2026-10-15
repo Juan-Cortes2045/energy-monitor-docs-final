@@ -60,26 +60,23 @@ The files are rendered at <https://www.plantuml.com/plantuml/uml> or with the Pl
 | **Point 03 artifact** | **What it contributes to point 05** |
 |---|---|
 | **Mockups** (web and mobile) | Define the visual look of each screen → `05.5-graphic-interfaces.md` |
-| **Wireframes** (web and mobile) | Define the information hierarchy → `05.5-graphic-interfaces.md` |
 | Navigation maps | Define the screen tree → `05.5-graphic-interfaces.md`, sections 4 and 5 |
-| User interaction flows | Define the steps of each task → `05.5-graphic-interfaces.md`, section 6 |
-| Use case diagrams | Define the functionalities → `05.1-architectural-model.md`, section 3 |
-| Activity diagrams | Define the flows → implemented as use cases in the backend |
+| User stories and use cases (point 02) | Define the functionalities → `05.1-architectural-model.md`, section 3 |
 | **ER model** | Defines the data model → `05.2-data-model.md` |
 | **Class diagram** | Defines the class model → `05.3-class-model.md` |
 
-> **The mockups and wireframes live in point 03.** This point describes them and relates them to the code, but does not duplicate them.
+> **The mockups live in point 03.** This point describes them and relates them to the code, but does not duplicate them.
 
 ### 6.2 Point 02 — Requirements specification
 
 | **Requirement** | **Where it is materialized** |
 |---|---|
-| RF1 User management | `security` context · access and account screens |
-| RF2 Project and home management | `home` context · home panel and home detail |
-| RF3 System management and configuration | `home_thresholds` + `user_configuration` · configuration screen |
-| RF4 Consumption recording and processing | `measurement`, `alert`, `recommendation` contexts · consumption and history tabs |
-| RF5 Measurement device management | `device` context · devices tab and linking wizard |
-| RNF1 to RNF7 | `05.1-architectural-model.md`, section 7 |
+| RF-SEC User and Profile Management | `security` context · access and account screens |
+| RF-HOM Household Management | `home` context · home panel and home detail |
+| RF-HOM-08, RF-NOT-03, RF-CLI-05, RF-CLI-06 Thresholds, preferences, language and colors | `home_thresholds` + `user_configuration` · configuration screen |
+| RF-MED, RF-ALE, RF-REC, RF-NOT Measurements, alerts, recommendations and notifications | `measurement`, `alert`, `recommendation` contexts · consumption and history tabs |
+| RF-DEV Device Management (connection status: RF-MED-04 to RF-MED-06) | `device` context · devices tab and linking wizard |
+| RNF-SEG, RNF-REN, RNF-DIS, RNF-COM, RNF-MAN, RNF-I18, RNF-ESC, RNF-USA, RNF-INT | `05.1-architectural-model.md`, section 7 |
 
 ### 6.3 Point 04 — Technical proposal
 
@@ -111,12 +108,12 @@ During the construction of the software, the schema and the class model evolved.
 
 | **#** | **Difference** | **Impact** |
 |---|---|---|
-| 1 | The ER model has 27 tables; the current schema has 29 | `notification_preference` and `push_subscription` were added |
+| 1 | The published ER model does not include every table; the current schema has 29 | `notification_preference` and `push_subscription` were added |
 | 2 | The note in the class diagram states that the Strategy pattern is not implemented | **All three classes do exist** in `home/domain/model` |
 | 3 | The class diagram models `RecommendationAnalyzer` | The code uses `RecommendationRules` (domain service) |
 | 4 | `AlertType` had two values | The current schema has four |
 
-**Recommended action:** update `MER.wsd` and `Diagrama_clases.wsd` in the documentation repository before the final delivery.
+**Recommended action:** update `MER.wsd` and `Diagrama_clases.wsd` in `05-diseno-software/EN/assets/diagramas/` before the final delivery.
 
 ### 7.2 Recorded design gaps
 

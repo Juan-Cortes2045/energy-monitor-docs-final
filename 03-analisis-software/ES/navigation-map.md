@@ -238,11 +238,10 @@ Sidebar ▸ avatar ▸ Mi cuenta
 
 | Este mapa se alimenta de… | Y alimenta a… |
 |--------------------------|---------------|
-| `02-domain/domain-map.md` | Los contextos que cada pantalla expone |
-| `04-requirements/user-stories.md` | Los flujos 1–4 y las historias de usuario que los recorren |
-| `07-api/contracts/openapi/` | Los recursos que estas pantallas consumen |
+| [`02-especificacion-requisitos`](../../02-especificacion-requisitos/ES/especificacion-requisitos.md) | Los flujos 1–4 y las historias de usuario (HU) que los recorren |
+| [`05-diseno-software/05.1`](../../05-diseno-software/ES/05.1-modelo-arquitectonico.md) | Los contextos que cada pantalla expone |
+| [`10-manual-tecnico`](../../10-manual-tecnico/ES/Manual_tecnico_Monitor_Consumo_Electrico_3145556.md) | Los recursos de la API que estas pantallas consumen |
 | `mockup/layout/web/**/README.md` | El diseño de cada pantalla y sus estados alternos |
-| `responsive-web-notes.md` | Cómo se comporta esta misma web en pantallas estrechas |
 | [`navegacion/mapa-navegacion-web.md`](./navegacion/mapa-navegacion-web.md) | La versión gráfica de este mismo mapa, en Mermaid |
 | [`navigation-map-mobile.md`](./navigation-map-mobile.md) | El árbol equivalente de la app nativa |
 | — | El enrutado del frontend y las decisiones de arquitectura que lo sostienen |
