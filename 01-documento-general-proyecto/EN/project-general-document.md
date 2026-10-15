@@ -71,7 +71,7 @@ Table 2 lists what the project builds and the system module responsible for each
 | Item | Description | Module or component |
 |---|---|---|
 | Users and profiles | Registration, sign-in, email verification, password recovery, Google sign-in, profile and account deletion | User and Profile Management Module |
-| Homes | Homes, members, owner and member roles, favorites and consumption limits | Home Management Module |
+| Homes | Homes, members, owner and member roles, favorites, consumption limits, home deletion and ownership transfer | Home Management Module |
 | Devices | Registration, linking, editing and unlinking of measuring devices | Device Management Module |
 | Measurements | Reception of readings, device status, consumption history and statistics | Measurements and Consumption Module |
 | Alerts | Consumption alerts and device connection alerts | Alerts Module |
@@ -182,7 +182,7 @@ Table 8 details the activities of the period between October 10 and 16, 2026, wh
 | October 15 | Technical and cost report. Rehearsal of the live demonstration | Technical and cost report |
 | October 16 | Final delivery | Working system and complete documentation |
 
-Two groups of items have no date within this plan and are carried out only if time allows: security improvements to the devices' credentials and reliability improvements in the sending of readings. The pending items of home and device management, which are home ownership transfer, home deletion and device history management by linking period, also have no assigned date.
+Two groups of items have no date within this plan and are carried out only if time allows: security improvements to the devices' credentials and reliability improvements in the sending of readings. The only pending item of home and device management, which is device history management by linking period, also has no assigned date.
 
 ## Work Team and Roles
 

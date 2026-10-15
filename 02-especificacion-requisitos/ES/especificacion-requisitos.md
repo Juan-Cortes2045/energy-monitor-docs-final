@@ -12,7 +12,7 @@ Versión 2.0, 10 de octubre de 2026
 
 ## Resumen
 
-Este documento especifica lo que debe hacer EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, recibir alertas y obtener recomendaciones de ahorro. Se redacta desde la perspectiva del usuario y del negocio, sin definir cómo se construirá la solución. Presenta los requisitos funcionales, agrupados por dispositivo del sistema, los requisitos no funcionales (seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad) y 14 historias de usuario y 2 casos de uso con criterios de aceptación verificables. Los requisitos se identifican con códigos estables que son idénticos en las versiones en español e inglés. Los datos que no pudieron confirmarse en las fuentes se marcan como [POR CONFIRMAR].
+Este documento especifica lo que debe hacer EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, recibir alertas y obtener recomendaciones de ahorro. Se redacta desde la perspectiva del usuario y del negocio, sin definir cómo se construirá la solución. Presenta los requisitos funcionales, agrupados por módulo del sistema, los requisitos no funcionales (seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad) y 15 historias de usuario y 2 casos de uso con criterios de aceptación verificables. Los requisitos se identifican con códigos estables que son idénticos en las versiones en español e inglés. Los datos que no pudieron confirmarse en las fuentes se marcan como [POR CONFIRMAR].
 
 *Palabras clave:* especificación de requisitos, consumo eléctrico, alertas, recomendaciones de ahorro, hogares
 
@@ -135,11 +135,13 @@ La Tabla 5 enumera los requisitos funcionales del Módulo de Gestión de Hogares
 | RF-HOM-02 | El sistema debe mostrar al usuario los hogares a los que pertenece. |
 | RF-HOM-03 | El sistema debe permitir unirse a un hogar con su código de acceso, con el rol de miembro. |
 | RF-HOM-04 | El sistema debe mostrar los miembros de un hogar. |
-| RF-HOM-05 | El sistema debe distinguir los permisos generales de los usuarios de los roles de propietario y miembro dentro de cada hogar. Todo hogar debe tener un propietario. Un usuario puede tener roles distintos en hogares distintos. |
+| RF-HOM-05 | El sistema debe distinguir los permisos generales de los usuarios de los roles de propietario y miembro dentro de cada hogar. Todo hogar tiene exactamente un propietario. Un usuario puede tener roles distintos en hogares distintos. |
 | RF-HOM-06 | El propietario debe poder retirar a un miembro y cualquier miembro debe poder abandonar el hogar. |
 | RF-HOM-07 | El usuario debe poder marcar un hogar como favorito. |
 | RF-HOM-08 | El sistema debe permitir consultar, actualizar y restablecer a los valores del sistema los umbrales de un hogar. El propietario define el límite diario o el mensual. Los valores predeterminados son 6 kWh diarios y 180 kWh mensuales. |
-| RF-HOM-09 | Pendiente de implementación: transferencia de propiedad de un hogar, eliminación lógica de un hogar y gestión del historial de un dispositivo según el periodo de vinculación. |
+| RF-HOM-09 | El propietario debe poder eliminar el hogar mediante eliminación lógica. Los dispositivos del hogar se desvinculan y quedan libres, se conserva el historial de mediciones, alertas y recomendaciones, y los miembros dejan de ver el hogar. Solo el propietario puede hacerlo. |
+| RF-HOM-10 | El propietario debe poder transferir la propiedad del hogar a otro miembro. Los roles se intercambian en un solo paso y el hogar siempre tiene un único propietario. La transferencia no cambia los umbrales, los dispositivos ni las mediciones. |
+| RF-HOM-11 | Pendiente: limitar el historial de un dispositivo al periodo de vinculación. |
 
 ### Módulo de Gestión de Dispositivos
 
@@ -249,7 +251,7 @@ La Tabla 11 recoge los requisitos funcionales de las aplicaciones web y móvil.
 | RF-CLI-01 | La aplicación web debe ofrecer registro, inicio de sesión (incluido Google), recuperación de contraseña, cuenta, hogares, favoritos, dispositivos, umbrales, consumo, historial y notificaciones. |
 | RF-CLI-02 | La aplicación web debe mostrar una insignia con las alertas pendientes, un contador en el título de la pestaña y un aviso emergente cuando llega una alerta nueva, y actualizarse cada 30 segundos. |
 | RF-CLI-03 | La aplicación web debe vincular dispositivos por Bluetooth y permitir notificaciones del navegador, que llegan aunque la pestaña esté cerrada. |
-| RF-CLI-04 | La aplicación móvil debe estar disponible solo para Android y permitir el acceso a la cuenta, los hogares, las alertas, las recomendaciones y las preferencias de notificación. |
+| RF-CLI-04 | La aplicación móvil debe estar disponible solo para Android y permitir el acceso a la cuenta, los hogares, las alertas, las recomendaciones y las preferencias de notificación. La eliminación de hogares y la transferencia de propiedad aún no están disponibles en la aplicación móvil. |
 | RF-CLI-05 | Ambas aplicaciones deben permitir elegir el idioma entre español, inglés, francés y portugués. |
 | RF-CLI-06 | Las aplicaciones deben permitir elegir una paleta de colores con modo oscuro. |
 
@@ -273,7 +275,7 @@ La Tabla 12 establece los requisitos de seguridad.
 | RNF-SEG-06 | El canje de códigos de recuperación debe limitarse a 10 intentos por dirección y por ventana de 15 minutos, e indicar al usuario cuánto debe esperar. La verificación de correo debe limitarse además a 5 intentos por dirección y por ventana. |
 | RNF-SEG-07 | Las funciones internas con las que se autentica a los dispositivos solo deben ser accesibles desde la red del propio sistema y nunca desde internet. |
 | RNF-SEG-08 | El sistema debe proteger la información de los usuarios conforme a la Ley 1581 de 2012 (Congreso de la República de Colombia, 2012). |
-| RNF-SEG-09 | Las credenciales de los dispositivos deben comprobarse de forma segura. Su almacenamiento protegido está pendiente. |
+| RNF-SEG-09 | Las credenciales de los dispositivos deben comprobarse de forma segura. Solo se conserva una huella protegida (hash) de cada clave. |
 | RNF-SEG-10 | Las contraseñas y claves del sistema no deben quedar expuestas en los archivos compartidos del proyecto. |
 
 ### Rendimiento
@@ -286,7 +288,7 @@ La Tabla 13 establece los requisitos de rendimiento.
 
 | Código | Requisito |
 |---|---|
-| RNF-REN-01 | Las consultas de datos y las gráficas deben responder en menos de 2 segundos. La medición de este valor con la carga prevista. |
+| RNF-REN-01 | Las consultas de datos y las gráficas deben responder en menos de 2 segundos. La medición de este valor con la carga prevista es `[POR CONFIRMAR]`. |
 | RNF-REN-02 | El sistema debe procesar la información de cada dispositivo con una cadencia de una lectura cada 60 segundos. |
 | RNF-REN-03 | El envío de correos no debe dejar esperando al usuario más de 5 segundos. |
 
@@ -466,7 +468,7 @@ Requisitos relacionados: RF-DEV-06.
 
 Como miembro del hogar, quiero ver el consumo actual y el historial de cada electrodoméstico, para identificar los periodos de mayor demanda.
 
-Requisitos relacionados: RF-MED-01 a RF-MED-10.
+Requisitos relacionados: RF-MED-01 a RF-MED-09.
 
 - CA-16. Dado un dispositivo en línea, cuando consulto su consumo, entonces aparece una lectura nueva cada 60 segundos con voltaje, corriente, potencia y energía.
 - CA-17. Dado un mensaje que declara pertenecer a un dispositivo distinto del que lo envía, cuando el sistema lo recibe, entonces no lo guarda.
@@ -526,6 +528,16 @@ Como desarrollador, quiero que cada cambio en la estructura de los datos se pued
 Requisitos relacionados: RNF-MAN-02.
 
 - CA-31. Dado cualquier cambio en la estructura de los datos, cuando se revisa, entonces existe una forma de revertirlo.
+
+#### HU-15 Eliminar un hogar o transferir su propiedad
+
+Como propietario, quiero eliminar mi hogar o ceder su propiedad a otro miembro, para dejar de administrarlo sin perder el control de sus datos.
+
+Requisitos relacionados: RF-HOM-05, RF-HOM-09, RF-HOM-10, RF-DEV-06.
+
+- CA-32. Dado un hogar con dispositivos vinculados, cuando el propietario lo elimina, entonces los dispositivos quedan desvinculados y libres, y los miembros ya no ven el hogar.
+- CA-33. Dado un hogar en el que soy miembro, cuando intento eliminarlo o transferir su propiedad, entonces el sistema lo rechaza por falta de permiso.
+- CA-34. Dado un hogar con propietario y miembros, cuando el propietario transfiere la propiedad a un miembro, entonces el nuevo propietario asume el rol, el anterior queda como miembro y el hogar sigue teniendo un único propietario.
 
 ### Casos de uso
 

@@ -12,7 +12,7 @@ October 16, 2026
 
 ## Abstract
 
-This document specifies what EnergyMonitor must do, a system that lets households see the electrical consumption of each appliance, receive alerts and get saving recommendations. It is written from the perspective of the user and the business, without defining how the solution will be built. It presents the functional requirements, grouped by system device, the non-functional requirements (security, performance, availability, compatibility, maintainability, internationalization, scalability, usability and interoperability) and 14 user stories and 2 use cases with verifiable acceptance criteria. Requirements are identified with stable codes that are identical in the Spanish and English versions. Data that could not be confirmed in the sources are marked as [TO BE CONFIRMED].
+This document specifies what EnergyMonitor must do, a system that lets households see the electrical consumption of each appliance, receive alerts and get saving recommendations. It is written from the perspective of the user and the business, without defining how the solution will be built. It presents the functional requirements, grouped by system module, the non-functional requirements (security, performance, availability, compatibility, maintainability, internationalization, scalability, usability and interoperability) and 15 user stories and 2 use cases with verifiable acceptance criteria. Requirements are identified with stable codes that are identical in the Spanish and English versions. Data that could not be confirmed in the sources are marked as [TO BE CONFIRMED].
 
 *Keywords:* requirements specification, electrical consumption, alerts, saving recommendations, households
 
@@ -135,11 +135,13 @@ Table 5 lists the functional requirements of the Home Management Module.
 | RF-HOM-02 | The system must show the user the homes they belong to. |
 | RF-HOM-03 | The system must allow joining a home with its access code, with the member role. |
 | RF-HOM-04 | The system must show the members of a home. |
-| RF-HOM-05 | The system must distinguish users' general permissions from the owner and member roles within each home. Every home must have an owner. A user can have different roles in different homes. |
+| RF-HOM-05 | The system must distinguish users' general permissions from the owner and member roles within each home. Every home has exactly one owner. A user can have different roles in different homes. |
 | RF-HOM-06 | The owner must be able to remove a member and any member must be able to leave the home. |
 | RF-HOM-07 | The user must be able to mark a home as a favorite. |
 | RF-HOM-08 | The system must allow viewing, updating and resetting to system values the thresholds of a home. The owner sets the daily or the monthly limit. Default values are 6 kWh daily and 180 kWh monthly. |
-| RF-HOM-09 | Pending implementation: home ownership transfer, home soft delete and device history management by linking period. |
+| RF-HOM-09 | The owner must be able to delete the home by soft delete. The home's devices are unlinked and become free, the history of measurements, alerts and recommendations is kept, and members stop seeing the home. Only the owner can do it. |
+| RF-HOM-10 | The owner must be able to transfer home ownership to another member. Roles are swapped in a single step and the home always has a single owner. The transfer does not change thresholds, devices or measurements. |
+| RF-HOM-11 | Pending: limit a device's history to the linking period. |
 
 ### Device Management Module
 
@@ -249,7 +251,7 @@ Table 11 gathers the functional requirements of the web and mobile applications.
 | RF-CLI-01 | The web application must offer registration, sign-in (including Google), password recovery, account, homes, favorites, devices, thresholds, consumption, history and notifications. |
 | RF-CLI-02 | The web application must show a badge with pending alerts, a counter in the tab title and a pop-up notice when a new alert arrives, and refresh every 30 seconds. |
 | RF-CLI-03 | The web application must link devices over Bluetooth and allow browser notifications, which arrive even when the tab is closed. |
-| RF-CLI-04 | The mobile application must be available for Android only and allow access to the account, homes, alerts, recommendations and notification preferences. |
+| RF-CLI-04 | The mobile application must be available for Android only and allow access to the account, homes, alerts, recommendations and notification preferences. Home deletion and ownership transfer are not yet available in the mobile application. |
 | RF-CLI-05 | Both applications must allow choosing the language among Spanish, English, French and Portuguese. |
 | RF-CLI-06 | The applications must allow choosing a color palette with dark mode.  |
 
@@ -273,7 +275,7 @@ Table 12 sets the security requirements.
 | RNF-SEG-06 | Redeeming recovery codes must be limited to 10 attempts per address per 15-minute window, and tell the user how long to wait. Email verification must additionally be limited to 5 attempts per address per window. |
 | RNF-SEG-07 | The internal functions used to authenticate devices must only be reachable from the system's own network and never from the internet. |
 | RNF-SEG-08 | The system must protect user information in accordance with Law 1581 of 2012 (Congreso de la República de Colombia, 2012). |
-| RNF-SEG-09 | Device credentials must be checked securely. Their protected storage is pending. |
+| RNF-SEG-09 | Device credentials must be checked securely. Only a protected hash of each key is kept. |
 | RNF-SEG-10 | The system's passwords and keys must not be exposed in the project's shared files. |
 
 ### Performance
@@ -286,7 +288,7 @@ Table 13 sets the performance requirements.
 
 | Code | Requirement |
 |---|---|
-| RNF-REN-01 | Data queries and charts must respond in under 2 seconds.Measurement of this value under the expected load. |
+| RNF-REN-01 | Data queries and charts must respond in under 2 seconds. Measuring this value under the expected load is `[TO BE CONFIRMED]`. |
 | RNF-REN-02 | The system must process each device's information at a cadence of one reading every 60 seconds. |
 | RNF-REN-03 | Sending emails must not keep the user waiting more than 5 seconds. |
 
@@ -466,7 +468,7 @@ Related requirements: RF-DEV-06.
 
 As a home member, I want to see the current consumption and the history of each appliance, so that I can identify the periods of highest demand.
 
-Related requirements: RF-MED-01 to RF-MED-10.
+Related requirements: RF-MED-01 to RF-MED-09.
 
 - CA-16. Given an online device, when I check its consumption, then a new reading appears every 60 seconds with voltage, current, power and energy.
 - CA-17. Given a message that claims to belong to a device other than the one sending it, when the system receives it, then it does not store it.
@@ -526,6 +528,16 @@ As a developer, I want every change to the data structure to be reversible, so t
 Related requirements: RNF-MAN-02.
 
 - CA-31. Given any change to the data structure, when it is reviewed, then a way to revert it exists.
+
+#### HU-15 Delete a Home or Transfer Its Ownership
+
+As an owner, I want to delete my home or hand its ownership to another member, so that I can stop managing it without losing control of its data.
+
+Related requirements: RF-HOM-05, RF-HOM-09, RF-HOM-10, RF-DEV-06.
+
+- CA-32. Given a home with linked devices, when the owner deletes it, then the devices are unlinked and free, and members no longer see the home.
+- CA-33. Given a home where I am a member, when I try to delete it or transfer its ownership, then the system rejects it for lack of permission.
+- CA-34. Given a home with an owner and members, when the owner transfers ownership to a member, then the new owner takes the role, the previous one becomes a member and the home still has a single owner.
 
 ### Use Cases
 
