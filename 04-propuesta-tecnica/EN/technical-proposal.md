@@ -71,7 +71,7 @@ EnergyMonitor is a modular monolith built with Spring Modulith. It is a single d
 | Module | Responsibility |
 |---|---|
 | security | Registration, authentication, sessions, permissions, email verification, password recovery, Google Sign-In, profile and account deletion |
-| home | Homes, members, OWNER and MEMBER roles, favorites and thresholds |
+| home | Homes, members, OWNER and MEMBER roles, favorites, thresholds, home deletion and ownership transfer |
 | device | Registration, linking, editing and unlinking of devices, credentials and MQTT authorization |
 | measurement | Measurements, telemetry and status messages |
 | alert | Consumption and connectivity alerts |
@@ -95,12 +95,14 @@ Modules communicate through internal Spring events, in memory, without Kafka. Ta
 
 | Event | Source | Destination |
 |---|---|---|
-| MeasurementRecorded | measurement | alert and recommendation |
+| MeasurementRecorded | measurement | alert |
 | AlertRaised | alert | notification |
 | RecommendationCreated | recommendation | notification |
 | AccountDeleted | security | home |
+| HomeDeleted | home | device |
+| HomeOwnershipTransferred | home | no consumer |
 
-A device's loss of connectivity is identified through the status records and the last will and silence mechanisms of the MQTT protocol.
+The recommendation module does not listen to measurement events: it evaluates recommendations every hour through a scheduler (`RecommendationScheduler`). A device's loss of connectivity is identified through the status records and the last will and silence mechanisms of the MQTT protocol.
 
 ### Interfaces
 
@@ -300,7 +302,7 @@ Table 12 presents progress as of October 12, 2026, when the project is in phase 
 | Web application | In final adjustments |
 | Android mobile application | Under development |
 
-Pending in the core service are the integration of home deletion into `dev` (branch `feat/home-deletion`, through a pull request), home ownership transfer (functionality that does not yet exist), logical deletion of a home and device history management by linking period. Before delivery, the pending local changes must be confirmed and recorded, and the user manuals, tests and the technical and cost report must be completed.
+Pending in the core service is device history management by linking period. Before delivery, the pending local changes must be confirmed and recorded, and the user manuals, tests and the technical and cost report must be completed.
 
 ## Pending Technical Risks
 
@@ -310,7 +312,7 @@ Pending in the core service are the integration of home deletion into `dev` (bra
 
 | Code | Risk | Effect |
 |---|---|---|
-| RT-01 | The device `api_key` is stored without a hash | Credentials exposed if the database is accessed |
+| RT-01 | Mitigated: the device `api_key` is no longer stored in clear; only its SHA-256 hash is kept (`api_key_hash`, changesets `device-007` and `device-008`) | Keys of already linked devices are renewed when they are linked again |
 | RT-02 | Telemetry uses MQTT with QoS 0 | Possible loss of readings. QoS 1 will be evaluated |
 | RT-03 | Web tokens are stored in localStorage | Risk of theft through XSS, acknowledged |
 | RT-04 | No over-the-air (OTA) firmware update | The device is updated only by cable |
