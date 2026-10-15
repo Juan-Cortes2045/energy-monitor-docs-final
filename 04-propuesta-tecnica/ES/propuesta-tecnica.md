@@ -71,7 +71,7 @@ EnergyMonitor es un monolito modular construido con Spring Modulith. Es una sola
 | Módulo | Responsabilidad |
 |---|---|
 | security | Registro, autenticación, sesiones, permisos, verificación de correo, recuperación de contraseña, Google Sign-In, perfil y borrado de cuenta |
-| home | Hogares, miembros, roles OWNER y MEMBER, favoritos y umbrales |
+| home | Hogares, miembros, roles OWNER y MEMBER, favoritos, umbrales, eliminación del hogar y transferencia de propiedad |
 | device | Registro, vinculación, edición y desvinculación de dispositivos, credenciales y autorización MQTT |
 | measurement | Mediciones, telemetría y mensajes de estado |
 | alert | Alertas de consumo y de conectividad |
@@ -95,12 +95,14 @@ Los módulos se comunican con eventos internos de Spring, en memoria, sin Kafka.
 
 | Evento | Origen | Destino |
 |---|---|---|
-| MeasurementRecorded | measurement | alert y recommendation |
+| MeasurementRecorded | measurement | alert |
 | AlertRaised | alert | notification |
 | RecommendationCreated | recommendation | notification |
 | AccountDeleted | security | home |
+| HomeDeleted | home | device |
+| HomeOwnershipTransferred | home | sin consumidor |
 
-La pérdida de conectividad de un dispositivo se identifica mediante los registros de estado y los mecanismos de última voluntad y silencio del protocolo MQTT.
+El módulo recommendation no escucha eventos de medición: evalúa las recomendaciones cada hora mediante un programador (`RecommendationScheduler`). La pérdida de conectividad de un dispositivo se identifica mediante los registros de estado y los mecanismos de última voluntad y silencio del protocolo MQTT.
 
 ### Interfaces
 
@@ -300,7 +302,7 @@ La Tabla 12 presenta el avance al 12 de octubre de 2026, cuando el proyecto est�
 | Aplicación web | En ajustes finales |
 | Aplicación móvil Android | En desarrollo |
 
-Quedan pendientes en el servicio central la integración de la eliminación de hogares en `dev` (rama `feat/home-deletion`, mediante pull request), la transferencia de propiedad de un hogar (funcionalidad aún inexistente), el borrado lógico de hogar y la gestión del historial del dispositivo según el periodo de vinculación. Antes de la entrega falta confirmar y registrar los cambios locales pendientes, y completar los manuales de usuario, las pruebas y el informe técnico y de costos.
+Queda pendiente en el servicio central la gestión del historial del dispositivo según el periodo de vinculación. Antes de la entrega falta confirmar y registrar los cambios locales pendientes, y completar los manuales de usuario, las pruebas y el informe técnico y de costos.
 
 ## Riesgos Técnicos Pendientes
 
@@ -310,7 +312,7 @@ Quedan pendientes en el servicio central la integración de la eliminación de h
 
 | Código | Riesgo | Efecto |
 |---|---|---|
-| RT-01 | La `api_key` del dispositivo se guarda sin hash | Exposición de credenciales si se accede a la base de datos |
+| RT-01 | Mitigado: la `api_key` del dispositivo ya no se guarda en claro; solo se conserva su hash SHA-256 (`api_key_hash`, changesets `device-007` y `device-008`) | Las claves de dispositivos ya vinculados se renuevan al volver a vincularlos |
 | RT-02 | La telemetría usa MQTT con QoS 0 | Posible pérdida de lecturas. Se evaluará QoS 1 |
 | RT-03 | Los tokens de la web se guardan en localStorage | Riesgo de robo por XSS, reconocido |
 | RT-04 | No hay actualización del firmware por aire (OTA) | El dispositivo se actualiza solo con cable |

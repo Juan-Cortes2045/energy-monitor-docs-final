@@ -95,7 +95,7 @@ El historial de cambios del presente manual se registra en la siguiente tabla. C
 
 # 4. Introducción
 
-El presente documento es el manual de administrador del software «Monitor de Consumo Eléctrico». Está orientado a quien tendrá a su cargo la operación diaria del sistema: arranque y parada de servicios, configuraciones que gobiernan la seguridad, vigilancia del comportamiento del sistema, respaldos, actualización del software y atención de incidentes (Corte Parra y García Artunduaga, 2026).
+El presente documento es el manual de administrador del software «Monitor de Consumo Eléctrico». Está orientado a quien tendrá a su cargo la operación diaria del sistema: arranque y parada de servicios, configuraciones que gobiernan la seguridad, vigilancia del comportamiento del sistema, respaldos, actualización del software y atención de incidentes (Cortés Parra y García Artunduaga, 2026).
 
 El sistema expone la mayor parte de su administración directamente desde la API REST y la base de datos MySQL 8.4 (Spring, s. f.; Docker Inc., s. f.). Es importante que el lector sepa que, en esta versión, el backend no expone un panel web de administración: la gestión de roles, permisos, políticas y claves se realiza mediante las tablas correspondientes y los archivos de configuración que se detallan aquí.
 
@@ -139,7 +139,7 @@ No cubre la administración de bases de datos de producción, de servicios en la
 | Backend API      | \`./mvnw.cmd spring-boot:run\`                                   | GET \`/v3/api-docs\` y \`/swagger-ui.html\`                      |
 | Correo (Mailpit) | \`docker run … axllent/mailpit\`                                 | Bandeja en \`http://localhost:8025\`                             |
 | Web (Vite 8)     | \`npm run dev\` en \`Energy-Monitor-application\`                | Cliente en \`http://localhost:5173\`                             |
-| Mobile (Expo)    | \`npm start\` en \`Energy-Monitor-Mobile\`                       | QR + Expo Go / web (datos mock)                                  |
+| Mobile (Expo)    | \`npm start\` en \`Energy-Monitor-Mobile\`                       | QR + Expo Go / web (conectada a la API)                                  |
 
 ## 7.2 Dónde están los secretos de la plataforma
 
@@ -202,7 +202,7 @@ Los inicios de sesión denegados quedan registrados con motivo y dirección de o
 
 # 9. Roles y permisos (RBAC)
 
-El modelo RBAC existe en la base de datos, pero en esta versión \*\*no hay endpoints HTTP ni interfaz web para administrarlo\*\*. La administración se realiza por SQL con el usuario de la aplicación (\`energy_app\`) o el root, desde un terminal seguro (Corte Parra y García Artunduaga, 2026).
+El modelo RBAC existe en la base de datos, pero en esta versión \*\*no hay endpoints HTTP ni interfaz web para administrarlo\*\*. La administración se realiza por SQL con el usuario de la aplicación (\`energy_app\`) o el root, desde un terminal seguro (Cortés Parra y García Artunduaga, 2026).
 
 ## 9.1 Modelo
 
@@ -355,7 +355,7 @@ Las citas en el texto y la lista de referencias siguen el estilo de la séptima 
 
 American Psychological Association. (2020). Publication manual of the American Psychological Association (7.ª ed.). https://www.apa.org/
 
-Corte Parra, J. E. y García Artunduaga, M. A. (2026). Especificación de requisitos de software (SRS) del proyecto «Monitor de Consumo Eléctrico» \[Documento interno\]. SENA – CIES Regional Huila.
+Cortés Parra, J. E. y García Artunduaga, M. A. (2026). *Especificación de requisitos de software de EnergyMonitor* (versión 2.0). SENA – CIES Regional Huila.
 
 Docker Inc. (s. f.). Docker documentation. https://docs.docker.com/
 

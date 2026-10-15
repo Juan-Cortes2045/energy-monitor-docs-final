@@ -71,7 +71,7 @@ La Tabla 2 enumera lo que el proyecto construye y el módulo del sistema que res
 | Elemento | Descripción | Módulo o componente |
 |---|---|---|
 | Usuarios y perfiles | Registro, inicio de sesión, verificación de correo, recuperación de contraseña, inicio con Google, perfil y eliminación de cuenta | Módulo de Gestión de Usuarios y Perfiles |
-| Hogares | Hogares, miembros, roles de propietario y miembro, favoritos y límites de consumo | Módulo de Gestión de Hogares |
+| Hogares | Hogares, miembros, roles de propietario y miembro, favoritos, límites de consumo, eliminación del hogar y transferencia de propiedad | Módulo de Gestión de Hogares |
 | Dispositivos | Registro, vinculación, edición y desvinculación de los dispositivos de medición | Módulo de Gestión de Dispositivos |
 | Mediciones | Recepción de lecturas, estado de los dispositivos, historial y estadísticas de consumo | Módulo de Mediciones y Consumo |
 | Alertas | Alertas de consumo y de conexión de los dispositivos | Módulo de Alertas |
@@ -182,7 +182,7 @@ La Tabla 8 detalla las actividades del periodo comprendido entre el 10 y el 16 d
 | 15 de octubre | Informe técnico y de costos. Ensayo de la demostración en vivo | Informe técnico y de costos |
 | 16 de octubre | Entrega final | Sistema funcionando y documentación completa |
 
-Quedan sin fecha dentro de este plan, y se ejecutan solo si el tiempo lo permite, las mejoras de seguridad de las credenciales de los dispositivos y de confiabilidad en el envío de lecturas. Los pendientes de la gestión de hogares y dispositivos, que son la transferencia de propiedad del hogar, la eliminación del hogar y la gestión del historial del dispositivo según el periodo de vinculación, tampoco tienen fecha asignada.
+Quedan sin fecha dentro de este plan, y se ejecutan solo si el tiempo lo permite, las mejoras de seguridad de las credenciales de los dispositivos y de confiabilidad en el envío de lecturas. El único pendiente de la gestión de hogares y dispositivos, que es la gestión del historial del dispositivo según el periodo de vinculación, tampoco tiene fecha asignada.
 
 ## Equipo de trabajo y roles
 

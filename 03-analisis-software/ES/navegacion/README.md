@@ -122,8 +122,8 @@ Los mapas están escritos en **Mermaid**, embebido dentro de los documentos Mark
 
 | **Artefacto** | **Ubicación** |
 |---|---|
-| Mockups y wireframes | `Documentacion-proyecto-Monitor-de-consumo-electrico/Mockups/` y `.../Wireframes/` |
-| Mapas de navegación del proyecto de documentación (versión anterior, basada en mockups) | `Documentacion-proyecto-Monitor-de-consumo-electrico/Diagramas de navegación/` |
+| Mockups en HTML (web y móvil) | `03-analisis-software/mockup/layout/web/` y `03-analisis-software/mockup/layout/mobile/` |
+| Mapas de navegación gráficos (Mermaid) | `03-analisis-software/ES/navegacion/mapa-navegacion-web.md` y `03-analisis-software/ES/navegacion/mapa-navegacion-movil.md` |
 | Diseño de interfaces gráficas | `05-diseno-software/ES/05.5-interfaces-graficas.md` |
 | Diseño de la arquitectura de presentación | `05-diseno-software/ES/05.1-modelo-arquitectonico.md`, sección 6 |
 | Versión en inglés | `03-analisis-software/EN/navigation/` |
