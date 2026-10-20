@@ -29,7 +29,7 @@ Este documento es el informe de calidad y mejoras de EnergyMonitor y se redacta 
 
 ### Propósito
 
-Documentar el estado de calidad del código de EnergyMonitor y planificar su mejoramiento antes y después de la entrega del 16 de octubre de 2026. El documento reúne el análisis de código limpio, la gestión de la deuda técnica y el plan de mejoras y hoja de ruta de la versión 2.0. La estructura del informe se inspira en el modelo de calidad de producto de ISO/IEC 25010 (mantenibilidad, fiabilidad, seguridad y eficiencia de desempeño), pero no aplica una evaluación certificada.
+Documentar el estado de calidad del código de EnergyMonitor y planificar su mejoramiento antes y después de la entrega del 28 de octubre de 2026. El documento reúne el análisis de código limpio, la gestión de la deuda técnica y el plan de mejoras y hoja de ruta de la versión 2.0. La estructura del informe se inspira en el modelo de calidad de producto de ISO/IEC 25010 (mantenibilidad, fiabilidad, seguridad y eficiencia de desempeño), pero no aplica una evaluación certificada.
 
 ### Alcance
 

@@ -29,7 +29,7 @@ This document is the quality and improvements report of EnergyMonitor and is wri
 
 ### Purpose
 
-To document the quality status of the EnergyMonitor code and plan its improvement before and after the delivery of October 16, 2026. The document brings together the clean code analysis, the technical debt management and the improvement plan and roadmap for version 2.0. The structure of the report is inspired by the ISO/IEC 25010 product quality model (maintainability, reliability, security and performance efficiency), but it does not apply a certified assessment.
+To document the quality status of the EnergyMonitor code and plan its improvement before and after the delivery of October 28, 2026. The document brings together the clean code analysis, the technical debt management and the improvement plan and roadmap for version 2.0. The structure of the report is inspired by the ISO/IEC 25010 product quality model (maintainability, reliability, security and performance efficiency), but it does not apply a certified assessment.
 
 ### Scope
 
