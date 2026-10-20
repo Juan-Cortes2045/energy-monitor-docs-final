@@ -27,4 +27,10 @@ Ejecución del 14 de octubre de 2026 con `npm test` (Vitest 5.0.3, jsdom). Rama 
 | services/http/httpClient.refresh.test.js | 3 | 3 | 0 | 0.1 |
 | services/http/httpClient.test.js | 11 | 11 | 0 | 0.1 |
 
+## Ejecución de la versión 1.1
+
+Ejecución del 20 de octubre de 2026 con `npx vitest run` (Vitest 5.0.3, jsdom). Rama `main`, commit `2b41cb3`. Node.js 22.22.2.
+
+**Total:** 20 archivos, 141 pruebas, 141 aprobadas, 0 fallidas (38,6 s). Mismos archivos y pruebas que la ejecución anterior. El *check* `Tests and build` de GitHub Actions ejecuta estas pruebas y el build de producción en cada *pull request*.
+
 **Cobertura:** el `package.json` de la web no define un script de cobertura; no hay reporte.

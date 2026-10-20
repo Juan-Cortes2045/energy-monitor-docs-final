@@ -6,13 +6,18 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Technologist in Software Analysis and Development (ADSO), group (ficha) 3145556
 
-Version 2.0, October 10, 2026
+Version 2.1, October 20, 2026
 
-October 16, 2026
+October 16, 2026 (updated October 20, 2026)
+
+## Version Control
+
+- Version 2.0 (10/10/2026): functional requirements per module, non-functional requirements, 15 user stories and 2 use cases.
+- Version 2.1 (10/20/2026): Platform Administration Module (RF-ADM-01 to RF-ADM-10), security requirement for the administration functions (RNF-SEG-11), continuous integration and deployment (RNF-MAN-05), push notifications in the mobile application, user story HU-16 and renumbering of tables 12 to 23.
 
 ## Abstract
 
-This document specifies what EnergyMonitor must do, a system that lets households see the electrical consumption of each appliance, receive alerts and get saving recommendations. It is written from the perspective of the user and the business, without defining how the solution will be built. It presents the functional requirements, grouped by system module, the non-functional requirements (security, performance, availability, compatibility, maintainability, internationalization, scalability, usability and interoperability) and 15 user stories and 2 use cases with verifiable acceptance criteria. Requirements are identified with stable codes that are identical in the Spanish and English versions. Data that could not be confirmed in the sources are marked as [TO BE CONFIRMED].
+This document specifies what EnergyMonitor must do, a system that lets households see the electrical consumption of each appliance, receive alerts and get saving recommendations. It is written from the perspective of the user and the business, without defining how the solution will be built. It presents the functional requirements, grouped by system module, the non-functional requirements (security, performance, availability, compatibility, maintainability, internationalization, scalability, usability and interoperability) and 16 user stories and 2 use cases with verifiable acceptance criteria. Requirements are identified with stable codes that are identical in the Spanish and English versions. Data that could not be confirmed in the sources are marked as [TO BE CONFIRMED].
 
 *Keywords:* requirements specification, electrical consumption, alerts, saving recommendations, households
 
@@ -49,6 +54,8 @@ Table 1 defines the terms and acronyms used in the document.
 | Threshold | Daily or monthly consumption limit set by the owner of the home |
 | Alert | Notice the system raises for excessive consumption, a limit reached or a device disconnection |
 | Recommendation | Saving suggestion the system builds from the home's measured consumption |
+| Global role | Permission over the whole platform, separate from the owner and member roles of each home. Today there is one: administrator (ADMIN) |
+| Administration notice | Notification the system shows inside the web application to administrators; it is not sent by email or push |
 
 ### Code Convention
 
@@ -68,6 +75,7 @@ Every requirement has a stable code that is identical in the Spanish and English
 | `RF-REC` | Functional requirements of the Savings Recommendations Module |
 | `RF-NOT` | Functional requirements of the Notifications Module |
 | `RF-CLI` | Functional requirements for the web and mobile applications |
+| `RF-ADM` | Functional requirements of the Platform Administration Module |
 | `RNF-SEG`, `RNF-REN`, `RNF-DIS`, `RNF-COM`, `RNF-MAN`, `RNF-I18`, `RNF-ESC`, `RNF-USA`, `RNF-INT` | Non-functional requirements: security, performance, availability, compatibility, maintainability, internationalization, scalability, usability and interoperability |
 | `HU` | User stories |
 | `CU` | Use cases |
@@ -85,7 +93,7 @@ Table 3 describes the user types of the system. A person can belong to several h
 
 | Type | Description |
 |---|---|
-| System administrator | Operates the platform and manages users' general permissions. There is no dedicated administration screen |
+| System administrator | Holds the global administrator role. Views the platform accounts, changes their status, grants or revokes the administrator role and receives administration notices from a dedicated screen of the web application. The role gives no access to any home |
 | Home owner | Manages the home, its devices, its members and its consumption limits |
 | Home member | Views the home's consumption, alerts and recommendations |
 | Measuring device | Technical actor that sends consumption readings and its own status |
@@ -230,10 +238,10 @@ Table 10 lists the functional requirements of the Notifications Module.
 
 | Code | Requirement |
 |---|---|
-| RF-NOT-01 | The system must deliver every alert to all members of the home by email and browser notification, according to each user's preferences. Both channels are on by default. |
+| RF-NOT-01 | The system must deliver every alert to all members of the home by email and push notification (in the browser or in the Android mobile application where the user turned it on), according to each user's preferences. Both channels are on by default. |
 | RF-NOT-02 | The system must deliver every new recommendation through the same channels. |
 | RF-NOT-03 | The user must be able to view and change their notification preferences. |
-| RF-NOT-04 | The user must be able to turn browser notifications on and off. If the service is not enabled in the system, email keeps working. |
+| RF-NOT-04 | The user must be able to turn push notifications on and off in the browser and in the mobile application. If the service is not enabled in the system, email keeps working. |
 | RF-NOT-05 | Every delivery attempt must be recorded as sent or failed, without storing the message content. Attempts still not closed after 30 minutes are marked as failed. |
 | RF-NOT-06 | The system must send the verification code and the password recovery code by email. An email failure must not change what the user sees on screen. |
 | RF-NOT-07 | Every alert email must include a link to the web application. |
@@ -248,20 +256,41 @@ Table 11 gathers the functional requirements of the web and mobile applications.
 
 | Code | Requirement |
 |---|---|
-| RF-CLI-01 | The web application must offer registration, sign-in (including Google), password recovery, account, homes, favorites, devices, thresholds, consumption, history and notifications. |
+| RF-CLI-01 | The web application must offer registration, sign-in (including Google), password recovery, account, homes, favorites, devices, thresholds, consumption, history and notifications. To administrator accounts it offers the platform administration instead (RF-ADM-06). |
 | RF-CLI-02 | The web application must show a badge with pending alerts, a counter in the tab title and a pop-up notice when a new alert arrives, and refresh every 30 seconds. |
 | RF-CLI-03 | The web application must link devices over Bluetooth and allow browser notifications, which arrive even when the tab is closed. |
-| RF-CLI-04 | The mobile application must be available for Android only and allow access to the account, homes, alerts, recommendations and notification preferences. Home deletion and ownership transfer are not yet available in the mobile application. |
+| RF-CLI-04 | The mobile application must be available for Android only and allow access to the account, homes, alerts, recommendations and notification preferences, and receive push notifications on the phone. Home deletion and ownership transfer are not yet available in the mobile application. |
 | RF-CLI-05 | Both applications must allow choosing the language among Spanish, English, French and Portuguese. |
 | RF-CLI-06 | The applications must allow choosing a color palette with dark mode.  |
+
+### Platform Administration Module
+
+Table 12 lists the functional requirements of the Platform Administration Module.
+
+**Table 12**
+
+*Functional Requirements of the Platform Administration Module*
+
+| Code | Requirement |
+|---|---|
+| RF-ADM-01 | The system must have a global administrator role with three permissions: view the accounts, change the status of accounts and manage global roles. No account is an administrator when the system is installed: the first administrator is designated from the server on an already registered account, and the next ones from the web application. |
+| RF-ADM-02 | The administrator must be able to view the directory of active accounts, from newest to oldest, search by email, first name or last name and browse it in pages of up to 50 accounts. For each account it shows the email, the name, the status, whether the email is verified, the registration date, the last sign-in and the global roles. |
+| RF-ADM-03 | The administrator must be able to change the status of another account to active, inactive or blocked. An account that stops being active cannot sign in and its open sessions are closed. The web application asks for confirmation before applying the change. |
+| RF-ADM-04 | The administrator must be able to grant and revoke the administrator role to another account. Repeating a grant or a revocation changes nothing. The web application asks for confirmation before revoking the role. |
+| RF-ADM-05 | The system must prevent an administrator from changing the status or the roles of their own account, and reject the request with a readable message. |
+| RF-ADM-06 | The administrator role must give no access to any home. In the web application, an administrator account goes straight to the administration and its menu only shows Administration, Notifications and Settings; the home and favorites screens are not available to it and Settings does not show the homes' notification preferences. |
+| RF-ADM-07 | The system must notify every active administrator inside the web application when a new account is registered (also on the first Google sign-in) and when another administrator changes the status or the role of an account. Whoever made the change does not receive the notice, and an action that changes nothing produces no notices. |
+| RF-ADM-08 | The administrator must be able to view their 50 most recent notices, see which ones are unread, mark them as read one by one or all at once and delete them. They can only view and change their own notices. The application shows the number of unread notices. |
+| RF-ADM-09 | Every status or role change made by an administrator must be recorded in the audit log, with the source address. |
+| RF-ADM-10 | Pending: management of support requests and editing of the documentation from Settings, and delivery of the administration notices by email or push notification. |
 
 ## Non-functional Requirements
 
 ### Security
 
-Table 12 sets the security requirements.
+Table 13 sets the security requirements.
 
-**Table 12**
+**Table 13**
 
 *Non-functional Security Requirements*
 
@@ -277,12 +306,13 @@ Table 12 sets the security requirements.
 | RNF-SEG-08 | The system must protect user information in accordance with Law 1581 of 2012 (Congreso de la República de Colombia, 2012). |
 | RNF-SEG-09 | Device credentials must be checked securely. Only a protected hash of each key is kept. |
 | RNF-SEG-10 | The system's passwords and keys must not be exposed in the project's shared files. |
+| RNF-SEG-11 | The administration functions must require, on every request, the global permission that matches the action. Without a session they are rejected as unauthenticated, without the permission as unauthorized, and any administration function that has no permission assigned is always rejected. |
 
 ### Performance
 
-Table 13 sets the performance requirements.
+Table 14 sets the performance requirements.
 
-**Table 13**
+**Table 14**
 
 *Non-functional Performance Requirements*
 
@@ -294,9 +324,9 @@ Table 13 sets the performance requirements.
 
 ### Availability and Fault Tolerance
 
-Table 14 sets the availability and fault tolerance requirements.
+Table 15 sets the availability and fault tolerance requirements.
 
-**Table 14**
+**Table 15**
 
 *Non-functional Availability and Fault Tolerance Requirements*
 
@@ -311,9 +341,9 @@ Table 14 sets the availability and fault tolerance requirements.
 
 ### Compatibility
 
-Table 15 sets the compatibility requirements.
+Table 16 sets the compatibility requirements.
 
-**Table 15**
+**Table 16**
 
 *Non-functional Compatibility Requirements*
 
@@ -326,24 +356,25 @@ Table 15 sets the compatibility requirements.
 
 ### Maintainability
 
-Table 16 sets the maintainability requirements.
+Table 17 sets the maintainability requirements.
 
-**Table 16**
+**Table 17**
 
 *Non-functional Maintainability Requirements*
 
 | Code | Requirement |
 |---|---|
-| RNF-MAN-01 | The system must be organized in functional modules (User and Profile Management, Home Management, Device Management, Measurements and Consumption, Alerts, Savings Recommendations and Notifications), so that each one can be modified without affecting the others. |
+| RNF-MAN-01 | The system must be organized in functional modules (User and Profile Management, Home Management, Device Management, Measurements and Consumption, Alerts, Savings Recommendations, Notifications and Platform Administration), so that each one can be modified without affecting the others. |
 | RNF-MAN-02 | Every change to the data structure must be reversible. |
 | RNF-MAN-03 | Deleted data must be kept marked as deleted and not physically erased. |
 | RNF-MAN-04 | The system must have automated tests that verify its main functions. |
+| RNF-MAN-05 | Every change must pass the automated tests before it is integrated, and its release to production must require an approval, check the health of the system and go back to the previous version if the check fails. |
 
 ### Internationalization
 
-Table 17 sets the internationalization requirements.
+Table 18 sets the internationalization requirements.
 
-**Table 17**
+**Table 18**
 
 *Non-functional Internationalization Requirements*
 
@@ -355,9 +386,9 @@ Table 17 sets the internationalization requirements.
 
 ### Scalability
 
-Table 18 sets the scalability requirements.
+Table 19 sets the scalability requirements.
 
-**Table 18**
+**Table 19**
 
 *Non-functional Scalability Requirements*
 
@@ -368,9 +399,9 @@ Table 18 sets the scalability requirements.
 
 ### Usability
 
-Table 19 sets the usability requirements.
+Table 20 sets the usability requirements.
 
-**Table 19**
+**Table 20**
 
 *Non-functional Usability Requirements*
 
@@ -380,9 +411,9 @@ Table 19 sets the usability requirements.
 
 ### Interoperability
 
-Table 20 sets the interoperability requirements with external services and with the measuring device.
+Table 21 sets the interoperability requirements with external services and with the measuring device.
 
-**Table 20**
+**Table 21**
 
 *Non-functional Interoperability Requirements*
 
@@ -539,13 +570,24 @@ Related requirements: RF-HOM-05, RF-HOM-09, RF-HOM-10, RF-DEV-06.
 - CA-33. Given a home where I am a member, when I try to delete it or transfer its ownership, then the system rejects it for lack of permission.
 - CA-34. Given a home with an owner and members, when the owner transfers ownership to a member, then the new owner takes the role, the previous one becomes a member and the home still has a single owner.
 
+#### HU-16 Administer the Platform Accounts
+
+As a system administrator, I want to view the accounts, change their status and manage the administrator role, so that I keep the platform under control without going into the database.
+
+Related requirements: RF-ADM-01 to RF-ADM-09, RNF-SEG-11.
+
+- CA-35. Given an account without the administrator role, when it tries to open the administration, then the system rejects it for lack of permission.
+- CA-36. Given an active account with open sessions, when an administrator blocks it, then the account can no longer sign in and its sessions are closed.
+- CA-37. Given an administrator, when they try to change the status or the roles of their own account, then the system rejects it with a readable message and changes nothing.
+- CA-38. Given two administrators, when one of them grants the administrator role to another account, then the other administrator receives a notice inside the application and whoever made the change does not.
+
 ### Use Cases
 
 #### CU-01 Link a Measuring Device
 
-Table 21 summarizes the device linking use case.
+Table 22 summarizes the device linking use case.
 
-**Table 21**
+**Table 22**
 
 *Use Case CU-01 Link a Measuring Device*
 
@@ -574,9 +616,9 @@ Alternate flows:
 
 #### CU-02 Handle a Disconnection Alert
 
-Table 22 summarizes the use case of the alert for a device disconnection.
+Table 23 summarizes the use case of the alert for a device disconnection.
 
-**Table 22**
+**Table 23**
 
 *Use Case CU-02 Handle a Disconnection Alert*
 

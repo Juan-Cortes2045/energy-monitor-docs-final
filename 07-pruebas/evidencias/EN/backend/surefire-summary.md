@@ -1,5 +1,7 @@
 # Surefire Summary (backend)
 
+> Historical evidence from version 1.0. The full run of version 1.1 is in [full-suite-summary.md](full-suite-summary.md).
+
 Run of October 14, 2026 with `./mvnw -o test` limited to the classes that do not boot a context with a database, plus 4 new classes. Branch `dev`, commit `d03bbd3` plus 4 new uncommitted test files. Java 21.0.12, Spring Boot 4.1.1.
 
 **Tests per module**

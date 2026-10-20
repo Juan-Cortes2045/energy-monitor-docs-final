@@ -1,66 +1,42 @@
 # Enlaces de Repositorios GitHub
 
-## Backend
-- [energy-monitor-backend](https://github.com/Juan-Cortes2045/energy-monitor-backend)
-- Rama actual: `dev`
+Actualizado el 20 de octubre de 2026.
 
-## Frontend Web
-- [Energy-Monitor-application](https://github.com/Juan-Cortes2045/Energy-Monitor-application)
-- Rama actual: `dev`
+## Sistema en producción
 
-## Frontend Mobile
-- [Energy-Monitor-Mobile](https://github.com/angelgarcia0/Energy-Monitor-Mobile)
-- Rama actual: `dev`
+- Aplicación web y API: [https://energy-monitor.tech](https://energy-monitor.tech)
+- Broker MQTT de los medidores: `mqtt.energy-monitor.tech:8883` (MQTT con TLS; no se abre en el navegador)
 
-## Infra
-- [energy-monitor-infra](https://github.com/Juan-Cortes2045/energy-monitor-infra)
-- Rama actual: `dev`
+## Repositorios vigentes
 
-## Documentación
-- [energy-monitor-docs-final](https://github.com/Juan-Cortes2045/energy-monitor-docs-final)
-- Rama actual: `dev`
+| Componente | Repositorio | Contenido | Rama de producción | Rama de integración |
+|---|---|---|---|---|
+| Backend | [energy-monitor-backend](https://github.com/Juan-Cortes2045/energy-monitor-backend) | API REST Spring Boot y firmware del ESP32 (`firmware/`) | `main` | `dev` |
+| Frontend web | [Energy-Monitor-application](https://github.com/Juan-Cortes2045/Energy-Monitor-application) | Aplicación web React + Vite | `main` | `dev` |
+| Frontend móvil | [Energy-Monitor-Mobile](https://github.com/angelgarcia0/Energy-Monitor-Mobile) | Aplicación Android (Expo / React Native) | `main` | `dev` |
+| Infraestructura | [energy-monitor-infra](https://github.com/Juan-Cortes2045/energy-monitor-infra) | Docker Compose (local, desarrollo y producción), broker Mosquitto, scripts de despliegue y CI/CD | `main` | — (las ramas de trabajo van directo a `main` por PR) |
+| Documentación | [energy-monitor-docs-final](https://github.com/Juan-Cortes2045/energy-monitor-docs-final) | Documentación final bilingüe (ES/EN) | `main` | `dev` |
 
----
+## Integración y despliegue continuos
 
-## Commits y ramas para subir (conventionales)
+Backend, web e infraestructura tienen el workflow `.github/workflows/ci-cd.yml` (GitHub Actions):
 
-### Backend (`energy-monitor-backend`)
-- Rama actual: `dev`
-- Últimos 5 commits:
-  - `a90b5c9 test: add controller and MQTT consumer tests for device, measurement and recommendation`
-  - `d03bbd3 feat(notification): add in-app notifications for administrators (#45)`
-  - `e539a3c feat(security): add global admin role and user administration API (#43)`
-  - `8a9f274 fix(devices): hash device API keys before storage (#42)`
-  - `94ada72 feat(home): add home ownership transfer (#41)`
+| Repositorio | Check obligatorio en los PR | Despliegue |
+|---|---|---|
+| energy-monitor-backend | `Tests` | Desde `main`, con aprobación del environment `production` |
+| Energy-Monitor-application | `Tests and build` | Desde `main`, con aprobación del environment `production` |
+| energy-monitor-infra | `Validate compose and scripts` | Desde `main`, con aprobación del environment `production` |
 
-### Frontend Web (`Energy-Monitor-application`)
-- Rama actual: `dev`
-- Últimos 5 commits:
-  - `ee78ba3 build(web): add production Dockerfile, nginx reverse-proxy config and dockerignore`
-  - `e6edc12 docs: describe the administration screens`
-  - `985d260 feat(layout): show administrators only administration, notifications and settings`
-  - `9f9bbdf feat(admin): show administrator notifications`
-  - `5f2d4da feat(admin): add the user administration screen`
+## Versión desplegada
 
-### Frontend Mobile (`Energy-Monitor-Mobile`)
-- Rama actual: `dev`
-- Últimos 5 commits:
-  - `a3f6875 feat(i18n): describe where push actually arrives`
-  - `5578986 feat(settings): read the notification channel preferences from the backend`
-  - `d9b5bc2 feat(api): add the notification preferences client`
-  - `1ec9622 feat(i18n): replace the sample recommendation copy with the copy the backend names`
-  - `334e1b1 feat(notifications): read recommendations from the backend and merge both inboxes`
+Commit en `main` desplegado por GitHub Actions el 19 de octubre de 2026:
 
-### Infra (`energy-monitor-infra`)
-- Rama actual: `main`
-- Últimos 5 commits:
-  - `7b6237d chore(infra): add local Docker Compose stack for the full EnergyMonitor platform`
+| Repositorio | Commit |
+|---|---|
+| energy-monitor-backend | `90ae5ef` |
+| Energy-Monitor-application | `2b41cb3` |
+| energy-monitor-infra | `7324110` |
 
-### Documentación (`energy-monitor-docs-final`)
-- Rama actual: `dev`
-- Últimos 5 commits:
-  - `26ed0b6 docs(testing): add EN/ES test plan and evidence directories, remove .gitkeep placeholders`
-  - `2af09ab docs: merge final documentation alignment`
-  - `e22dcb3 docs(manual): complete the installation manual and fix manual citations`
-  - `8fe506f docs(manual): rewrite the technical manual for the final state`
-  - `4794595 docs(design): replace legacy references and update requirement traceability`
+## Repositorio retirado
+
+- [energy-monitor-devices](https://github.com/Juan-Cortes2045/energy-monitor-devices): ya no se usa. El firmware del ESP32 pasó a `energy-monitor-backend/firmware/` y la configuración del broker Mosquitto a `energy-monitor-infra/mosquitto/`. Se conserva solo como historial.

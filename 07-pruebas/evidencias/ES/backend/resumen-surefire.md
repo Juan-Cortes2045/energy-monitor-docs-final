@@ -1,5 +1,7 @@
 # Resumen de Surefire (backend)
 
+> Evidencia histórica de la versión 1.0. La ejecución completa de la versión 1.1 está en [resumen-suite-completa.md](resumen-suite-completa.md).
+
 Ejecución del 14 de octubre de 2026 con `./mvnw -o test` limitada a las clases que no levantan contexto con base de datos, más 4 clases nuevas. Rama `dev`, commit `d03bbd3` más 4 archivos de prueba nuevos sin confirmar. Java 21.0.12, Spring Boot 4.1.1.
 
 **Pruebas por módulo**

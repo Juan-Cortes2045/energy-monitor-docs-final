@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Technologist in Software Analysis and Development (ADSO), group (ficha) 3145556
 
-October 14, 2026
+October 14, 2026 (updated October 20, 2026)
 
 ## Version Control
 
@@ -17,10 +17,13 @@ October 14, 2026
 | Version | Date       | Description of change                                                             | Authors                                       |
 |---------|------------|-----------------------------------------------------------------------------------|-----------------------------------------------|
 | 1.0     | 10/14/2026 | First version: inventory, traceability and results of the run without a database. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.1     | 10/20/2026 | Run of the full suite against MySQL (1131 tests, 0 failures) locally and in GitHub Actions; DEF-01 and DEF-02 closed; 3 new push notification test classes; traceability, risks and evidence updated. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Abstract
 
 This document is the test plan and report of EnergyMonitor. It inventories the 129 automated test classes of the core service (1097 declared test methods) and the 20 suites of the web application (141 tests), traces the 107 functional and non-functional requirements of the specification against those tests, and records the run of October 14, 2026. The core service suite without a database ran 835 tests, 833 passed and 2 failed; the web ran 141 tests, all passed. The 37 classes that need MySQL were not run because the SPRING_DATASOURCE_PASSWORD variable is missing. The mobile application has no automated tests. 4 new test classes were written and 2 defects and 1 documentary observation were recorded.
+
+Version 1.1 (October 20, 2026) records the run of the full core service suite against MySQL 8.4: 1131 tests in 132 classes, 0 failures, both locally and in the required `Tests` check of GitHub Actions. The 37 pending classes now run, defects DEF-01 and DEF-02 are closed and the web passes its 141 tests again. Traceability stands at 68 requirements with an automated test run and 39 with no coverage.
 
 *Keywords:* software testing, traceability, JUnit, Vitest, Spring Modulith, EnergyMonitor
 
@@ -28,7 +31,7 @@ This document is the test plan and report of EnergyMonitor. It inventories the 1
 
 ### Purpose
 
-To document the tests that already exist and run in EnergyMonitor, and show which requirements they cover and which they do not before the delivery on October 16, 2026. The structure is adapted from IEEE 829-2008 and ISO/IEC/IEEE 29119-3.
+To document the tests that already exist and run in EnergyMonitor, and show which requirements they cover and which they do not before the delivery on October 28, 2026. The structure is adapted from IEEE 829-2008 and ISO/IEC/IEEE 29119-3.
 
 ### Scope
 
@@ -40,7 +43,7 @@ Traceability uses the codes of the requirements specification (RF-SEC, RF-HOM, R
 
 ## Items Under Test
 
-The Table 2 lists the items, the branch and the commit with which each test was run.
+The Table 2 lists the items, the branch and the commit with which each test was run in version 1.1. The version 1.0 run used `dev` (backend `d03bbd3`, web `e6edc12`).
 
 **Table 2**
 
@@ -48,11 +51,11 @@ The Table 2 lists the items, the branch and the commit with which each test was 
 
 | Item                      | Version                         | Branch | Commit  | Remark                                                    |
 |---------------------------|---------------------------------|--------|---------|-----------------------------------------------------------|
-| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1     | dev    | d03bbd3 | Core service; the tree has 4 new uncommitted test classes |
-| energy-monitor-web        | React 19 · Vite 8               | dev    | e6edc12 | Web application                                           |
-| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev    | a3f6875 | No automated tests                                        |
-| devices                   | Firmware 1.3.8 · Mosquitto 2    | dev    | 57417a7 | The tree has 2 modified uncommitted files                 |
-| energy-monitor-docs-final | Markdown ES/EN                  | dev    | 2af09ab | Final documentation (this document)                       |
+| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1     | main   | 90ae5ef | Core service and firmware (`firmware/`, version 1.3.8)    |
+| energy-monitor-web        | React 19 · Vite 8               | main   | 2b41cb3 | Web application                                           |
+| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev    | 4ebccfb | No automated tests                                        |
+| energy-monitor-infra      | Docker Compose · Mosquitto 2    | main   | 7324110 | Compose, broker and scripts validated in CI; replaces the retired `devices` |
+| energy-monitor-docs-final | Markdown ES/EN                  | dev    | 00806c6 | Final documentation (this document)                       |
 
 ## Test Strategy
 
@@ -64,17 +67,17 @@ The Table 2 lists the items, the branch and the commit with which each test was 
 
 | No. | Level                                           | Classes/suites | Test methods | Classes run |
 |-----|-------------------------------------------------|----------------|--------------|-------------|
-| 1   | Domain                                          | 20             | 337          | 20          |
-| 2   | Use cases and adapters without a Spring context | 50             | 276          | 50          |
-| 3   | Web (controllers)                               | 10             | 144          | 7           |
-| 4   | Security                                        | 18             | 195          | 12          |
-| 5   | Integration with real MySQL                     | 27             | 126          | 0           |
-| 6   | Architecture                                    | 1              | 2            | 0           |
+| 1   | Domain                                          | 21             | 342          | 21          |
+| 2   | Use cases and adapters without a Spring context | 51             | 285          | 51          |
+| 3   | Web (controllers)                               | 10             | 144          | 10          |
+| 4   | Security                                        | 18             | 195          | 18          |
+| 5   | Integration with real MySQL                     | 28             | 133          | 28          |
+| 6   | Architecture                                    | 1              | 2            | 1           |
 | 7   | Events between modules                          | 1              | 1            | 1           |
 | 8   | MQTT and broker                                 | 2              | 16           | 2           |
 | 9   | Web frontend (Vitest)                           | 20             | 141          | 20          |
 
-All the levels in the list exist in the project. Level 9 corresponds to the web suites. The mobile application has no automated tests.
+All the levels in the list exist in the project. Level 9 corresponds to the web suites. The mobile application has no automated tests. In version 1.1 every core service class runs; the counts include the 3 new push notification classes (PushDeviceTest, ExpoPushSenderTest and PushDevicePersistenceTest).
 
 ### Techniques and tools
 
@@ -94,6 +97,7 @@ White-box tests (domain and use cases with mocked ports) and black-box tests (HT
 | Vitest / Testing Library (React)               | 5.0.3 / 16.3.3             | Web application tests (jsdom)                                  |
 | Java / Node.js / Docker                        | 21.0.12 / 22.22.2 / 29.8.2 | Execution environment                                          |
 | JaCoCo                                         | Not in pom.xml             | No coverage report (see recommendations)                       |
+| GitHub Actions                                 | ubuntu-latest runner       | Continuous integration: `Tests` (backend) and `Tests and build` (web) checks |
 
 ## Test Environment
 
@@ -107,6 +111,7 @@ Persistence and full-context tests run against real MySQL 8.4 (container energy-
 |----------------|--------------------------------------------------------------------------------|
 | MySQL 8.4      | Docker, energy-monitor-mysql (healthy)                                         |
 | Spring profile | test (src/test/resources/application-test.yaml); recommendation.enabled: false |
+| CI (GitHub Actions) | `mysql:8.4` service container (user energy_app), `application-local.yaml` built from the example and a throwaway RSA pair; the `Tests` job takes about 23 minutes |
 
 ## Entry, Exit, Suspension and Resumption Criteria
 
@@ -123,7 +128,7 @@ Persistence and full-context tests run against real MySQL 8.4 (container energy-
 
 ## Inventory of Automated Tests
 
-Each table corresponds to a module of the core service. “Status” is Passed, Fails (with its defect) or “To run (MySQL)” for the classes that boot a context with a database. New classes are marked NEW in their description.
+Each table corresponds to a module of the core service. “Status” is Passed, Fails (with its defect) or “To run (MySQL)” for the classes that boot a context with a database. New classes are marked NEW in their description. In version 1.1 every class ran against MySQL and passed, so the status of all of them is “Passed”.
 
 **Table 7**
 
@@ -135,7 +140,7 @@ Each table corresponds to a module of the core service. “Status” is Passed, 
 | Domain                 | PasswordResetTokenTest                | Rules and invariants of PasswordResetToken                                                          | 19      | RF-SEC-06                                                                               | Passed         |
 | Domain                 | RbacTest                              | Rules and invariants of Rbac                                                                        | 14      | RF-SEC-09                                                                               | Passed         |
 | Domain                 | RefreshTokenTest                      | Rules and invariants of RefreshToken                                                                | 41      | RF-SEC-04, RNF-SEG-02                                                                   | Passed         |
-| Domain                 | SecuritySupportModelTest              | Rules and invariants of SecuritySupportModel                                                        | 28      | RF-SEC-12                                                                               | Fails (DEF-01) |
+| Domain                 | SecuritySupportModelTest              | Rules and invariants of SecuritySupportModel                                                        | 28      | RF-SEC-12                                                                               | Passed         |
 | Domain                 | UserSessionTest                       | Rules and invariants of UserSession                                                                 | 45      | RF-SEC-04                                                                               | Passed         |
 | Domain                 | UserTest                              | Rules and invariants of User                                                                        | 21      | RF-SEC-01                                                                               | Passed         |
 | Domain                 | ValueObjectTest                       | Rules and invariants of ValueObject                                                                 | 14      | RF-SEC-01                                                                               | Passed         |
@@ -151,35 +156,35 @@ Each table corresponds to a module of the core service. “Status” is Passed, 
 | Use cases and adapters | UserAdministrationServiceTest         | Account administration: an administrator never acts on their own account                            | 18      | —                                                                                       | Passed         |
 | Use cases and adapters | UserProfileQueryServiceTest           | Name and email of known accounts                                                                    | 1       | RF-SEC-08                                                                               | Passed         |
 | Use cases and adapters | UserSessionServiceTest                | Session opening with opaque refresh token and logout                                                | 6       | RF-SEC-04                                                                               | Passed         |
-| Web (controllers)      | AdminControllerWebTest                | Administration endpoints /api/v1/admin with RBAC permissions and 409 on self-administration         | 15      | —                                                                                       | To run (MySQL) |
-| Web (controllers)      | AuthControllerWebTest                 | HTTP contract of authentication, account, password, profile, Google and permissions (401, 403, 429) | 66      | RF-SEC-01, RF-SEC-02, RF-SEC-03, RF-SEC-05, RF-SEC-07, RF-SEC-08, RF-SEC-09, RNF-SEG-06 | To run (MySQL) |
-| Security               | AuthRefreshEndpointWebTest            | HTTP contract of POST /api/v1/auth/refresh                                                          | 18      | RF-SEC-04                                                                               | To run (MySQL) |
+| Web (controllers)      | AdminControllerWebTest                | Administration endpoints /api/v1/admin with RBAC permissions and 409 on self-administration         | 15      | —                                                                                       | Passed         |
+| Web (controllers)      | AuthControllerWebTest                 | HTTP contract of authentication, account, password, profile, Google and permissions (401, 403, 429) | 66      | RF-SEC-01, RF-SEC-02, RF-SEC-03, RF-SEC-05, RF-SEC-07, RF-SEC-08, RF-SEC-09, RNF-SEG-06 | Passed         |
+| Security               | AuthRefreshEndpointWebTest            | HTTP contract of POST /api/v1/auth/refresh                                                          | 18      | RF-SEC-04                                                                               | Passed         |
 | Security               | BCryptPasswordHasherAdapterTest       | BCryptPasswordHasherAdapter                                                                         | 10      | RF-SEC-03                                                                               | Passed         |
 | Security               | InMemoryResetAttemptLimiterTest       | Limit of 10 attempts per IP every 15 minutes                                                        | 8       | RNF-SEG-06                                                                              | Passed         |
 | Security               | JwtTokenIssuerTest                    | RS256 JWT issuing and validation (15 minutes)                                                       | 18      | RF-SEC-03, RNF-SEG-01                                                                   | Passed         |
 | Security               | PemRsaKeysTest                        | Which PEM keys are accepted and the message on refusal                                              | 19      | —                                                                                       | Passed         |
 | Security               | PepperedHmacResetCodeHasherTest       | PepperedHmacResetCodeHasher                                                                         | 15      | RF-SEC-06, RNF-SEG-05                                                                   | Passed         |
-| Security               | PoolSaturatedLimiterTest              | The per-IP limit applies without waiting for a pool connection (429)                                | 2       | RNF-SEG-06                                                                              | To run (MySQL) |
+| Security               | PoolSaturatedLimiterTest              | The per-IP limit applies without waiting for a pool connection (429)                                | 2       | RNF-SEG-06                                                                              | Passed         |
 | Security               | RbacServiceTest                       | Assign and revoke roles with audit and permission checks                                            | 17      | RF-SEC-09                                                                               | Passed         |
-| Security               | ResetAttemptLimiterBeforeDatabaseTest | A redemption refused by the limit opens no transaction                                              | 3       | RNF-SEG-06                                                                              | To run (MySQL) |
+| Security               | ResetAttemptLimiterBeforeDatabaseTest | A redemption refused by the limit opens no transaction                                              | 3       | RNF-SEG-06                                                                              | Passed         |
 | Security               | SecureIdentifierGeneratorAdapterTest  | SecureIdentifierGeneratorAdapter                                                                    | 5       | —                                                                                       | Passed         |
 | Security               | SecureTokenGeneratorAdapterTest       | SecureTokenGeneratorAdapter                                                                         | 13      | —                                                                                       | Passed         |
 | Security               | SecurityCorsConfigurationTest         | CORS policy guards without booting a context                                                        | 11      | RNF-SEG-03                                                                              | Passed         |
-| Security               | SecurityCorsWebTest                   | CORS contract: origins answered and preflight response                                              | 23      | RNF-SEG-03                                                                              | To run (MySQL) |
+| Security               | SecurityCorsWebTest                   | CORS contract: origins answered and preflight response                                              | 23      | RNF-SEG-03                                                                              | Passed         |
 | Security               | SecurityLoginFlowTest                 | Order of the login exchange and what it refuses                                                     | 11      | RF-SEC-03                                                                               | Passed         |
 | Security               | Sha256TokenHasherTest                 | Sha256TokenHasher                                                                                   | 9       | RF-SEC-04                                                                               | Passed         |
-| Integration with real  | ConfigurationPolicyPersistenceTest    | ConfigurationPolicy round trips against real MySQL                                                  | 6       | RF-SEC-12                                                                               | To run (MySQL) |
-| Integration with real  | LogPersistenceTest                    | Log round trips against real MySQL                                                                  | 5       | RF-SEC-12                                                                               | To run (MySQL) |
-| Integration with real  | PasswordPolicySeedTest                | Password policy seeded by changeset security-019                                                    | 5       | RF-SEC-12                                                                               | To run (MySQL) |
-| Integration with real  | PasswordResetTokenReservationTest     | Redemption attempt reservation against MySQL                                                        | 6       | RF-SEC-06                                                                               | To run (MySQL) |
-| Integration with real  | RbacAssignmentPersistenceTest         | RbacAssignment round trips against real MySQL                                                       | 2       | RF-SEC-09                                                                               | To run (MySQL) |
-| Integration with real  | RefreshLifecycleIntegrationTest       | Full lifecycle: open session, rotate, detect replay and revoke the family                           | 15      | RF-SEC-04, RNF-SEG-02                                                                   | To run (MySQL) |
-| Integration with real  | RefreshSessionTransactionTest         | Refresh token rotation is atomic against the real database                                          | 6       | RF-SEC-04                                                                               | To run (MySQL) |
-| Integration with real  | RefreshTokenPersistenceTest           | RefreshToken round trips against real MySQL                                                         | 10      | RF-SEC-04                                                                               | To run (MySQL) |
-| Integration with real  | SecurityTransactionBoundaryTest       | Where the transaction boundary sits and that Spring honours it                                      | 5       | —                                                                                       | To run (MySQL) |
-| Integration with real  | SecurityTransactionRollbackTest       | The transaction really rolls back                                                                   | 3       | —                                                                                       | To run (MySQL) |
-| Integration with real  | TokenSessionPersistenceTest           | TokenSession round trips against real MySQL                                                         | 6       | RF-SEC-04                                                                               | To run (MySQL) |
-| Integration with real  | UserPersonPersistenceTest             | UserPerson round trips against real MySQL                                                           | 5       | RF-SEC-01, RNF-MAN-03                                                                   | To run (MySQL) |
+| Integration with real  | ConfigurationPolicyPersistenceTest    | ConfigurationPolicy round trips against real MySQL                                                  | 6       | RF-SEC-12                                                                               | Passed         |
+| Integration with real  | LogPersistenceTest                    | Log round trips against real MySQL                                                                  | 5       | RF-SEC-12                                                                               | Passed         |
+| Integration with real  | PasswordPolicySeedTest                | Password policy seeded by changeset security-019                                                    | 5       | RF-SEC-12                                                                               | Passed         |
+| Integration with real  | PasswordResetTokenReservationTest     | Redemption attempt reservation against MySQL                                                        | 6       | RF-SEC-06                                                                               | Passed         |
+| Integration with real  | RbacAssignmentPersistenceTest         | RbacAssignment round trips against real MySQL                                                       | 2       | RF-SEC-09                                                                               | Passed         |
+| Integration with real  | RefreshLifecycleIntegrationTest       | Full lifecycle: open session, rotate, detect replay and revoke the family                           | 15      | RF-SEC-04, RNF-SEG-02                                                                   | Passed         |
+| Integration with real  | RefreshSessionTransactionTest         | Refresh token rotation is atomic against the real database                                          | 6       | RF-SEC-04                                                                               | Passed         |
+| Integration with real  | RefreshTokenPersistenceTest           | RefreshToken round trips against real MySQL                                                         | 10      | RF-SEC-04                                                                               | Passed         |
+| Integration with real  | SecurityTransactionBoundaryTest       | Where the transaction boundary sits and that Spring honours it                                      | 5       | —                                                                                       | Passed         |
+| Integration with real  | SecurityTransactionRollbackTest       | The transaction really rolls back                                                                   | 3       | —                                                                                       | Passed         |
+| Integration with real  | TokenSessionPersistenceTest           | TokenSession round trips against real MySQL                                                         | 6       | RF-SEC-04                                                                               | Passed         |
+| Integration with real  | UserPersonPersistenceTest             | UserPerson round trips against real MySQL                                                           | 5       | RF-SEC-01, RNF-MAN-03                                                                   | Passed         |
 
 **Table 8**
 
@@ -210,11 +215,11 @@ Each table corresponds to a module of the core service. “Status” is Passed, 
 | Use cases and adapters | UpdateHomeThresholdsServiceTest  | UpdateHomeThresholds use case: business rules and errors with mocked ports            | 7       | RF-HOM-08                                                                                 | Passed         |
 | Web (controllers)      | HomeControllerTest               | Household endpoints: create, list, join, favorite, remove, leave, delete and transfer | 26      | RF-HOM-01, RF-HOM-02, RF-HOM-03, RF-HOM-04, RF-HOM-06, RF-HOM-07, RF-HOM-08, RF-HOM-09, … | Passed         |
 | Web (controllers)      | HomeExceptionHandlerTest         | What the module answers when a request cannot be attributed to a user                 | 2       | RF-SEC-10                                                                                 | Passed         |
-| Integration with real  | HomePersistenceTest              | Home round trips against real MySQL                                                   | 6       | RF-HOM-01, RNF-MAN-03                                                                     | To run (MySQL) |
-| Integration with real  | HomeThresholdsPersistenceTest    | HomeThresholds round trips against real MySQL                                         | 3       | RF-HOM-08                                                                                 | To run (MySQL) |
-| Integration with real  | HomeTypePersistenceTest          | HomeType round trips against real MySQL                                               | 3       | —                                                                                         | To run (MySQL) |
-| Integration with real  | HomeTypeSeedTest                 | The catalog holds exactly the six seeded household types                              | 1       | RF-HOM-01                                                                                 | To run (MySQL) |
-| Integration with real  | UserHomePersistenceTest          | UserHome round trips against real MySQL                                               | 7       | RF-HOM-05                                                                                 | To run (MySQL) |
+| Integration with real  | HomePersistenceTest              | Home round trips against real MySQL                                                   | 6       | RF-HOM-01, RNF-MAN-03                                                                     | Passed         |
+| Integration with real  | HomeThresholdsPersistenceTest    | HomeThresholds round trips against real MySQL                                         | 3       | RF-HOM-08                                                                                 | Passed         |
+| Integration with real  | HomeTypePersistenceTest          | HomeType round trips against real MySQL                                               | 3       | —                                                                                         | Passed         |
+| Integration with real  | HomeTypeSeedTest                 | The catalog holds exactly the six seeded household types                              | 1       | RF-HOM-01                                                                                 | Passed         |
+| Integration with real  | UserHomePersistenceTest          | UserHome round trips against real MySQL                                               | 7       | RF-HOM-05                                                                                 | Passed         |
 
 **Table 9**
 
@@ -245,8 +250,8 @@ Each table corresponds to a module of the core service. “Status” is Passed, 
 | Use cases and adapters | RegisterMeasurementServiceTest      | RegisterMeasurement use case: business rules and errors with mocked ports                  | 4       | RF-MED-02                       | Passed         |
 | Web (controllers)      | ConsumptionLevelControllerTest      | HTTP codes and body of ConsumptionLevelController                                          | 1       | RF-MED-09                       | Passed         |
 | Web (controllers)      | MeasurementControllerTest           | HTTP codes and body of MeasurementController                                               | 5       | RF-MED-07                       | Passed         |
-| Integration with real  | ConsumptionLevelPersistenceTest     | ConsumptionLevel round trips against real MySQL                                            | 4       | RF-MED-09                       | To run (MySQL) |
-| Integration with real  | MeasurementPersistenceTest          | Measurement round trips against real MySQL                                                 | 4       | RF-MED-02                       | To run (MySQL) |
+| Integration with real  | ConsumptionLevelPersistenceTest     | ConsumptionLevel round trips against real MySQL                                            | 4       | RF-MED-09                       | Passed         |
+| Integration with real  | MeasurementPersistenceTest          | Measurement round trips against real MySQL                                                 | 4       | RF-MED-02                       | Passed         |
 | MQTT and broker        | TelemetryMqttConsumerTest           | NEW. Telemetry ingestion: the topic identifies the device and invalid messages are dropped | 8       | RF-DEV-07, RF-MED-02, RF-MED-03 | Passed         |
 
 **Table 11**
@@ -263,7 +268,7 @@ Each table corresponds to a module of the core service. “Status” is Passed, 
 | Use cases and adapters | RegisterThresholdAlertServiceTest    | High or critical consumption alerts by power level                            | 7       | RF-ALE-03            | Passed         |
 | Use cases and adapters | ResolveAlertServiceTest              | ResolveAlert use case: business rules and errors with mocked ports            | 4       | RF-ALE-05            | Passed         |
 | Web (controllers)      | AlertControllerTest                  | Alert endpoints: list, get, read, delete and 404                              | 7       | RF-ALE-05            | Passed         |
-| Integration with real  | AlertPersistenceTest                 | Alert round trips against real MySQL                                          | 4       | RF-ALE-05            | To run (MySQL) |
+| Integration with real  | AlertPersistenceTest                 | Alert round trips against real MySQL                                          | 4       | RF-ALE-05            | Passed         |
 | Events between modules | MeasurementRecordedListenerTest      | The MeasurementRecorded event triggers threshold and limit alert registration | 1       | RF-ALE-03, RF-ALE-06 | Passed         |
 
 **Table 12**
@@ -275,8 +280,8 @@ Each table corresponds to a module of the core service. “Status” is Passed, 
 | Domain                 | RecommendationRulesTest            | Five saving rules: peak hours, standby, weekly comparison, projection and per-device increase | 8       | RF-REC-01, RF-REC-02, RF-REC-03, RF-REC-04, RF-REC-05, RF-REC-06, RF-REC-07, RF-REC-09 | Passed         |
 | Use cases and adapters | EvaluateRecommendationsServiceTest | Rule evaluation per household and no repeats within 7 days                                    | 4       | RF-REC-01, RF-REC-07                                                                   | Passed         |
 | Use cases and adapters | RecommendationInboxServiceTest     | RecommendationInbox use case: business rules and errors with mocked ports                     | 4       | RF-REC-08                                                                              | Passed         |
-| Web (controllers)      | RecommendationControllerTest       | NEW. Recommendation inbox: list, read, delete, 404 and 409                                    | 7       | RF-REC-08                                                                              | Fails (DEF-02) |
-| Integration with real  | RecommendationPersistenceTest      | Recommendation round trips against real MySQL                                                 | 3       | RF-REC-08                                                                              | To run (MySQL) |
+| Web (controllers)      | RecommendationControllerTest       | NEW. Recommendation inbox: list, read, delete, 404 and 409                                    | 7       | RF-REC-08                                                                              | Passed         |
+| Integration with real  | RecommendationPersistenceTest      | Recommendation round trips against real MySQL                                                 | 3       | RF-REC-08                                                                              | Passed         |
 
 **Table 13**
 
@@ -289,11 +294,14 @@ Each table corresponds to a module of the core service. “Status” is Passed, 
 | Use cases and adapters | AdminNotificationsTest                | Administrator notifications: who receives each event and reads scoped to the caller | 5       | —                                                      | Passed         |
 | Use cases and adapters | EmailPasswordResetDeliveryAdapterTest | Recovery code delivery; nothing is sent if the transaction rolls back               | 5       | RF-NOT-06, RF-SEC-06                                   | Passed         |
 | Use cases and adapters | EmailSenderTest                       | Recording of the attempt before sending and sending the email                       | 9       | RF-NOT-01, RF-NOT-05, RF-NOT-06, RF-SEC-02, RNF-INT-02 | Passed         |
-| Use cases and adapters | NotifyAlertTest                       | Delivery of each alert to members by email and push per preferences                 | 4       | RF-NOT-01, RF-NOT-07                                   | Passed         |
+| Use cases and adapters | NotifyAlertTest                       | Delivery of alerts and recommendations to members by email and push per preferences | 8       | RF-NOT-01, RF-NOT-02, RF-NOT-07                        | Passed         |
 | Use cases and adapters | SendPasswordResetEmailTest            | Password recovery message and its record                                            | 11      | RF-NOT-06, RF-SEC-06                                   | Passed         |
 | Use cases and adapters | WebPushSenderTest                     | Push message encryption (RFC 8291) as a browser decrypts it                         | 2       | RF-NOT-01, RF-NOT-04                                   | Passed         |
-| Web (controllers)      | AdminNotificationsControllerWebTest   | Administrator notification endpoints                                                | 5       | —                                                      | To run (MySQL) |
-| Integration with real  | NotificationPersistenceTest           | Delivery log against the real schema                                                | 4       | RF-NOT-05                                              | To run (MySQL) |
+| Domain                 | PushDeviceTest                        | NEW (1.1). Invariants of the mobile device registered for push                      | 5       | RF-NOT-01                                              | Passed         |
+| Use cases and adapters | ExpoPushSenderTest                    | NEW (1.1). Interpretation of the Expo push relay's answer                           | 9       | RF-NOT-01                                              | Passed         |
+| Integration with real  | PushDevicePersistenceTest             | NEW (1.1). Registration and removal of mobile installations against the real schema | 7       | RF-NOT-01                                              | Passed         |
+| Web (controllers)      | AdminNotificationsControllerWebTest   | Administrator notification endpoints                                                | 5       | —                                                      | Passed         |
+| Integration with real  | NotificationPersistenceTest           | Delivery log against the real schema                                                | 4       | RF-NOT-05                                              | Passed         |
 
 **Table 14**
 
@@ -301,14 +309,14 @@ Each table corresponds to a module of the core service. “Status” is Passed, 
 
 | Level                  | Test class                           | What it verifies                                                                               | Methods | Requirements covered  | Status         |
 |------------------------|--------------------------------------|------------------------------------------------------------------------------------------------|---------|-----------------------|----------------|
-| Security               | AdminRbacIntegrationTest             | Seeded ADMIN role, USER.READ, USER.MANAGE and ROLE.MANAGE codes and directory searches         | 6       | RF-SEC-09             | To run (MySQL) |
-| Security               | HomeCallerIdentityIntegrationTest    | Caller identity on /homes through the real filter chain and an RS256 JWT; X-User-Id is ignored | 4       | RF-SEC-10             | To run (MySQL) |
-| Integration with real  | AccountDeletionIntegrationTest       | Account deletion across security and home against the real schema                              | 3       | RF-SEC-11             | To run (MySQL) |
-| Integration with real  | DeviceApiKeyStorageIntegrationTest   | Only the SHA-256 hash of the api_key reaches the table; broker login keeps working             | 3       | RF-DEV-02, RNF-SEG-09 | To run (MySQL) |
-| Integration with real  | EnergyMonitorBackendApplicationTests | Boot of the full application context                                                           | 1       | —                     | To run (MySQL) |
-| Integration with real  | HomeDeletionIntegrationTest          | Deleting a household drops memberships and thresholds and unlinks devices; a member cannot     | 2       | RF-DEV-06, RF-HOM-09  | To run (MySQL) |
-| Integration with real  | HomeOwnershipTransferIntegrationTest | Atomic swap of OWNER and MEMBER roles against the real schema                                  | 4       | RF-HOM-05, RF-HOM-10  | To run (MySQL) |
-| Architecture           | ModularityTests                      | ApplicationModules.verify(): the boundaries of the seven modules hold                          | 2       | RNF-MAN-01            | To run (MySQL) |
+| Security               | AdminRbacIntegrationTest             | Seeded ADMIN role, USER.READ, USER.MANAGE and ROLE.MANAGE codes and directory searches         | 6       | RF-SEC-09             | Passed         |
+| Security               | HomeCallerIdentityIntegrationTest    | Caller identity on /homes through the real filter chain and an RS256 JWT; X-User-Id is ignored | 4       | RF-SEC-10             | Passed         |
+| Integration with real  | AccountDeletionIntegrationTest       | Account deletion across security and home against the real schema                              | 3       | RF-SEC-11             | Passed         |
+| Integration with real  | DeviceApiKeyStorageIntegrationTest   | Only the SHA-256 hash of the api_key reaches the table; broker login keeps working             | 3       | RF-DEV-02, RNF-SEG-09 | Passed         |
+| Integration with real  | EnergyMonitorBackendApplicationTests | Boot of the full application context                                                           | 1       | —                     | Passed         |
+| Integration with real  | HomeDeletionIntegrationTest          | Deleting a household drops memberships and thresholds and unlinks devices; a member cannot     | 2       | RF-DEV-06, RF-HOM-09  | Passed         |
+| Integration with real  | HomeOwnershipTransferIntegrationTest | Atomic swap of OWNER and MEMBER roles against the real schema                                  | 4       | RF-HOM-05, RF-HOM-10  | Passed         |
+| Architecture           | ModularityTests                      | ApplicationModules.verify(): the boundaries of the seven modules hold                          | 2       | RNF-MAN-01            | Passed         |
 
 **Table 15**
 
@@ -341,7 +349,7 @@ Mobile application tests do not exist: the repository has no test files or test 
 
 ## Requirement → Test Traceability Matrix
 
-The 107 requirements of the specification are crossed with the test classes. “Coverage” distinguishes what was run from what depends on MySQL. Result: 66 with an automated test run, 1 with automated tests that depend on MySQL and 40 with no coverage.
+The 107 requirements of the specification are crossed with the test classes. “Coverage” distinguishes what was run from what depends on MySQL. Result in version 1.0: 66 with an automated test run, 1 with automated tests that depend on MySQL and 40 with no coverage. Result in version 1.1: 68 with an automated test run (RNF-MAN-01 now runs and RF-NOT-02 is covered by NotifyAlertTest) and 39 with no coverage.
 
 **Table 16**
 
@@ -447,8 +455,8 @@ The 107 requirements of the specification are crossed with the test classes. “
 
 | Requirement | Description                                                                                        | Automated tests                                                                              | Coverage    |
 |-------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|-------------|
-| RF-NOT-01   | The system must deliver every alert to all members of the home by email and browser notification,… | NotifyAlertTest, NotificationTest, WebPushSenderTest, EmailSenderTest                        | Automated   |
-| RF-NOT-02   | The system must deliver every new recommendation through the same channels                         | —                                                                                            | No coverage |
+| RF-NOT-01   | The system must deliver every alert to all members of the home by email and browser notification,… | NotifyAlertTest, NotificationTest, WebPushSenderTest, EmailSenderTest, ExpoPushSenderTest, PushDeviceTest | Automated   |
+| RF-NOT-02   | The system must deliver every new recommendation through the same channels                         | NotifyAlertTest                                                                              | Automated   |
 | RF-NOT-03   | The user must be able to view and change their notification preferences                            | —                                                                                            | No coverage |
 | RF-NOT-04   | The user must be able to turn browser notifications on and off                                     | WebPushSenderTest                                                                            | Automated   |
 | RF-NOT-05   | Every delivery attempt must be recorded as sent or failed, without storing the message content     | NotificationTest, NotificationPersistenceTest, AbandonedDeliverySweeperTest, EmailSenderTest | Automated   |
@@ -525,7 +533,7 @@ The 107 requirements of the specification are crossed with the test classes. “
 
 | Requirement | Description                                                                                               | Automated tests                                                       | Coverage                           |
 |-------------|-----------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|------------------------------------|
-| RNF-MAN-01  | The system must be organized in functional modules (User and Profile Management, Home Management, Device… | ModularityTests                                                       | Automated (needs MySQL, to be run) |
+| RNF-MAN-01  | The system must be organized in functional modules (User and Profile Management, Home Management, Device… | ModularityTests                                                       | Automated                          |
 | RNF-MAN-02  | Every change to the data structure must be reversible                                                     | —                                                                     | No coverage                        |
 | RNF-MAN-03  | Deleted data must be kept marked as deleted and not physically erased                                     | HomePersistenceTest, UserPersonPersistenceTest, DeleteHomeServiceTest | Automated                          |
 | RNF-MAN-04  | The system must have automated tests that verify its main functions                                       | —                                                                     | No coverage                        |
@@ -569,11 +577,15 @@ The 107 requirements of the specification are crossed with the test classes. “
 | RNF-INT-04  | Browser notifications must only work on a secure connection and require the system to have that service…    | —                           | No coverage |
 | RNF-INT-05  | Device configuration over Bluetooth must be available for up to 10 minutes, must not interrupt measuring…   | —                           | No coverage |
 
-Requirements with no coverage are known gaps (see risks and limitations). Account administration has no requirement in the specification (DOC-01).
+Requirements with no coverage are known gaps (see risks and limitations). Account administration has no requirement in the specification (DOC-01); adding it to the specification is in progress `[TO BE CONFIRMED]`.
 
 ## Results
 
-### Backend without a database
+### Full backend suite with MySQL (version 1.1)
+
+On October 20, 2026 the full core service suite (`./mvnw test`, test profile, MySQL 8.4) finished with **1131 tests, 0 failures and 0 errors**. The required `Tests` check of GitHub Actions gives the same result on `main` (commit `90ae5ef`, 23 min 9 s), and it runs on every pull request to `dev` and `main`. The per-module distribution of the most recent local Surefire report (October 16, 2026: 132 classes, 1124 tests, 0 failures) is in [full-suite-summary.md](../../evidencias/EN/backend/full-suite-summary.md); 7 tests were added between that report and the final run.
+
+### Backend without a database (version 1.0 run, 10/14/2026)
 
 `./mvnw -o test` was run limited to the classes that do not boot a context with a database (88 existing classes) plus the 4 new classes. The totals per module come from target/surefire-reports and are detailed in [surefire-summary.md](../../evidencias/EN/backend/surefire-summary.md).
 
@@ -596,7 +608,7 @@ Requirements with no coverage are known gaps (see risks and limitations). Accoun
 
 ### Web application
 
-`npm test` was run: 20 files and 141 tests, all passed ([vitest-summary.md](../../evidencias/EN/web/vitest-summary.md)).
+`npm test` was run: 20 files and 141 tests, all passed ([vitest-summary.md](../../evidencias/EN/web/vitest-summary.md)). In version 1.1 (October 20, 2026, branch `main`, commit `2b41cb3`) `npx vitest run` repeated the result: 20 files and 141 tests passed. The `Tests and build` check of GitHub Actions runs these tests and the production build on every pull request.
 
 ### New tests
 
@@ -610,7 +622,7 @@ Requirements with no coverage are known gaps (see risks and limitations). Accoun
 |------------------------------|-------|--------|--------|----------------------------------------------------------------------------------------------|-----------------------|
 | BrokerAuthControllerTest     | 12    | 12     | 0      | Device authentication and authorization at the broker (security); the controller had no test | RF-DEV-07, RNF-SEG-09 |
 | HomeDeviceControllerTest     | 10    | 10     | 0      | Device linking and credentials; only the use case had a test                                 | RF-DEV-02 a RF-DEV-06 |
-| RecommendationControllerTest | 7     | 6      | 1      | Recommendation inbox; the controller had no tests                                            | RF-REC-08             |
+| RecommendationControllerTest | 7     | 6      | 1      | Recommendation inbox; the controller had no tests. In version 1.1, with DEF-02 closed, all 7 pass | RF-REC-08             |
 | TelemetryMqttConsumerTest    | 10    | 10     | 0      | Reading ingestion and dropping of foreign messages; the MQTT consumer had no tests           | RF-MED-02, RF-MED-03  |
 
 ### Defects and observations
@@ -621,13 +633,13 @@ Requirements with no coverage are known gaps (see risks and limitations). Accoun
 
 | ID     | Severity | Item                                                           | Description                                                                                                                                                                                                                                                                                                                 | Status |
 |--------|----------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| DEF-01 | Low      | SecuritySupportModelTest.refusesMissingNames                   | The test requires Person to reject a null last name, but the code made it optional on purpose (changeset security-023: a Google account may have no last name). The test is out of date; the code is correct. It was not changed.                                                                                           | Open   |
-| DEF-02 | Medium   | RecommendationControllerTest.listRequiresHomeId (prueba nueva) | A missing required parameter (for example homeId in GET /api/v1/recommendations or /api/v1/alerts) answers 500 instead of 400: SecurityExceptionHandler declares a globally scoped @ExceptionHandler(Exception.class) that catches MissingServletRequestParameterException. The test was left failing; it was not adjusted. | Open   |
-| DOC-01 | Low      | Documentación                                                  | Account administration (routes /api/v1/admin, permissions USER.READ, USER.MANAGE and ROLE.MANAGE, the /admin/users screen and administrator notifications) exists in the code but has no requirement in the requirements specification and is not described in the technical and administrator manuals.                     | Open   |
+| DEF-01 | Low      | SecuritySupportModelTest.refusesMissingNames                   | The test requires Person to reject a null last name, but the code made it optional on purpose (changeset security-023: a Google account may have no last name). The test is out of date; the code is correct. It was not changed. Version 1.1: the test was updated; it requires the first name and accepts a missing last name, and it passes. | Closed |
+| DEF-02 | Medium   | RecommendationControllerTest.listRequiresHomeId (prueba nueva) | A missing required parameter (for example homeId in GET /api/v1/recommendations or /api/v1/alerts) answers 500 instead of 400: SecurityExceptionHandler declares a globally scoped @ExceptionHandler(Exception.class) that catches MissingServletRequestParameterException. The test was left failing; it was not adjusted. Version 1.1: `handleUnexpected` keeps the 4xx status of framework exceptions (`ErrorResponse`) and `TypeMismatchException` answers 400; the test passes. | Closed |
+| DOC-01 | Low      | Documentación                                                  | Account administration (routes /api/v1/admin, permissions USER.READ, USER.MANAGE and ROLE.MANAGE, the /admin/users screen and administrator notifications) exists in the code but has no requirement in the requirements specification and is not described in the technical and administrator manuals. Version 1.1: the technical and administrator manuals now describe it; the requirement in the specification is still missing `[TO BE CONFIRMED]`. | Partial |
 
 ### Evidence
 
-The evidence is in [evidence](../../evidencias/EN/README.md): Surefire summary, trimmed execution log and Vitest summary. It contains no secrets.
+The evidence is in [evidence](../../evidencias/EN/README.md): Surefire summary, trimmed execution log and Vitest summary from version 1.0, and the full suite summary and new Vitest run from version 1.1. It contains no secrets.
 
 ## Risks, Limitations and Known Gaps
 
@@ -637,7 +649,7 @@ The evidence is in [evidence](../../evidencias/EN/README.md): Surefire summary, 
 
 | ID   | Risk or limitation                                                                                                                                                                                                                                                                                                                                               | Effect                                                            | Recommendation                                                 |
 |------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|----------------------------------------------------------------|
-| R-01 | Non-hermetic tests: persistence and full context need real MySQL and SPRING_DATASOURCE_PASSWORD                                                                                                                                                                                                                                                                  | 37 classes were not run in this delivery                          | Run the full suite before delivery and evaluate Testcontainers |
+| R-01 | Non-hermetic tests: persistence and full context need real MySQL and SPRING_DATASOURCE_PASSWORD                                                                                                                                                                                                                                                                  | Mitigated in version 1.1: the full suite runs with MySQL locally and in CI; the tests are still not hermetic | Evaluate Testcontainers |
 | R-02 | The mobile application has no automated tests                                                                                                                                                                                                                                                                                                                    | No automated verification                                         | Add component and service tests                                |
 | R-03 | MQTT with QoS 0                                                                                                                                                                                                                                                                                                                                                  | A reading may be lost; loss is not tested                         | Evaluate QoS 1 and add a loss test                             |
 | R-04 | No over-the-air (OTA) update                                                                                                                                                                                                                                                                                                                                     | Firmware is updated only by USB                                   | Document the USB upload procedure                              |
@@ -647,9 +659,13 @@ The evidence is in [evidence](../../evidencias/EN/README.md): Surefire summary, 
 | R-08 | No coverage report (JaCoCo is not in pom.xml)                                                                                                                                                                                                                                                                                                                    | Coverage percentage unknown                                       | Add JaCoCo (not added without asking)                          |
 | R-09 | Gaps with no automated test: StatusMqttConsumer, DeviceInactivityScheduler, HomeDeletedListener, DeviceCommandListener, MqttDeviceCommandAdapter, RecommendationScheduler, NotificationChannelsController, HomeConsumptionController, ApplianceTypeController, RegisterConnectivityAlertService, DeviceConnectivityLostListener, BrokerAuthSecurityConfiguration | No direct automated coverage                                      | Prioritize connectivity and disconnection alerts               |
 
+| R-10 | The full backend suite takes about 23 minutes in GitHub Actions | Pull requests wait that long before they can be merged | Parallelize the suite or split out the slowest integration tests |
+
 ## Conclusions and Recommendations
 
 The core service has a broad and fast suite: 835 tests run without a database in 26 seconds, with 2 failures that are not production code (DEF-01) or that point to an error-handling defect (DEF-02). The web passes its 141 tests. The 37 classes with MySQL remain to be run to close the verification. Recommendations: (1) define SPRING_DATASOURCE_PASSWORD and run the full `./mvnw clean test`; (2) fix DEF-02 with a MissingServletRequestParameterException handler; (3) update the DEF-01 test; (4) adopt Testcontainers to make the persistence tests hermetic; (5) add tests to the mobile application; (6) add JaCoCo and continuous integration; (7) write the administration requirements and their tests.
+
+Version 1.1: the verification of the core service is closed with the full suite (1131 tests, 0 failures) against MySQL, locally and in GitHub Actions. Recommendations (1), (2) and (3) were carried out, and the continuous integration of (6) now exists with required checks on `dev` and `main`. Testcontainers (4), mobile application tests (5), JaCoCo (6) and the administration requirement in the specification (7) remain pending.
 
 ## References
 

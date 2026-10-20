@@ -1,5 +1,7 @@
 # Log of the backend run without a database
 
+> Historical evidence from version 1.0 (10/14/2026). In version 1.1 the full suite passes with MySQL: see [full-suite-summary.md](full-suite-summary.md).
+
 Trimmed Maven log: result lines only. No environment variables or credentials.
 
 ```text

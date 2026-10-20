@@ -1,5 +1,7 @@
 # Log de la ejecución de las pruebas nuevas
 
+> Evidencia histórica de la versión 1.0 (14/10/2026). En la versión 1.1 `RecommendationControllerTest.listRequiresHomeId` aprueba (DEF-02 cerrado).
+
 Log recortado de Maven: solo líneas de resultados. Sin variables de entorno ni credenciales.
 
 ```text

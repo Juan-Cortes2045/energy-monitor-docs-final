@@ -6,11 +6,18 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-16 de octubre de 2026
+16 de octubre de 2026 (actualizado el 20 de octubre de 2026)
+
+## Control de versiones
+
+| Versión | Fecha      | Descripción del cambio                                                                                          | Responsables                                  |
+|---------|------------|-----------------------------------------------------------------------------------------------------------------|-----------------------------------------------|
+| 1.0     | 16/10/2026 | Primera versión del acta de constitución: justificación, objetivos, alcance, presupuesto, cronograma y equipo.   | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.1     | 20/10/2026 | Alineación con el sistema desplegado: administración de cuentas dentro del alcance, presupuesto con el servidor en producción y el costo total estimado, puesta en producción en `https://energy-monitor.tech` con integración y despliegue continuos, y estado de objetivos e hitos al 20 de octubre. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
-Este documento es el acta de constitución del proyecto EnergyMonitor, una solución que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, identificar los periodos de mayor demanda, recibir alertas y obtener recomendaciones de ahorro. Define por qué se hace el proyecto y el valor que aporta, sus objetivos con indicadores medibles, el alcance incluido y excluido, el presupuesto, las fases, los hitos y el cronograma hasta la fecha de entrega, el 16 de octubre de 2026, y el equipo de trabajo con sus roles. La solución integra un dispositivo de medición que se conecta a cada electrodoméstico, una aplicación web y una aplicación móvil para Android. A la fecha de redacción, el proyecto está en su fase final, dedicada a la consolidación, las pruebas y la entrega. El detalle de las funciones se desarrolla en la especificación de requisitos.
+Este documento es el acta de constitución del proyecto EnergyMonitor, una solución que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, identificar los periodos de mayor demanda, recibir alertas y obtener recomendaciones de ahorro. Define por qué se hace el proyecto y el valor que aporta, sus objetivos con indicadores medibles, el alcance incluido y excluido, el presupuesto, las fases, los hitos y el cronograma hasta la fecha de entrega, el 28 de octubre de 2026, y el equipo de trabajo con sus roles. La solución integra un dispositivo de medición que se conecta a cada electrodoméstico, una aplicación web y una aplicación móvil para Android. Al 20 de octubre de 2026 el sistema está desplegado en producción en `https://energy-monitor.tech` y se actualiza mediante integración y despliegue continuos. El detalle de las funciones se desarrolla en la especificación de requisitos.
 
 *Palabras clave:* acta de constitución, consumo eléctrico, ahorro de energía, hogares, alertas
 
@@ -20,7 +27,7 @@ Este documento es el acta de constitución del proyecto EnergyMonitor, una soluc
 
 EnergyMonitor permite que los hogares conozcan el consumo eléctrico de cada electrodoméstico, identifiquen los periodos de mayor demanda, reciban alertas y obtengan recomendaciones para ahorrar energía. La medición la realiza un dispositivo propio que se conecta al electrodoméstico y envía lecturas reales de su consumo. El usuario consulta los datos desde una aplicación web y una aplicación móvil para Android.
 
-El proyecto es un proyecto formativo del programa Tecnólogo en Análisis y Desarrollo de Software (ADSO) del SENA, desarrollado por dos aprendices y con fecha de entrega el 16 de octubre de 2026.
+El proyecto es un proyecto formativo del programa Tecnólogo en Análisis y Desarrollo de Software (ADSO) del SENA, desarrollado por dos aprendices y con fecha de entrega el 28 de octubre de 2026.
 
 ### Problema que resuelve
 
@@ -44,19 +51,19 @@ Desarrollar un sistema de control del recurso energético que permita monitorear
 
 ### Objetivos específicos
 
-Cada objetivo específico tiene un indicador medible y una meta alcanzable dentro del plazo del proyecto. La Tabla 1 los presenta junto con su cobertura al 12 de octubre de 2026.
+Cada objetivo específico tiene un indicador medible y una meta alcanzable dentro del plazo del proyecto. La Tabla 1 los presenta junto con su cobertura al 20 de octubre de 2026.
 
 **Tabla 1**
 
 *Objetivos específicos, indicadores y cobertura*
 
-| Código | Objetivo | Indicador y meta | Cobertura al 12 de octubre de 2026 |
+| Código | Objetivo | Indicador y meta | Cobertura al 20 de octubre de 2026 |
 |---|---|---|---|
 | OBJ-01 | Medir el consumo eléctrico de cada electrodoméstico del hogar | Una lectura cada 60 segundos de voltaje, corriente, potencia activa y energía acumulada por cada dispositivo de medición conectado | Cubierto. Dispositivo de medición operativo |
-| OBJ-02 | Mostrar el consumo de forma clara en una aplicación web y una móvil | Resumen e historial de consumo por hogar en la web, y consulta de hogares, alertas y recomendaciones en la aplicación Android, en español, inglés, francés y portugués | Aplicación web en ajustes finales. Aplicación móvil en desarrollo |
+| OBJ-02 | Mostrar el consumo de forma clara en una aplicación web y una móvil | Resumen e historial de consumo por hogar en la web, y consulta de hogares, alertas y recomendaciones en la aplicación Android, en español, inglés, francés y portugués | Aplicación web desplegada en producción. Aplicación móvil en desarrollo, integrada con la API |
 | OBJ-03 | Emitir alertas automáticas ante consumo inusual o excesivo | Cuatro tipos de alerta (dispositivo vinculado, desconexión, consumo alto o crítico, límite diario o mensual). Una desconexión se detecta en un máximo de 150 segundos | Cubierto |
 | OBJ-04 | Fomentar hábitos responsables mediante recomendaciones basadas en los datos medidos | Cinco reglas de ahorro evaluadas cada hora. La misma recomendación no se repite en 7 días | Cubierto |
-| OBJ-05 | Entregar el sistema funcionando de extremo a extremo | Demostración en vivo, desde la medición de un dispositivo físico hasta una alerta o recomendación en un teléfono, sin intervención manual, el 16 de octubre de 2026 | Pendiente |
+| OBJ-05 | Entregar el sistema funcionando de extremo a extremo | Demostración en vivo, desde la medición de un dispositivo físico hasta una alerta o recomendación en un teléfono, sin intervención manual, el 28 de octubre de 2026 | Sistema desplegado en producción. Demostración en vivo prevista para la entrega del 28 de octubre; la vinculación de un medidor en producción está pendiente de evidencia |
 
 ## Alcance general
 
@@ -71,15 +78,17 @@ La Tabla 2 enumera lo que el proyecto construye y el módulo del sistema que res
 | Elemento | Descripción | Módulo o componente |
 |---|---|---|
 | Usuarios y perfiles | Registro, inicio de sesión, verificación de correo, recuperación de contraseña, inicio con Google, perfil y eliminación de cuenta | Módulo de Gestión de Usuarios y Perfiles |
+| Administración | Consulta de cuentas, cambio de estado, asignación y retiro del rol de administrador, y avisos para los administradores | Módulo de Gestión de Usuarios y Perfiles |
 | Hogares | Hogares, miembros, roles de propietario y miembro, favoritos, límites de consumo, eliminación del hogar y transferencia de propiedad | Módulo de Gestión de Hogares |
 | Dispositivos | Registro, vinculación, edición y desvinculación de los dispositivos de medición | Módulo de Gestión de Dispositivos |
 | Mediciones | Recepción de lecturas, estado de los dispositivos, historial y estadísticas de consumo | Módulo de Mediciones y Consumo |
 | Alertas | Alertas de consumo y de conexión de los dispositivos | Módulo de Alertas |
 | Recomendaciones | Sugerencias de ahorro basadas en el consumo medido | Módulo de Recomendaciones de Ahorro |
-| Notificaciones | Avisos por correo y por el navegador, preferencias y registro de entregas | Módulo de Notificaciones |
+| Notificaciones | Avisos por correo y por el navegador, avisos dentro de la aplicación para administradores, preferencias y registro de entregas | Módulo de Notificaciones |
 | Aplicación web | Cliente completo de gestión, historial y estadísticas | Aplicación web |
 | Aplicación móvil | Cliente Android de consulta y alertas | Aplicación móvil |
 | Dispositivo de medición | Aparato físico que mide el consumo de cada electrodoméstico y envía las lecturas | Dispositivo de medición |
+| Despliegue | Publicación del sistema en un servidor con HTTPS, y actualización con pruebas automáticas, aprobación y reversión | Infraestructura |
 
 ### Fuera del alcance
 
@@ -93,7 +102,7 @@ La Tabla 3 lista de forma explícita lo que el proyecto no construye y el motivo
 |---|---|
 | Aplicación para iPhone (iOS) | La aplicación móvil solo se desarrolla para Android. |
 | Registro manual del consumo desde la factura | El dispositivo de medición registra el consumo de forma automática, por lo que no se contempla la captura manual. |
-| Pantalla de administración de permisos generales | Esas funciones las opera directamente el equipo técnico. |
+| Gestión de soporte y de contenidos desde la administración | La administración actual cubre cuentas, estados, roles y avisos; lo demás queda para una versión posterior. |
 | Estimación del costo en moneda local | No existe acuerdo con un operador de energía que provea tarifas. El sistema reporta energía en kWh. |
 | Actualización remota del software del dispositivo de medición | El dispositivo se actualiza conectándolo por cable. |
 | Servicio para varias organizaciones a la vez | Cada instalación atiende a una sola organización. |
@@ -108,8 +117,8 @@ La Tabla 4 recoge los supuestos y restricciones que condicionan el proyecto.
 
 | Tipo | Descripción |
 |---|---|
-| Tiempo | Entrega el 16 de octubre de 2026, según el calendario del programa ADSO para la ficha 3145556. |
-| Presupuesto | Aproximadamente COP 180.000 invertidos en los componentes del dispositivo de medición. No hay presupuesto para alojamiento o servicios de pago. |
+| Tiempo | Entrega el 28 de octubre de 2026, fecha fijada para la evaluación de la ficha 3145556 en el programa ADSO, según el calendario del programa ADSO para la ficha 3145556. |
+| Presupuesto | Aproximadamente COP 180.000 invertidos en los componentes del dispositivo de medición y COP 48.000 en un mes de servidor. El dominio se obtuvo sin costo. |
 | Tecnología | Se usan las herramientas definidas para el proyecto formativo, que se detallan en la propuesta técnica. |
 | Equipo | Dos aprendices del programa ADSO. |
 | Normativa | Protección de la información de los usuarios, con referencia a la Ley 1581 de 2012 (Congreso de la República de Colombia, 2012). |
@@ -125,9 +134,10 @@ La Tabla 5 resume el presupuesto del proyecto.
 
 | Concepto | Valor |
 |---|---|
-| Componentes del dispositivo de medición | Aproximadamente COP 180.000 |
-| Alojamiento y servicios de pago | No contemplado |
-| Costo total del proyecto | `[POR CONFIRMAR]`, se consolida en el informe técnico y de costos |
+| Componentes del dispositivo de medición | Aproximadamente COP 180.000 (COP 173.997 según el desglose de la propuesta técnica) |
+| Alojamiento | COP 48.000: VPS Hostinger KVM 2 contratado por un mes (COP 27.900 mensuales con contrato anual) |
+| Dominio y certificados | Sin costo: dominio `energy-monitor.tech` gratuito y certificados Let's Encrypt |
+| Costo total estimado del proyecto | COP 57.021.997, incluidos los equipos del equipo de desarrollo y el recurso humano estimado (detalle en la propuesta técnica) |
 
 ## Cronograma e hitos
 
@@ -144,9 +154,9 @@ El proyecto inició el 1 de mayo de 2026 y se planificó en cuatro fases con ava
 | 1. Fundación y flujo central | 1 de mayo a 30 de junio | Un usuario se registra, crea o se une a un hogar, registra un dispositivo y ve llegar sus mediciones. | Un usuario registrado inicia sesión, crea un hogar, vincula un dispositivo y ve al menos una medición real registrada. |
 | 2. Visibilidad del consumo y alertas | 1 de julio a 31 de agosto | El consumo es visible y el sistema avisa cuando algo es anormal. | Un hogar que supera su límite genera una alerta visible en web y móvil y se entrega una notificación. |
 | 3. Recomendaciones e internacionalización | 1 a 30 de septiembre | Cerrar el ciclo del producto con orientación proactiva y terminar el trabajo transversal de la interfaz. | Un hogar con una semana de historial recibe al menos una recomendación basada en su propio consumo, y la interfaz se verifica en más de un idioma. |
-| 4. Consolidación y entrega | 1 a 16 de octubre | Dejar el sistema listo para demostración y defensa. | El sistema se demuestra en vivo, desde la medición de un dispositivo físico hasta una alerta o recomendación en un teléfono. |
+| 4. Consolidación y entrega | 1 a 28 de octubre | Dejar el sistema listo para demostración y defensa. | El sistema se demuestra en vivo, desde la medición de un dispositivo físico hasta una alerta o recomendación en un teléfono. |
 
-**Estado al 12 de octubre de 2026:** el proyecto se encuentra en la fase 4. Las funciones de las fases 1 a 3 están construidas.
+**Estado al 20 de octubre de 2026:** las funciones de las fases 1 a 3 están construidas y, durante la fase 4, el sistema se puso en producción en `https://energy-monitor.tech`, con integración y despliegue continuos.
 
 ### Hitos
 
@@ -156,20 +166,21 @@ La Tabla 7 reúne los hitos del proyecto con su fecha estimada.
 
 *Hitos del proyecto*
 
-| Código | Hito | Fecha estimada | Estado al 12 de octubre de 2026 |
+| Código | Hito | Fecha estimada | Estado al 20 de octubre de 2026 |
 |---|---|---|---|
 | H-01 | Inicio del proyecto | 1 de mayo de 2026 | Cumplido |
 | H-02 | Fin de la fase 1: un usuario registrado vincula un dispositivo y ve una medición real | 30 de junio de 2026 | Cumplido |
 | H-03 | Fin de la fase 2: una alerta por superar un límite, visible en web y móvil con su notificación | 31 de agosto de 2026 | Cumplido |
 | H-04 | Fin de la fase 3: recomendación basada en el consumo propio e interfaz en más de un idioma | 30 de septiembre de 2026 | Cumplido |
 | H-05 | Documentación bilingüe completa (acta de constitución y especificación de requisitos) | 12 de octubre de 2026 | En curso |
-| H-06 | Pruebas de extremo a extremo y manuales de usuario, técnico y de instalación | 14 de octubre de 2026 | Pendiente |
-| H-07 | Informe técnico y de costos, y ensayo de la demostración | 15 de octubre de 2026 | Pendiente |
-| H-08 | Entrega final y demostración en vivo | 16 de octubre de 2026 | Pendiente |
+| H-06 | Pruebas de extremo a extremo y manuales de usuario, técnico y de instalación | 14 de octubre de 2026 | `[POR CONFIRMAR]`. Las pruebas de extremo a extremo en producción están pendientes de evidencia |
+| H-07 | Informe técnico y de costos, y ensayo de la demostración | 15 de octubre de 2026 | `[POR CONFIRMAR]` |
+| H-08 | Entrega final y demostración en vivo | 28 de octubre de 2026 | Pendiente |
+| H-09 | Puesta en producción en `https://energy-monitor.tech` con integración y despliegue continuos | 19 de octubre de 2026 | Cumplido |
 
 ### Plan de la fase final
 
-La Tabla 8 detalla las actividades del periodo comprendido entre el 10 y el 16 de octubre de 2026, que corresponde a la fase 4.
+La Tabla 8 detalla las actividades del periodo comprendido entre el 10 y el 28 de octubre de 2026, que corresponde a la fase 4, con la puesta en producción y la entrega.
 
 **Tabla 8**
 
@@ -180,9 +191,10 @@ La Tabla 8 detalla las actividades del periodo comprendido entre el 10 y el 16 d
 | 10 a 12 de octubre | Confirmar y registrar los cambios pendientes. Completar el acta de constitución y la especificación de requisitos (ES y EN) | Documentos bilingües en formato APA 7 |
 | 13 y 14 de octubre | Pruebas de extremo a extremo. Manuales de usuario (web y móvil), manual técnico y de instalación | Plan y evidencias de pruebas. Manuales |
 | 15 de octubre | Informe técnico y de costos. Ensayo de la demostración en vivo | Informe técnico y de costos |
-| 16 de octubre | Entrega final | Sistema funcionando y documentación completa |
+| 16 a 20 de octubre | Despliegue en el servidor de producción, pipelines de GitHub Actions y manual de implementación y despliegue | Sistema en producción y manual de implementación y despliegue |
+| 28 de octubre | Entrega final y demostración en vivo | Sistema funcionando y documentación completa |
 
-Quedan sin fecha dentro de este plan, y se ejecutan solo si el tiempo lo permite, las mejoras de seguridad de las credenciales de los dispositivos y de confiabilidad en el envío de lecturas. El único pendiente de la gestión de hogares y dispositivos, que es la gestión del historial del dispositivo según el periodo de vinculación, tampoco tiene fecha asignada.
+La mejora de seguridad de las credenciales de los dispositivos ya se aplicó: el sistema solo guarda el hash de la clave de cada dispositivo. Queda sin fecha, y se ejecuta solo si el tiempo lo permite, la mejora de confiabilidad en el envío de lecturas. El único pendiente de la gestión de hogares y dispositivos, que es la gestión del historial del dispositivo según el periodo de vinculación, tampoco tiene fecha asignada.
 
 ## Equipo de trabajo y roles
 

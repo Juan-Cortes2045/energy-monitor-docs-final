@@ -12,18 +12,17 @@ Group (Ficha): 3145556
 
 **Project: Electrical Consumption Monitor**
 
-*Platform operation, configuration, backups and security management*
+*Account administration, operation, configuration, backups and security management of the platform*
 
 | **Item**             | **Information**                                                                 |
 |----------------------|---------------------------------------------------------------------------------|
-| Team members         | Juan Esteban Cortes Parra Miguel Angel Garcia Artunduaga                        |
-| Instructor           | Karol Daniela Correa                                                            |
+| Team members         | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga                       |
 | Training center      | Center for Industry, Business and Services (CIES) – SENA Huila Regional         |
 | Program              | Technology in Software Analysis and Development (ADSO)                          |
 | Group (Ficha)        | 3145556                                                                         |
 | Document type        | Administrator manual                                                            |
-| Version              | 1.0                                                                             |
-| Date prepared        | October 7, 2026                                                                 |
+| Version              | 1.1                                                                             |
+| Date prepared        | October 7, 2026 (updated October 20, 2026)                                      |
 
 Year 2026
 
@@ -34,333 +33,408 @@ The change history of this manual is recorded in the following table. Any new ad
 | **Version** | **Date**   | **Description of change**                                                                                                                                                                                                       | **Responsible**      |
 |-------------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
 | 1.0         | 10/07/2026 | Initial creation of the administrator manual: environment, roles and permissions, password policy, audit log, backups, updates and incidents. Citations and references in APA format.                                          | Development team     |
+| 1.1         | 10/20/2026 | Administration from the web application (user directory, statuses, administrator role and administration notices), designation of the first administrator with `make-admin.sh --prod`, production environment at `https://energy-monitor.tech`, backups and updates on the server, administration incidents and corrected SQL queries. | Development team     |
 
 # 3. Table of contents
 
-[2. Document version control [1](#document-version-control)](#document-version-control)
-
-[3. Table of contents [2](#table-of-contents)](#table-of-contents)
-
-[4. Introduction [3](#introduction)](#introduction)
-
-[5. Objective [3](#objective)](#objective)
-
-[6. Technical scope [3](#technical-scope)](#technical-scope)
-
-[7. Administration environment and credentials [4](#administration-environment-and-credentials)](#administration-environment-and-credentials)
-
-[7.1 Components the administrator must monitor [4](#components-the-administrator-must-monitor)](#components-the-administrator-must-monitor)
-
-[7.2 Where the platform secrets are stored [4](#where-the-platform-secrets-are-stored)](#where-the-platform-secrets-are-stored)
-
-[8. Security model surrounding the platform [5](#security-model-surrounding-the-platform)](#security-model-surrounding-the-platform)
-
-[8.1 Tables that govern security [5](#tables-that-govern-security)](#tables-that-govern-security)
-
-[8.2 Audit (\`audit_log\`) [5](#audit-audit_log)](#audit-audit_log)
-
-[8.3 Failed access attempts (\`login_error_log\`) [5](#failed-access-attempts-login_error_log)](#failed-access-attempts-login_error_log)
-
-[9. Roles and permissions (RBAC) [5](#roles-and-permissions-rbac)](#roles-and-permissions-rbac)
-
-[9.1 Model [6](#model)](#model)
-
-[10. Password policy and security configuration [6](#password-policy-and-security-configuration)](#password-policy-and-security-configuration)
-
-[10.1 Active policy (\`password_policy\`) [6](#active-policy-password_policy)](#active-policy-password_policy)
-
-[10.2 Dynamic parameters (\`security_configuration\`) [6](#dynamic-parameters-security_configuration)](#dynamic-parameters-security_configuration)
-
-[11. Sessions, tokens and revocation [7](#sessions-tokens-and-revocation)](#sessions-tokens-and-revocation)
-
-[12. Backups and restoration [7](#backups-and-restoration)](#backups-and-restoration)
-
-[12.1 Schema backup (recommended) [7](#schema-backup-recommended)](#schema-backup-recommended)
-
-[12.2 Restore [7](#restore)](#restore)
-
-[12.3 Data volume [7](#data-volume)](#data-volume)
-
-[13. Software updates [7](#software-updates)](#software-updates)
-
-[14. Verifying the recovery email [9](#verifying-the-recovery-email)](#verifying-the-recovery-email)
-
-[15. Common incidents and how to diagnose them [9](#common-incidents-and-how-to-diagnose-them)](#common-incidents-and-how-to-diagnose-them)
-
-[16. Quick administration commands [9](#quick-administration-commands)](#quick-administration-commands)
-
-[17. Administrator daily / weekly checklist [9](#administrator-daily-weekly-checklist)](#administrator-daily-weekly-checklist)
-
-[18. References (APA format, 7th edition) [10](#references-apa-format-7th-edition)](#references-apa-format-7th-edition)
+- [4. Introduction](#4-introduction)
+- [5. Objective](#5-objective)
+- [6. Technical scope](#6-technical-scope)
+- [7. Administration environment and credentials](#7-administration-environment-and-credentials)
+- [8. Platform security model](#8-platform-security-model)
+- [9. Roles and permissions (RBAC)](#9-roles-and-permissions-rbac)
+- [10. Administration from the web application](#10-administration-from-the-web-application)
+- [11. Password policy and security configuration](#11-password-policy-and-security-configuration)
+- [12. Sessions, tokens and revocation](#12-sessions-tokens-and-revocation)
+- [13. Backups and restore](#13-backups-and-restore)
+- [14. Software update](#14-software-update)
+- [15. Email verification](#15-email-verification)
+- [16. Frequent incidents and how to diagnose them](#16-frequent-incidents-and-how-to-diagnose-them)
+- [17. Quick administration commands](#17-quick-administration-commands)
+- [18. Daily / weekly administrator checklist](#18-daily--weekly-administrator-checklist)
+- [19. References (APA format, 7th edition)](#19-references-apa-format-7th-edition)
 
 # 4. Introduction
 
-This document is the administrator manual for the "Electrical Consumption Monitor" software. It is aimed at the person who will be in charge of the day-to-day operation of the system: starting and stopping services, security-governing configurations, monitoring system behavior, backups, software updates and incident handling (Cortés Parra & García Artunduaga, 2026).
+This document is the administrator manual of the "Electrical Consumption Monitor" software (EnergyMonitor). It is aimed at whoever will be in charge of administering the platform: managing user accounts and administrators, monitoring the system's behavior, backups, software updates and incident handling (Cortés Parra & García Artunduaga, 2026a).
 
-Most of the system's administration is exposed directly through the REST API and the MySQL 8.4 database (Spring, n.d.; Docker Inc., n.d.). It is important for the reader to know that, in this version, the backend does not expose a web administration panel: the management of roles, permissions, policies and keys is carried out through the corresponding tables and the configuration files detailed here.
+The system has two levels of administration:
+
+- **Functional administration, from the web application.** An account with the global administrator role (`ADMIN`) has a dedicated screen at `https://energy-monitor.tech` to view the accounts, change their status, grant or revoke the administrator role and receive administration notices (section 10).
+- **Technical administration, from the server.** Designating the first administrator, the password policy, the security parameters, backups and updates are done on the server, with the scripts of the infrastructure repository and queries to the MySQL 8.4 database (Spring, n.d.; Docker Inc., n.d.).
 
 The academic and technical references cited in the body of the document were formatted according to the 7th edition of the APA manual (American Psychological Association \[APA\], 2020).
 
 # 5. Objective
 
-To provide the team that administers the system with a clear, operational and verifiable guide to safely carry out the tasks specific to platform administration.
+To provide the team that administers the system with a clear, operational and verifiable guide to carry out, without risks, the tasks of administering the platform.
 
-- Describe the minimum administration environment and where each credential or configuration file is located.
-
-- Document the role and permission model present in the database and its management via SQL.
-
-- Explain how to review, rotate and restore encryption keys (recovery pepper and RSA pair).
-
+- Explain how the first administrator is designated and how accounts are administered from the web application.
+- Describe the administration environment and where each credential or configuration file is located.
+- Document the roles and permissions model and its restrictions.
+- Explain how to review and rotate the encryption keys (recovery pepper and RSA pair).
 - Record the procedure to run backups and restore them.
-
-- Define the flow for updating the software without losing data and for diagnosing common incidents.
+- Define the flow to update the software without losing data and to diagnose frequent incidents.
 
 # 6. Technical scope
 
-This manual covers administration in a development environment:
+This manual covers administration in two environments:
 
-- MySQL 8.4 container and the \`energy_monitor\` database managed with Docker Compose.
+- **Production:** a VPS with Ubuntu 26.04 LTS, published at `https://energy-monitor.tech`. The whole platform (MySQL 8.4, backend, MQTT broker and frontend) runs with Docker Compose from `/opt/energy-monitor/infra` (`docker-compose.prod.yml`), behind Nginx with Let's Encrypt certificates.
+- **Local development:** the full stack of the `energy-monitor-infra` repository (`docker-compose.yml`), or MySQL and the broker in Docker with the backend run from the IDE.
 
-- Spring Boot 4.1.1 backend (Java 21, Spring Modulith, Liquibase, JWT RS256) and its \`local\` profile.
+Administered components:
 
-- Recovery email via SMTP (Mailpit locally or Gmail in the cloud).
+- Spring Boot 4.1.1 backend (Java 21, Spring Modulith, Liquibase, JWT RS256) and its `energy_monitor` database.
+- Web application, including its administration screen.
+- Verification, recovery and alert email via SMTP (Gmail in production, Mailpit locally).
 
-- Web and mobile application: only their operational fit is mentioned.
-
-It does not cover the administration of production databases, cloud services, or the initial setup from scratch (all of which is already in the \*Installation Manual\*). Nor does it describe setting up the project from source code: the three repositories are described in the \*Technical Manual\*.
+It does not describe installing the server from scratch or configuring continuous deployment: both are in the *Implementation and deployment manual* (Cortés Parra & García Artunduaga, 2026b). Setting up the project from the code is in the *Technical manual*.
 
 # 7. Administration environment and credentials
 
 ## 7.1 Components the administrator must monitor
 
-| **Component**    | **How it is operated**                                           | **Evidence/verification**                                        |
-|------------------|------------------------------------------------------------------|------------------------------------------------------------------|
-| MySQL 8.4        | \`docker compose up/stop/restart\` in \`energy-monitor-backend\` | \`docker compose ps\` → \`energy-monitor-mysql\` in \`healthy\`. |
-| Backend API      | \`./mvnw.cmd spring-boot:run\`                                   | GET \`/v3/api-docs\` and \`/swagger-ui.html\`                    |
-| Email (Mailpit)  | \`docker run … axllent/mailpit\`                                 | Inbox at \`http://localhost:8025\`                               |
-| Web (Vite 8)     | \`npm run dev\` in \`Energy-Monitor-application\`                | Client at \`http://localhost:5173\`                              |
-| Mobile (Expo)    | \`npm start\` in \`Energy-Monitor-Mobile\`                       | QR + Expo Go / web (connected to the API)                                   |
+On the production server the `emc` alias is used (defined in the implementation and deployment manual), equivalent to `docker compose -f /opt/energy-monitor/infra/docker-compose.prod.yml --env-file /opt/energy-monitor/infra/.env.prod --project-directory /opt/energy-monitor/infra`.
 
-## 7.2 Where the platform secrets are stored
+| **Component**         | **Production**                                                | **Evidence/verification**                                               |
+|-----------------------|---------------------------------------------------------------|-------------------------------------------------------------------------|
+| MySQL 8.4             | `mysql` service (`emc ps`)                                    | Status `Up (healthy)`                                                   |
+| Backend API           | `backend` service, at `127.0.0.1:8080`                        | `curl -s http://127.0.0.1:8080/actuator/health` → `{"status":"UP"...}` |
+| MQTT broker           | `mosquitto` service, public port 8883 (TLS)                   | `emc logs --tail 50 mosquitto` without restarts                         |
+| Web                   | `frontend` service behind Nginx                               | `https://energy-monitor.tech` opens the home page                       |
+| Email                 | SMTP account configured in `.env.prod`                        | `notification` table without `FAILED` deliveries (section 15)           |
 
-No secret is stored in the code or in Git. The administrator must keep them only in these locations:
+In local development, the same services are checked with `docker compose ps` from `energy-monitor-infra`; Mailpit shows the emails at `http://localhost:8025`.
 
-- \`energy-monitor-backend/.env\` — passwords \`MYSQL_PASSWORD\`, \`MYSQL_ROOT_PASSWORD\`, \`SPRING_DATASOURCE_PASSWORD\`, \`MAIL\_\*\` credentials, \`SECURITY_RESET_PEPPER\` and \`SECURITY_CORS_ALLOWED_ORIGINS\`.
+## 7.2 Where the platform secrets are
 
-- \`energy-monitor-backend/src/main/resources/application-local.yaml\` — local profile: \`spring.datasource.url\`, \`security.jwt.\*\` (paths to the keys) and \`security.reset.pepper\`.
+No secret is stored in the code or in Git. The administrator must keep them only in these places:
 
-- \`\$HOME/.energy-monitor/keys/\` — \`private.pem\` / \`public.pem\` pair (700 permissions on Linux/macOS; user folder on Windows).
+- **Production:**
+  - `/opt/energy-monitor/infra/.env.prod` (mode 600): `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `SECURITY_RESET_PEPPER`, `MQTT_BACKEND_PASS`, `MAIL_*` credentials, `GOOGLE_CLIENT_SECRET`, VAPID keys and the other secrets.
+  - `/opt/energy-monitor/keys/`: JWT `private.pem` / `public.pem` pair (owned by uid 10001).
+  - `/opt/energy-monitor/mqtt-certs/`: broker certificate, copied from Let's Encrypt.
+- **Local development:** `energy-monitor-infra/.env` and `energy-monitor-infra/keys/`; if the backend runs from the IDE, also `energy-monitor-backend/.env` and `src/main/resources/application-local.yaml`.
 
-- \`Energy-Monitor-application/.env.local\` — \`VITE_API_BASE_URL\`.
+> *Golden rule: no secret goes into commits, manual annexes, chats or shared folders. The `.env`, `.env.prod`, `application-local.yaml`, `*.pem` files and the certificates are in `.gitignore`.*
 
-> *Golden rule: no secret goes into commits, manual appendices, chats or shared directories. The \`.env\` files, \`application-local.yaml\` and \`\*.pem\` are in \`.gitignore\`.*
-
-# 8. Security model surrounding the platform
+# 8. Platform security model
 
 ## 8.1 Tables that govern security
 
 | **Table**                                                         | **Purpose**                                                                                       |
 |-------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| user, person, user_configuration, user_session                    | Identity, basic data, own configuration and sessions of each account.                             |
-| password_policy                                                   | Active password policy (default min 8, max 64, 90 days, uppercase/numbers/symbols).               |
-| password_reset_token                                              | Password recovery tokens (hash with pepper).                                                      |
-| security_configuration                                            | Name/value pairs of security parameters managed by the backend.                                   |
-| login_error_log                                                   | Failed access attempts with type, description, IP and date.                                       |
-| system_role, permission, user_system_role, system_role_permission | RBAC model that defines which action each role can execute.                                       |
-| audit_log                                                         | Audit of CREATE/UPDATE/DELETE/LOGIN/LOGIN_FAILED/LOGOUT with IP and application.                  |
-| notification                                                      | Log of email attempts (SENT/FAILED status and reason).                                            |
+| user, person, user_configuration, user_session                    | Identity, basic data, own configuration and sessions of each account. `user.status` is `ACTIVE`, `INACTIVE` or `BLOCKED`. |
+| password_policy                                                   | Active password policy (by default min 8, max 64, 90 days, uppercase/numbers/symbols).            |
+| password_reset_token                                              | Password recovery tokens (hashed with pepper).                                                    |
+| security_configuration                                            | Name/value pairs of security parameters managed by the backend.                                  |
+| login_error_log                                                   | Failed access attempts with type, description, IP and date.                                      |
+| system_role, permission, user_system_role, system_role_permission | RBAC model of the global roles (section 9).                                                      |
+| audit_log                                                         | Audit of CREATE/UPDATE/DELETE/LOGIN/LOGIN_FAILED/LOGOUT with IP and application, including the status and role changes made by administrators. |
+| notification                                                      | Log of email and push deliveries (SENT/FAILED status and reason) and administration notices (`IN_APP` channel, `ADMINISTRATION` source). |
 
-## 8.2 Audit (\`audit_log\`)
+## 8.2 Audit (`audit_log`)
 
-Every relevant operation on accounts, sessions and credentials should leave a trace in \`audit_log\`. The administrator can query the latest actions as follows:
+Every relevant operation on accounts, sessions, credentials and roles leaves a trace in `audit_log`. The administrator can check the latest actions like this:
 
-> SELECT id_audit_log, user_id, action, description, ip_address, created_at
->
-> FROM audit_log
->
-> ORDER BY created_at DESC
->
-> LIMIT 50;
+```sql
+SELECT id_audit_log, user_id, action, description, ip_address, created_at
+FROM audit_log
+ORDER BY created_at DESC
+LIMIT 50;
+```
 
-The \`action\` field accepts CREATE, UPDATE, DELETE, LOGIN, LOGIN_FAILED and LOGOUT (MySQL, 2026).
+The `action` field accepts CREATE, UPDATE, DELETE, LOGIN, LOGIN_FAILED and LOGOUT (MySQL, 2026).
 
-## 8.3 Failed access attempts (\`login_error_log\`)
+## 8.3 Failed access attempts (`login_error_log`)
 
-Denied logins are recorded with the reason and origin address. This is useful for detecting brute force:
+Denied sign-ins are recorded with reason and source address. It is useful to detect brute force:
 
-> SELECT error_type, ip_address, COUNT(\*) AS intentos, MAX(created_at) AS ultimo
->
-> FROM login_error_log
->
-> GROUP BY error_type, ip_address
->
-> ORDER BY intentos DESC
->
-> LIMIT 20;
+```sql
+SELECT error_type, ip_address, COUNT(*) AS attempts, MAX(created_at) AS last
+FROM login_error_log
+GROUP BY error_type, ip_address
+ORDER BY attempts DESC
+LIMIT 20;
+```
 
-\`error_type\` can be \`INVALID_PASSWORD\`, \`USER_NOT_FOUND\`, \`ACCOUNT_BLOCKED\` or \`ACCOUNT_INACTIVE\`.
+`error_type` can be `INVALID_PASSWORD`, `USER_NOT_FOUND`, `ACCOUNT_BLOCKED` or `ACCOUNT_INACTIVE`. The last two appear when an account blocked or deactivated by an administrator tries to sign in.
 
 # 9. Roles and permissions (RBAC)
 
-The RBAC model exists in the database, but in this version \*\*there are no HTTP endpoints or web interface to manage it\*\*. Administration is done via SQL with the application user (\`energy_app\`) or root, from a secure terminal (Cortés Parra & García Artunduaga, 2026).
-
 ## 9.1 Model
 
-> system_role (id_system_role, name, description, enabled)
->
-> permission (id_permission, code, name, description)
->
-> system_role_permission (system_role_id, permission_id)
->
-> user_system_role (user_id, system_role_id)
+The system distinguishes two kinds of role that do not mix:
 
-Example of creating a role and assigning it a specific permission:
+- **Home roles** (`OWNER` / `MEMBER`): valid inside a single home and managed by the owner from the application.
+- **Global roles** (RBAC): valid for the whole platform. Today there is one, `ADMIN`.
 
-> INSERT INTO system_role (id_system_role, name, description, enabled) VALUES ('rol0000001', 'ADMIN', 'Administrador de la plataforma', 1);
->
-> INSERT INTO permission (id_permission, code, name, description) VALUES ('prm0000001', 'METER.READ', 'Lectura de medidores', 'Permite ver dispositivos y mediciones');
->
-> INSERT INTO system_role_permission (system_role_id, permission_id, assigned_at) VALUES ('rol0000001', 'prm0000001', NOW());
->
-> INSERT INTO user_system_role (user_id, system_role_id, assigned_at) VALUES ('usr0000001', 'rol0000001', NOW());
->
-> *Current security agreement: even though the table exists, no public interface renames, creates or assigns roles; any additional access must go through review by the development team before being enabled via HTTP.*
+```
+system_role (id_system_role, name, description, enabled)
+permission (id_permission, code, name, description)
+system_role_permission (system_role_id, permission_id)
+user_system_role (user_id, system_role_id, assigned_at, deleted_at)
+```
 
-# 10. Password policy and security configuration
+The Liquibase changeset `security-025` creates the `ADMIN` role with its three permissions:
 
-## 10.1 Active policy (\`password_policy\`)
+| **Permission** | **What it allows**                                                   |
+|----------------|----------------------------------------------------------------------|
+| `USER.READ`    | View the account directory, the roles and one's own administration notices |
+| `USER.MANAGE`  | Change the status of an account to active, inactive or blocked       |
+| `ROLE.MANAGE`  | Grant or revoke global roles                                         |
 
-The application takes the policy from the \*\*first row\*\* without \`deleted_at\`. For operational security, the schema seeds a single default row (id \`pol0000001\`): min. 8, max. 64, expiration 90 days, uppercase letters, numbers and symbols required. To change it:
+Permissions are read from the database **on every request** and do not travel inside the session token. That is why granting or revoking the role, or blocking an account, takes effect on the next request. Revoking the role from the web does not delete the `user_system_role` row: it sets a date in `deleted_at`.
 
-> UPDATE password_policy SET min_length = 10, expiration_days = 60 WHERE id_password_policy = 'pol0000001';
+> *The `ADMIN` role gives no access to any home: an administrator who is not a member of a home cannot see its data.*
 
-Do not insert a second active row: the selection has no \`ORDER BY\` and the behavior would be non-deterministic.
+## 9.2 Designating the first administrator
 
-## 10.2 Dynamic parameters (\`security_configuration\`)
+No account receives the role when the system is installed. The first administrator is designated once from the server; the following ones are designated from the web application (section 10.4).
 
-The table stores \`config_name / config_value\` pairs that the administrator can adjust without recompiling. Edit existing values:
+1. Register the account at `https://energy-monitor.tech` (sign-up with email or "Sign in with Google").
+2. On the server, run:
 
-> SELECT id_security_configuration, config_name, config_value, description FROM security_configuration;
->
-> UPDATE security_configuration SET config_value = 'valor' WHERE config_name = 'nombre_del_parametro';
->
+   ```bash
+   cd /opt/energy-monitor/infra
+   ./make-admin.sh --prod admin-email@example.com
+   ```
+
+3. Log out of the web application and log back in: the menu shows **Administration**.
+
+The script normalizes the email (no spaces, lowercase), rejects invalid addresses, fails if the account does not exist and is idempotent: if the account is already an administrator it duplicates nothing, and if the role had been revoked it reactivates it. At the end it shows the account's active roles. On the local stack it is used without `--prod` (`./make-admin.sh email@example.com`); with `--prod` it reads `.env.prod` and `docker-compose.prod.yml`.
+
+# 10. Administration from the web application
+
+## 10.1 Access and menu
+
+An account with the `ADMIN` role that signs in at `https://energy-monitor.tech` goes straight to **Administration** (`/admin/users`). Its side menu only shows three options:
+
+- **Administration:** user directory.
+- **Notifications:** administration notices.
+- **Settings:** language, theme and help center. The homes' notification preferences do not appear, because an administrator account has no homes.
+
+The home screens (dashboard, home detail and favorites) are not available to an administrator account: if it tries to open them, the application sends it back to the administration. An account without the `USER.READ` permission that tries to open the administration goes back to its homes dashboard, and the backend rejects its administration requests with `403`.
+
+## 10.2 User directory
+
+The **Platform users** screen shows the active accounts, from newest to oldest, in pages of 20.
+
+| **Column**        | **Content**                                                      |
+|-------------------|------------------------------------------------------------------|
+| User              | First name, last name and email. One's own account is marked "You". |
+| Status            | Active, Inactive or Blocked                                      |
+| Global roles      | Roles held by the account, or "No roles"                         |
+| Registered        | Account creation date                                            |
+| Last sign-in      | Last sign-in, or "Never"                                         |
+
+- **Search:** type part of the first name, last name or email and press **Search**.
+- **Paginate:** with more than 20 results the previous and next page buttons appear.
+
+## 10.3 Changing the status of an account
+
+Requires the `USER.MANAGE` permission.
+
+1. In the account's row, choose the new status in the **Status** selector.
+2. If the new status is not **Active**, the application asks for confirmation: the account will not be able to sign in and its open sessions will be closed.
+3. Press **Confirm**.
+
+| **Status** | **Effect**                                                                 |
+|------------|----------------------------------------------------------------------------|
+| Active     | The account can sign in normally.                                          |
+| Inactive   | The account cannot sign in (`ACCOUNT_INACTIVE`); its sessions are closed.  |
+| Blocked    | The account cannot sign in (`ACCOUNT_BLOCKED`); its sessions are closed.   |
+
+Sessions are revoked with the `ADMINISTRATIVE` reason. The access token the account already had may remain valid for up to 15 minutes, but it cannot be renewed.
+
+## 10.4 Granting or revoking the administrator role
+
+Requires the `ROLE.MANAGE` permission.
+
+- **Make administrator:** press the shield button in the account's row. The role applies immediately; the account must log out and back in to see the administration.
+- **Remove the role:** press the same button on an administrator account and confirm. The account loses access to the administration.
+
+Repeating a grant or a revocation changes nothing. Every change is recorded in `audit_log` with the source address.
+
+## 10.5 Administration notices
+
+The **Notifications** option shows the account's administration notices: the 50 most recent. The menu and the tab title show how many notices are unread.
+
+| **Notice**                | **When it is produced**                                                 |
+|---------------------------|-------------------------------------------------------------------------|
+| New account registered    | Someone creates an account, with email or with their first Google sign-in |
+| Account activated / deactivated / blocked | Another administrator changes the status of an account    |
+| New administrator / Administrator removed | Another administrator grants or revokes the `ADMIN` role  |
+
+- Whoever makes a change does not receive a notice about it, and an action that changes nothing produces no notices.
+- Each notice can be **marked as read**; all of them can also be marked at once, and the ones no longer needed can be **deleted**.
+- Each administrator only sees and changes their own notices.
+- Administration notices are only shown inside the web application: they are not sent by email or push notification.
+
+## 10.6 Restrictions
+
+| **Restriction**                                              | **Behavior**                                                             |
+|--------------------------------------------------------------|--------------------------------------------------------------------------|
+| An administrator cannot administer their own account         | The web does not show the actions on one's own row; the backend answers `409` if attempted |
+| An action without the matching permission                    | The web hides the action and the backend answers `403`                   |
+| No session                                                   | The backend answers `401`                                                |
+| Any `/api/v1/admin/**` route without an assigned permission   | Always rejected (`403`)                                                  |
+| The `ADMIN` role and the homes                                | The role gives no access to any home                                     |
+
+## 10.7 Pending features
+
+The following features do not exist in this version and are planned:
+
+- Management of support requests from **Settings**.
+- Editing of the help documentation from **Settings**.
+- Delivery of administration notices by email or push notification.
+- Global roles other than `ADMIN`.
+
+# 11. Password policy and security configuration
+
+## 11.1 Active policy (`password_policy`)
+
+The application takes the policy from the **first row** without `deleted_at`. For operational safety, the schema seeds a single default row (id `pol0000001`): min. 8, max. 64, 90-day expiration, uppercase, numbers and symbols required. To change it:
+
+```sql
+UPDATE password_policy SET min_length = 10, expiration_days = 60 WHERE id_password_policy = 'pol0000001';
+```
+
+Do not insert a second active row: the selection has no `ORDER BY` and the behavior would be non-deterministic.
+
+## 11.2 Dynamic parameters (`security_configuration`)
+
+The table stores `config_name / config_value` pairs that the administrator can adjust without recompiling. Edit existing values:
+
+```sql
+SELECT id_security_configuration, config_name, config_value, description FROM security_configuration;
+UPDATE security_configuration SET config_value = 'value' WHERE config_name = 'parameter_name';
+```
+
 > *Changing values the code uses to sign/validate tokens may invalidate sessions: coordinate with the development team before touching those parameters.*
 
-# 11. Sessions, tokens and revocation
+# 12. Sessions, tokens and revocation
 
-From the platform's security standpoint, any session or refresh token revocation accepts \`ADMINISTRATIVE\`, \`PASSWORD_CHANGED\` or \`REFRESH_TOKEN_REUSE\` as the reason (MySQL, 2026). To force the closing of a user's sessions (e.g. while handling an incident):
+Every session or refresh token revocation records its reason: `ADMINISTRATIVE`, `PASSWORD_CHANGED` or `REFRESH_TOKEN_REUSE` (MySQL, 2026). The recommended way to close an account's sessions is to change its status from the web (section 10.3), which revokes them with the `ADMINISTRATIVE` reason and leaves the change audited. If it has to be done by SQL during an incident:
 
-> UPDATE user_session SET revoked_at = NOW(), revoked_reason = 'ADMINISTRATIVE' WHERE user_id = 'usr0000001' AND revoked_at IS NULL;
+```sql
+UPDATE user_session SET revoked_at = NOW(), revoked_reason = 'ADMINISTRATIVE' WHERE user_id = 'usr0000001' AND revoked_at IS NULL;
+```
 
-The \`revoked_reason\` field stores the cause (\`ADMINISTRATIVE\`, \`PASSWORD_CHANGED\`, \`REFRESH_TOKEN_REUSE\`). After a revocation, the client's next \`POST /api/v1/auth/refresh\` will respond \`401\`, forcing the client to authenticate again.
+After a revocation, the client's next `POST /api/v1/auth/refresh` answers `401` and forces it to authenticate again.
 
-# 12. Backups and restoration
+# 13. Backups and restore
 
-## 12.1 Schema backup (recommended)
+## 13.1 Backup in production
 
-With the MySQL container running, a full dump of \`energy_monitor\` is:
+The `infra/deploy/backup-mysql.sh` script produces `energy_monitor-YYYYMMDD-HHMMSS.sql.gz` in `/opt/energy-monitor/backups` (mode 600) and deletes those older than 14 days. It runs automatically before every deployment and must be scheduled daily:
 
-> docker exec -t energy-monitor-mysql
->
-> mysqldump -u root -p"\$env:MYSQL_ROOT_PASSWORD" --databases energy_monitor
->
-> \| gzip \> energy_monitor\_\$(Get-Date -Format yyyyMMdd).sql.gz
+```bash
+sudo /opt/energy-monitor/infra/deploy/backup-mysql.sh                 # by hand
+# cron (sudo crontab -e):
+0 3 * * * /opt/energy-monitor/infra/deploy/backup-mysql.sh >> /var/log/energy-monitor-backup.log 2>&1
+```
 
-## 12.2 Restore
+## 13.2 Restore
 
-> gzip -dc energy_monitor_20261007.sql.gz \|
->
-> docker exec -i energy-monitor-mysql mysql -u root -p"\$env:MYSQL_ROOT_PASSWORD"
+Restoring **overwrites** the database. Stop the backend first (`emc stop backend`) and, from `/opt/energy-monitor/infra`:
 
-## 12.3 Data volume
+```bash
+gunzip -c /opt/energy-monitor/backups/<file>.sql.gz | \
+  docker compose -f docker-compose.prod.yml --env-file .env.prod \
+  exec -T -e MYSQL_PWD="<root password>" mysql mysql -uroot energy_monitor
+emc start backend
+```
 
-MySQL's persistent data lives in the Docker volume declared as \`mysql-data\`. Deleting it with \`docker compose down -v\` erases the schema and, therefore, the database; do not do so unless you want to erase all the information (Docker Inc., n.d.).
+## 13.3 Data volume
 
-> *Never store backups on the same machine as the database; copy the encrypted SQL to external storage or to the cloud with restricted access.*
+MySQL's persistent data lives in the `mysql-data` Docker volume. Running `docker compose down -v` deletes the volume and, with it, the whole database; never do it in production (Docker Inc., n.d.).
 
-# 13. Software updates
+> *Backups stay on the same server as the database: periodically copy the files to external storage with restricted access.*
 
-1.  Communicate the maintenance window to the stakeholder and make a prior backup (section 12.1).
+# 14. Software update
 
-2.  Stop the backend and the clients: \`Ctrl+C\` in the backend terminal; \`docker compose stop\` if you are going to touch the database.
+In production, the software is updated with GitHub Actions: every change merged into `main` is deployed after the approval of the `production` environment, with a prior database backup, a health check and automatic rollback if something fails. Liquibase applies the new changesets when the backend starts. The full procedure is in the implementation and deployment manual (Cortés Parra & García Artunduaga, 2026b).
 
-3.  \`git pull\` (or download the new deliverable) in the three affected repositories.
+If GitHub is not available, the same procedure runs by hand on the server:
 
-4.  Review \`.env.example\` and \`application-local.yaml.example\` for new variables; reproduce those changes in the actual \`.env\` and \`application-local.yaml\` without sharing secrets.
+```bash
+sudo /opt/energy-monitor/infra/deploy/deploy.sh backend     # or frontend, or infra
+```
 
-5.  Bring up dependencies: \`docker compose up -d\` (Liquibase will apply the new changesets when the backend starts).
+> *Changing `SECURITY_RESET_PEPPER` invalidates all current recovery codes. Rotating it is a security decision, not a habit.*
 
-6.  Run tests: \`.\mvnw.cmd test\` (backend) and \`npm test\` / \`npm run lint\` (web and mobile). All must pass before restarting.
+# 15. Email verification
 
-7.  Start again: \`.\mvnw.cmd spring-boot:run\`, \`npm run dev\`, and validate the healthcheck \`/v3/api-docs\`.
+Every email or push delivery attempt is recorded in the `notification` table with a status (`delivery_status`) of `SENT` or `FAILED` and, if it fails, the reason (`failure_reason`). To audit whether email is failing:
 
-> *Changing \`SECURITY_RESET_PEPPER\` invalidates all current recovery codes. Rotating it is a security decision, not a habit.*
+```sql
+SELECT id_notification, channel, delivery_status, failure_reason, created_at
+FROM notification
+WHERE delivery_status = 'FAILED'
+ORDER BY created_at DESC
+LIMIT 20;
+```
 
-# 14. Verifying the recovery email
+If almost all of them fail, it is usually due to wrong SMTP credentials, to Gmail requiring an "app password" instead of the account password, or to `MAIL_FROM` not matching `MAIL_USERNAME` (Google, n.d.). In development, check that Mailpit is running (`http://localhost:8025`).
 
-Each send attempt is recorded in the \`notification\` table with status \`SENT\` or \`FAILED\` and the reason. To audit whether email is failing:
-
-> SELECT id_notification, status, reason, created_at
->
-> FROM notification
->
-> WHERE status = 'FAILED'
->
-> ORDER BY created_at DESC
->
-> LIMIT 20;
-
-If almost all fail, it is usually due to incorrect SMTP credentials, to Gmail requiring an "app password" instead of the account password, or to \`MAIL_FROM\` not matching \`MAIL_USERNAME\` (Google, n.d.). In development, check the \`status\` column and the recorded reason, and verify that Mailpit is running (\`http://localhost:8025\`).
-
-# 15. Common incidents and how to diagnose them
+# 16. Frequent incidents and how to diagnose them
 
 | **Symptom**                                                                        | **Possible cause**                                              | **Action**                                                                                                    |
 |------------------------------------------------------------------------------------|-----------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| The backend does not start and mentions keys or pepper                             | \`SECURITY_JWT\_\*\` or \`SECURITY_RESET_PEPPER\` are missing.  | Define them in \`.env\`/\`application-local.yaml\` with absolute paths (see installation manual, section 9).  |
-| Tests or backend give \`Access denied for user 'energy_app'\`                      | \`SPRING_DATASOURCE_PASSWORD\` is not in \`.env\`.              | Replicate it from \`MYSQL_PASSWORD\` (section 9.2 of the installation manual).                                |
-| Recovery emails do not arrive                                                      | SMTP misconfigured or Mailpit turned off.                       | Check \`notification\` (section 14) and \`MAIL\_\*\`.                                                         |
-| The web client shows CORS errors                                                   | \`SECURITY_CORS_ALLOWED_ORIGINS\` does not include the Vite origin. | Add it (section 10.4 of the installation manual).                                                         |
-| Frequent \`INVALID_PASSWORD\`, \`USER_NOT_FOUND\` in \`login_error_log\`           | Invalid access attempts or brute force.                         | Review repeated IPs and block them in the firewall if necessary.                                              |
-| Sessions that remain valid after a password change                                 | Revocation not propagated ahead of clock.                       | Check \`user_session.revoked_at\` and \`refresh_token.revoked_reason\`; repeat the revocation (section 11).   |
-| Docker / MySQL does not start                                                      | Docker Desktop is off or port 3306 is in use.                   | Start Docker Desktop; change the port in \`docker-compose.yml\` and re-create the container.                  |
+| After `make-admin.sh` the menu does not show **Administration**                    | The session started before the role was granted                 | Log out and back in.                                                                                          |
+| `make-admin.sh` answers "No encontré MYSQL_ROOT_PASSWORD"                          | It was run on the server without `--prod`                       | Run `./make-admin.sh --prod email`.                                                                           |
+| `make-admin.sh` answers that no active account exists with the email               | The account is not registered yet or the email is spelled differently | Register the account in the web application and repeat.                                                 |
+| The web rejects a change on one's own account (`409`)                              | An administrator cannot administer themselves                   | Ask another administrator for the change.                                                                     |
+| The web reports a lack of permission (`403`) in the administration                 | The account lacks the permission the action requires            | Check its roles (section 17) or grant the role from another administrator account.                            |
+| A user cannot sign in and `login_error_log` shows `ACCOUNT_BLOCKED` or `ACCOUNT_INACTIVE` | An administrator changed their status                    | Check `audit_log`; reactivate the account from the web if appropriate.                                        |
+| The backend does not start and names keys or pepper                                | The JWT keys or `SECURITY_RESET_PEPPER` are missing.            | Check `/opt/energy-monitor/keys` and `.env.prod` (or `.env` locally).                                         |
+| Recovery emails do not arrive                                                      | SMTP misconfigured or Mailpit stopped.                          | Check `notification` (section 15) and `MAIL_*`.                                                               |
+| Frequent `INVALID_PASSWORD`, `USER_NOT_FOUND` errors in `login_error_log`          | Invalid access attempts or brute force.                         | Review repeated IPs and block them in the firewall if needed.                                                 |
+| `docker compose ps` does not show the services on the server                       | The command was run without the production file                 | Use the `emc ps` alias.                                                                                       |
 
-# 16. Quick administration commands
+# 17. Quick administration commands
 
 | **Task**                                    | **Command**                                                                                                                                                  |
 |---------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| View container status                       | \`docker compose ps\` (from \`energy-monitor-backend\`)                                                                                                     |
-| View last 10 audited actions                | \`SELECT \* FROM audit_log ORDER BY created_at DESC LIMIT 10;\`                                                                                              |
-| View latest login errors                    | \`SELECT \* FROM login_error_log ORDER BY created_at DESC LIMIT 20;\`                                                                                        |
-| Force closing a user's sessions             | UPDATE \`user_session\` SET revoked_at/grace… (section 11)                                                                                                   |
-| Schema backup                               | \`mysqldump … \| gzip\` (section 12.1)                                                                                                                       |
-| Fix private key permissions                 | \`icacls private.pem /inheritance:r /grant:r "%USERNAME%:(R)"\`                                                                                              |
-| Query a user's role                         | \`SELECT u.id_usuario, r.name FROM user u JOIN user_system_role usr ON usr.user_id=u.id_usuario JOIN system_role r ON r.id_system_role=usr.system_role_id;\` |
-| Shut down all development containers       | \`docker compose stop\` (backend) and \`Ctrl+C\` in Vite/Expo                                                                                                |
+| Designate the first administrator           | `./make-admin.sh --prod email@example.com` (from `/opt/energy-monitor/infra`)                                                                                |
+| Check the services                          | `emc ps` (production) or `docker compose ps` (locally, from `energy-monitor-infra`)                                                                         |
+| Backend health                              | `curl -s http://127.0.0.1:8080/actuator/health`                                                                                                              |
+| See the last 10 audited actions             | `SELECT * FROM audit_log ORDER BY created_at DESC LIMIT 10;`                                                                                                 |
+| See the latest sign-in errors               | `SELECT * FROM login_error_log ORDER BY created_at DESC LIMIT 20;`                                                                                           |
+| List the active administrators              | `SELECT u.email, r.name FROM user u JOIN user_system_role usr ON usr.user_id = u.id_user JOIN system_role r ON r.id_system_role = usr.system_role_id WHERE usr.deleted_at IS NULL AND u.deleted_at IS NULL;` |
+| Force-close a user's sessions               | Change their status from the web, or `UPDATE user_session …` (section 12)                                                                                    |
+| Database backup                             | `sudo /opt/energy-monitor/infra/deploy/backup-mysql.sh` (section 13.1)                                                                                       |
+| Deploy by hand                              | `sudo /opt/energy-monitor/infra/deploy/deploy.sh backend` (section 14)                                                                                       |
 
-# 17. Administrator daily / weekly checklist
+# 18. Daily / weekly administrator checklist
 
-| **Check**                                                | **Frequency**  | **Expected status**                                   |
+| **Check**                                                | **Frequency**  | **Expected state**                                    |
 |----------------------------------------------------------|----------------|-------------------------------------------------------|
-| Healthy containers (\`docker compose ps\`)              | Daily          | \`energy-monitor-mysql → healthy\`                    |
-| Application and Liquibase logs                           | Daily          | No context errors or unhandled exceptions             |
-| \`audit_log\` and \`login_error_log\`                   | Daily          | No bursts of \`LOGIN_FAILED\` or per-IP spikes        |
-| \`FAILED\` notifications                                | Daily          | \`FAILED\` queue at zero or with a known reason       |
-| Encrypted SQL backup                                     | Weekly         | At least one recent file outside the server           |
-| Review \`.env\` and keys not committed                  | Weekly         | Clean \`git status\`; \`pem\` and \`.env\` ignored    |
-| Notify the dev team if the policy or permissions changed | Per change     | Manual and UseCaseModel tests updated                 |
+| Unread administration notices                            | Daily          | New accounts and other administrators' changes reviewed |
+| Healthy services (`emc ps`) and `actuator/health`        | Daily          | All `Up`; backend `UP`                                |
+| Backend and broker logs                                  | Daily          | No context errors or restarts                         |
+| `audit_log` and `login_error_log`                        | Daily          | No `LOGIN_FAILED` bursts or spikes per IP             |
+| `FAILED` notifications                                   | Daily          | `FAILED` queue at zero or with a known reason         |
+| List of active administrators                            | Weekly         | Only the accounts that should be                      |
+| Recent backup in `/opt/energy-monitor/backups`           | Daily          | Today's file; weekly external copy                    |
+| Check `.env` and keys are not committed                  | Weekly         | `pem`, `.env` and `.env.prod` ignored                 |
 
-# 18. References (APA format, 7th edition)
+# 19. References (APA format, 7th edition)
 
 In-text citations and the reference list follow the style of the seventh edition of the APA publication manual (American Psychological Association \[APA\], 2020).
 
-American Psychological Association. (2020). Publication manual of the American Psychological Association (7th ed.). https://www.apa.org/
+American Psychological Association. (2020). *Publication manual of the American Psychological Association* (7th ed.). https://www.apa.org/
 
-Cortés Parra, J. E., & García Artunduaga, M. A. (2026). *EnergyMonitor software requirements specification* (version 2.0). SENA – CIES Huila Regional.
+Cortés Parra, J. E., & García Artunduaga, M. A. (2026a). *EnergyMonitor software requirements specification* (version 2.1). SENA – CIES Huila Regional.
 
-Docker Inc. (n.d.). Docker documentation. https://docs.docker.com/
+Cortés Parra, J. E., & García Artunduaga, M. A. (2026b). *EnergyMonitor implementation and deployment manual*. SENA – CIES Huila Regional.
 
-Google. (n.d.). How to create an app password. https://myaccount.google.com/apppasswords
+Docker Inc. (n.d.). *Docker documentation*. https://docs.docker.com/
 
-MySQL. (2026). MySQL 8.4 reference manual. https://dev.mysql.com/doc/refman/8.4/en/
+Google. (n.d.). *How to create an app password*. https://myaccount.google.com/apppasswords
 
-Spring. (n.d.). Spring Boot reference documentation. https://docs.spring.io/spring-boot/index.html
+MySQL. (2026). *MySQL 8.4 reference manual*. https://dev.mysql.com/doc/refman/8.4/en/
+
+Spring. (n.d.). *Spring Boot reference documentation*. https://docs.spring.io/spring-boot/index.html

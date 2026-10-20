@@ -27,4 +27,10 @@ Run of October 14, 2026 with `npm test` (Vitest 5.0.3, jsdom). Branch `dev`, com
 | services/http/httpClient.refresh.test.js | 3 | 3 | 0 | 0.1 |
 | services/http/httpClient.test.js | 11 | 11 | 0 | 0.1 |
 
+## Version 1.1 Run
+
+Run of October 20, 2026 with `npx vitest run` (Vitest 5.0.3, jsdom). Branch `main`, commit `2b41cb3`. Node.js 22.22.2.
+
+**Total:** 20 files, 141 tests, 141 passed, 0 failed (38.6 s). Same files and tests as the previous run. The `Tests and build` check of GitHub Actions runs these tests and the production build on every pull request.
+
 **Coverage:** the web `package.json` defines no coverage script; there is no report.

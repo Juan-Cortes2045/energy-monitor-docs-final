@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-14 de octubre de 2026
+14 de octubre de 2026 (actualizado el 20 de octubre de 2026)
 
 ## Control de versiones
 
@@ -17,10 +17,13 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 | Versión | Fecha      | Descripción del cambio                                                                    | Responsables                                  |
 |---------|------------|-------------------------------------------------------------------------------------------|-----------------------------------------------|
 | 1.0     | 14/10/2026 | Primera versión: inventario, trazabilidad y resultados de la ejecución sin base de datos. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.1     | 20/10/2026 | Ejecución de la suite completa contra MySQL (1131 pruebas, 0 fallos) en local y en GitHub Actions; cierre de DEF-01 y DEF-02; 3 clases de prueba nuevas de notificaciones push; trazabilidad, riesgos y evidencias actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
 Este documento es el plan y reporte de pruebas de EnergyMonitor. Inventaría las 129 clases de prueba automatizadas del servicio central (1097 métodos de prueba declarados) y las 20 suites de la aplicación web (141 pruebas), traza los 107 requisitos funcionales y no funcionales de la especificación contra esas pruebas, y registra la ejecución del 14 de octubre de 2026. La suite del servicio central sin base de datos ejecutó 835 pruebas, con 833 aprobadas y 2 fallidas; la web ejecutó 141 pruebas, todas aprobadas. Las 37 clases que necesitan MySQL no se ejecutaron porque falta la variable SPRING_DATASOURCE_PASSWORD. La aplicación móvil no tiene pruebas automatizadas. Se escribieron 4 clases de prueba nuevas y se registraron 2 defectos y 1 observación documental.
+
+La versión 1.1 (20 de octubre de 2026) registra la ejecución de la suite completa del servicio central contra MySQL 8.4: 1131 pruebas en 132 clases, 0 fallos, tanto en local como en el *check* obligatorio `Tests` de GitHub Actions. Las 37 clases pendientes ya se ejecutan, los defectos DEF-01 y DEF-02 están cerrados y la web vuelve a aprobar sus 141 pruebas. La trazabilidad queda en 68 requisitos con prueba automatizada ejecutada y 39 sin cobertura.
 
 *Palabras clave:* pruebas de software, trazabilidad, JUnit, Vitest, Spring Modulith, EnergyMonitor
 
@@ -28,7 +31,7 @@ Este documento es el plan y reporte de pruebas de EnergyMonitor. Inventaría las
 
 ### Propósito
 
-Documentar las pruebas que ya existen y se ejecutan en EnergyMonitor, y mostrar qué requisitos cubren y cuáles no antes de la entrega del 16 de octubre de 2026. La estructura se adapta de IEEE 829-2008 e ISO/IEC/IEEE 29119-3.
+Documentar las pruebas que ya existen y se ejecutan en EnergyMonitor, y mostrar qué requisitos cubren y cuáles no antes de la entrega del 28 de octubre de 2026. La estructura se adapta de IEEE 829-2008 e ISO/IEC/IEEE 29119-3.
 
 ### Alcance
 
@@ -40,7 +43,7 @@ La trazabilidad usa los códigos de la especificación de requisitos (RF-SEC, RF
 
 ## Elementos bajo prueba
 
-La Tabla 2 lista los elementos, la rama y el commit con el que se ejecutó cada prueba.
+La Tabla 2 lista los elementos, la rama y el commit con el que se ejecutó cada prueba en la versión 1.1. La ejecución de la versión 1.0 usó `dev` (backend `d03bbd3`, web `e6edc12`).
 
 **Tabla 2**
 
@@ -48,11 +51,11 @@ La Tabla 2 lista los elementos, la rama y el commit con el que se ejecutó cada 
 
 | Elemento                  | Versión                         | Rama | Commit  | Observación                                                              |
 |---------------------------|---------------------------------|------|---------|--------------------------------------------------------------------------|
-| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1     | dev  | d03bbd3 | Servicio central; el árbol tiene 4 clases de prueba nuevas sin confirmar |
-| energy-monitor-web        | React 19 · Vite 8               | dev  | e6edc12 | Aplicación web                                                           |
-| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev  | a3f6875 | Sin pruebas automatizadas                                                |
-| devices                   | Firmware 1.3.8 · Mosquitto 2    | dev  | 57417a7 | El árbol tiene 2 archivos modificados sin confirmar                      |
-| energy-monitor-docs-final | Markdown ES/EN                  | dev  | 2af09ab | Documentación final (este documento)                                     |
+| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1     | main | 90ae5ef | Servicio central y firmware (`firmware/`, versión 1.3.8)                 |
+| energy-monitor-web        | React 19 · Vite 8               | main | 2b41cb3 | Aplicación web                                                           |
+| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev  | 4ebccfb | Sin pruebas automatizadas                                                |
+| energy-monitor-infra      | Docker Compose · Mosquitto 2    | main | 7324110 | Compose, broker y scripts validados en CI; reemplaza a `devices`, retirado |
+| energy-monitor-docs-final | Markdown ES/EN                  | dev  | 00806c6 | Documentación final (este documento)                                     |
 
 ## Estrategia de pruebas
 
@@ -64,17 +67,17 @@ La Tabla 2 lista los elementos, la rama y el commit con el que se ejecutó cada 
 
 | N.º | Nivel                                   | Clases/suites | Métodos de prueba | Clases ejecutadas |
 |-----|-----------------------------------------|---------------|-------------------|-------------------|
-| 1   | Dominio                                 | 20            | 337               | 20                |
-| 2   | Casos de uso y adaptadores sin contexto | 50            | 276               | 50                |
-| 3   | Web (controladores)                     | 10            | 144               | 7                 |
-| 4   | Seguridad                               | 18            | 195               | 12                |
-| 5   | Integración con MySQL real              | 27            | 126               | 0                 |
-| 6   | Arquitectura                            | 1             | 2                 | 0                 |
+| 1   | Dominio                                 | 21            | 342               | 21                |
+| 2   | Casos de uso y adaptadores sin contexto | 51            | 285               | 51                |
+| 3   | Web (controladores)                     | 10            | 144               | 10                |
+| 4   | Seguridad                               | 18            | 195               | 18                |
+| 5   | Integración con MySQL real              | 28            | 133               | 28                |
+| 6   | Arquitectura                            | 1             | 2                 | 1                 |
 | 7   | Eventos entre módulos                   | 1             | 1                 | 1                 |
 | 8   | MQTT y broker                           | 2             | 16                | 2                 |
 | 9   | Frontend web (Vitest)                   | 20            | 141               | 20                |
 
-Todos los niveles de la lista existen en el proyecto. El nivel 9 corresponde a las suites de la web. La aplicación móvil no tiene pruebas automatizadas.
+Todos los niveles de la lista existen en el proyecto. El nivel 9 corresponde a las suites de la web. La aplicación móvil no tiene pruebas automatizadas. En la versión 1.1 se ejecutan todas las clases del servicio central; los conteos incluyen las 3 clases nuevas de notificaciones push (PushDeviceTest, ExpoPushSenderTest y PushDevicePersistenceTest).
 
 ### Técnicas y herramientas
 
@@ -94,6 +97,7 @@ Se combinan pruebas de caja blanca (dominio y casos de uso con puertos simulados
 | Vitest / Testing Library (React)               | 5.0.3 / 16.3.3             | Pruebas de la aplicación web (jsdom)                                 |
 | Java / Node.js / Docker                        | 21.0.12 / 22.22.2 / 29.8.2 | Entorno de ejecución                                                 |
 | JaCoCo                                         | No está en el pom.xml      | Sin reporte de cobertura (ver recomendaciones)                       |
+| GitHub Actions                                 | runner ubuntu-latest       | Integración continua: *checks* `Tests` (backend) y `Tests and build` (web) |
 
 ## Entorno de pruebas
 
@@ -107,6 +111,7 @@ Las pruebas de persistencia y las de contexto completo corren contra MySQL 8.4 r
 |------------------|--------------------------------------------------------------------------------|
 | MySQL 8.4        | Docker, energy-monitor-mysql (healthy)                                         |
 | Perfil de Spring | test (src/test/resources/application-test.yaml); recommendation.enabled: false |
+| CI (GitHub Actions) | Contenedor de servicio `mysql:8.4` (usuario energy_app), `application-local.yaml` generado desde el ejemplo y par RSA desechable; el job `Tests` tarda unos 23 minutos |
 
 ## Criterios de entrada, salida, suspensión y reanudación
 
@@ -123,7 +128,7 @@ Las pruebas de persistencia y las de contexto completo corren contra MySQL 8.4 r
 
 ## Inventario de pruebas automatizadas
 
-Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada, Falla (con su defecto) o «Por ejecutar (MySQL)» para las clases que levantan contexto con base de datos. Las clases nuevas están marcadas con NUEVA en su descripción.
+Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada, Falla (con su defecto) o «Por ejecutar (MySQL)» para las clases que levantan contexto con base de datos. Las clases nuevas están marcadas con NUEVA en su descripción. En la versión 1.1 todas las clases se ejecutaron contra MySQL y aprobaron, por lo que el estado de todas es «Aprobada».
 
 **Tabla 7**
 
@@ -135,7 +140,7 @@ Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada
 | Dominio                | PasswordResetTokenTest                | Reglas e invariantes de PasswordResetToken                                                    | 19      | RF-SEC-06                                                                               | Aprobada             |
 | Dominio                | RbacTest                              | Reglas e invariantes de Rbac                                                                  | 14      | RF-SEC-09                                                                               | Aprobada             |
 | Dominio                | RefreshTokenTest                      | Reglas e invariantes de RefreshToken                                                          | 41      | RF-SEC-04, RNF-SEG-02                                                                   | Aprobada             |
-| Dominio                | SecuritySupportModelTest              | Reglas e invariantes de SecuritySupportModel                                                  | 28      | RF-SEC-12                                                                               | Falla (DEF-01)       |
+| Dominio                | SecuritySupportModelTest              | Reglas e invariantes de SecuritySupportModel                                                  | 28      | RF-SEC-12                                                                               | Aprobada             |
 | Dominio                | UserSessionTest                       | Reglas e invariantes de UserSession                                                           | 45      | RF-SEC-04                                                                               | Aprobada             |
 | Dominio                | UserTest                              | Reglas e invariantes de User                                                                  | 21      | RF-SEC-01                                                                               | Aprobada             |
 | Dominio                | ValueObjectTest                       | Reglas e invariantes de ValueObject                                                           | 14      | RF-SEC-01                                                                               | Aprobada             |
@@ -151,35 +156,35 @@ Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada
 | Casos de uso y adaptad | UserAdministrationServiceTest         | Administración de cuentas: un administrador nunca actúa sobre su propia cuenta                | 18      | —                                                                                       | Aprobada             |
 | Casos de uso y adaptad | UserProfileQueryServiceTest           | Nombre y correo de las cuentas conocidas                                                      | 1       | RF-SEC-08                                                                               | Aprobada             |
 | Casos de uso y adaptad | UserSessionServiceTest                | Apertura de sesión con refresh token opaco y cierre                                           | 6       | RF-SEC-04                                                                               | Aprobada             |
-| Web (controladores)    | AdminControllerWebTest                | Endpoints de administración /api/v1/admin con permisos RBAC y 409 al administrarse a sí mismo | 15      | —                                                                                       | Por ejecutar (MySQL) |
-| Web (controladores)    | AuthControllerWebTest                 | Contrato HTTP de autenticación, cuenta, contraseña, perfil, Google y permisos (401, 403, 429) | 66      | RF-SEC-01, RF-SEC-02, RF-SEC-03, RF-SEC-05, RF-SEC-07, RF-SEC-08, RF-SEC-09, RNF-SEG-06 | Por ejecutar (MySQL) |
-| Seguridad              | AuthRefreshEndpointWebTest            | Contrato HTTP de POST /api/v1/auth/refresh                                                    | 18      | RF-SEC-04                                                                               | Por ejecutar (MySQL) |
+| Web (controladores)    | AdminControllerWebTest                | Endpoints de administración /api/v1/admin con permisos RBAC y 409 al administrarse a sí mismo | 15      | —                                                                                       | Aprobada             |
+| Web (controladores)    | AuthControllerWebTest                 | Contrato HTTP de autenticación, cuenta, contraseña, perfil, Google y permisos (401, 403, 429) | 66      | RF-SEC-01, RF-SEC-02, RF-SEC-03, RF-SEC-05, RF-SEC-07, RF-SEC-08, RF-SEC-09, RNF-SEG-06 | Aprobada             |
+| Seguridad              | AuthRefreshEndpointWebTest            | Contrato HTTP de POST /api/v1/auth/refresh                                                    | 18      | RF-SEC-04                                                                               | Aprobada             |
 | Seguridad              | BCryptPasswordHasherAdapterTest       | BCryptPasswordHasherAdapter                                                                   | 10      | RF-SEC-03                                                                               | Aprobada             |
 | Seguridad              | InMemoryResetAttemptLimiterTest       | Límite de 10 intentos por IP cada 15 minutos                                                  | 8       | RNF-SEG-06                                                                              | Aprobada             |
 | Seguridad              | JwtTokenIssuerTest                    | Emisión y validación de JWT RS256 (15 minutos)                                                | 18      | RF-SEC-03, RNF-SEG-01                                                                   | Aprobada             |
 | Seguridad              | PemRsaKeysTest                        | Qué claves PEM se aceptan y qué mensaje se da al rechazarlas                                  | 19      | —                                                                                       | Aprobada             |
 | Seguridad              | PepperedHmacResetCodeHasherTest       | PepperedHmacResetCodeHasher                                                                   | 15      | RF-SEC-06, RNF-SEG-05                                                                   | Aprobada             |
-| Seguridad              | PoolSaturatedLimiterTest              | El límite por IP se aplica sin esperar una conexión del pool (429)                            | 2       | RNF-SEG-06                                                                              | Por ejecutar (MySQL) |
+| Seguridad              | PoolSaturatedLimiterTest              | El límite por IP se aplica sin esperar una conexión del pool (429)                            | 2       | RNF-SEG-06                                                                              | Aprobada             |
 | Seguridad              | RbacServiceTest                       | Asignar y revocar roles con auditoría y verificación de permisos                              | 17      | RF-SEC-09                                                                               | Aprobada             |
-| Seguridad              | ResetAttemptLimiterBeforeDatabaseTest | Un canje rechazado por el límite no abre transacción                                          | 3       | RNF-SEG-06                                                                              | Por ejecutar (MySQL) |
+| Seguridad              | ResetAttemptLimiterBeforeDatabaseTest | Un canje rechazado por el límite no abre transacción                                          | 3       | RNF-SEG-06                                                                              | Aprobada             |
 | Seguridad              | SecureIdentifierGeneratorAdapterTest  | SecureIdentifierGeneratorAdapter                                                              | 5       | —                                                                                       | Aprobada             |
 | Seguridad              | SecureTokenGeneratorAdapterTest       | SecureTokenGeneratorAdapter                                                                   | 13      | —                                                                                       | Aprobada             |
 | Seguridad              | SecurityCorsConfigurationTest         | Guardas de la política CORS sin levantar contexto                                             | 11      | RNF-SEG-03                                                                              | Aprobada             |
-| Seguridad              | SecurityCorsWebTest                   | Contrato CORS: orígenes respondidos y respuesta del preflight                                 | 23      | RNF-SEG-03                                                                              | Por ejecutar (MySQL) |
+| Seguridad              | SecurityCorsWebTest                   | Contrato CORS: orígenes respondidos y respuesta del preflight                                 | 23      | RNF-SEG-03                                                                              | Aprobada             |
 | Seguridad              | SecurityLoginFlowTest                 | Orden del intercambio de inicio de sesión y lo que rechaza                                    | 11      | RF-SEC-03                                                                               | Aprobada             |
 | Seguridad              | Sha256TokenHasherTest                 | Sha256TokenHasher                                                                             | 9       | RF-SEC-04                                                                               | Aprobada             |
-| Integración con MySQL  | ConfigurationPolicyPersistenceTest    | Ida y vuelta de ConfigurationPolicy contra MySQL real                                         | 6       | RF-SEC-12                                                                               | Por ejecutar (MySQL) |
-| Integración con MySQL  | LogPersistenceTest                    | Ida y vuelta de Log contra MySQL real                                                         | 5       | RF-SEC-12                                                                               | Por ejecutar (MySQL) |
-| Integración con MySQL  | PasswordPolicySeedTest                | Política de contraseñas sembrada por el changeset security-019                                | 5       | RF-SEC-12                                                                               | Por ejecutar (MySQL) |
-| Integración con MySQL  | PasswordResetTokenReservationTest     | Reserva de intentos de canje contra MySQL                                                     | 6       | RF-SEC-06                                                                               | Por ejecutar (MySQL) |
-| Integración con MySQL  | RbacAssignmentPersistenceTest         | Ida y vuelta de RbacAssignment contra MySQL real                                              | 2       | RF-SEC-09                                                                               | Por ejecutar (MySQL) |
-| Integración con MySQL  | RefreshLifecycleIntegrationTest       | Ciclo completo: abrir sesión, rotar, detectar reutilización y revocar la familia              | 15      | RF-SEC-04, RNF-SEG-02                                                                   | Por ejecutar (MySQL) |
-| Integración con MySQL  | RefreshSessionTransactionTest         | La rotación de refresh token es atómica contra la BD real                                     | 6       | RF-SEC-04                                                                               | Por ejecutar (MySQL) |
-| Integración con MySQL  | RefreshTokenPersistenceTest           | Ida y vuelta de RefreshToken contra MySQL real                                                | 10      | RF-SEC-04                                                                               | Por ejecutar (MySQL) |
-| Integración con MySQL  | SecurityTransactionBoundaryTest       | Dónde queda el límite transaccional y que Spring lo respeta                                   | 5       | —                                                                                       | Por ejecutar (MySQL) |
-| Integración con MySQL  | SecurityTransactionRollbackTest       | La transacción hace rollback de verdad                                                        | 3       | —                                                                                       | Por ejecutar (MySQL) |
-| Integración con MySQL  | TokenSessionPersistenceTest           | Ida y vuelta de TokenSession contra MySQL real                                                | 6       | RF-SEC-04                                                                               | Por ejecutar (MySQL) |
-| Integración con MySQL  | UserPersonPersistenceTest             | Ida y vuelta de UserPerson contra MySQL real                                                  | 5       | RF-SEC-01, RNF-MAN-03                                                                   | Por ejecutar (MySQL) |
+| Integración con MySQL  | ConfigurationPolicyPersistenceTest    | Ida y vuelta de ConfigurationPolicy contra MySQL real                                         | 6       | RF-SEC-12                                                                               | Aprobada             |
+| Integración con MySQL  | LogPersistenceTest                    | Ida y vuelta de Log contra MySQL real                                                         | 5       | RF-SEC-12                                                                               | Aprobada             |
+| Integración con MySQL  | PasswordPolicySeedTest                | Política de contraseñas sembrada por el changeset security-019                                | 5       | RF-SEC-12                                                                               | Aprobada             |
+| Integración con MySQL  | PasswordResetTokenReservationTest     | Reserva de intentos de canje contra MySQL                                                     | 6       | RF-SEC-06                                                                               | Aprobada             |
+| Integración con MySQL  | RbacAssignmentPersistenceTest         | Ida y vuelta de RbacAssignment contra MySQL real                                              | 2       | RF-SEC-09                                                                               | Aprobada             |
+| Integración con MySQL  | RefreshLifecycleIntegrationTest       | Ciclo completo: abrir sesión, rotar, detectar reutilización y revocar la familia              | 15      | RF-SEC-04, RNF-SEG-02                                                                   | Aprobada             |
+| Integración con MySQL  | RefreshSessionTransactionTest         | La rotación de refresh token es atómica contra la BD real                                     | 6       | RF-SEC-04                                                                               | Aprobada             |
+| Integración con MySQL  | RefreshTokenPersistenceTest           | Ida y vuelta de RefreshToken contra MySQL real                                                | 10      | RF-SEC-04                                                                               | Aprobada             |
+| Integración con MySQL  | SecurityTransactionBoundaryTest       | Dónde queda el límite transaccional y que Spring lo respeta                                   | 5       | —                                                                                       | Aprobada             |
+| Integración con MySQL  | SecurityTransactionRollbackTest       | La transacción hace rollback de verdad                                                        | 3       | —                                                                                       | Aprobada             |
+| Integración con MySQL  | TokenSessionPersistenceTest           | Ida y vuelta de TokenSession contra MySQL real                                                | 6       | RF-SEC-04                                                                               | Aprobada             |
+| Integración con MySQL  | UserPersonPersistenceTest             | Ida y vuelta de UserPerson contra MySQL real                                                  | 5       | RF-SEC-01, RNF-MAN-03                                                                   | Aprobada             |
 
 **Tabla 8**
 
@@ -210,11 +215,11 @@ Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada
 | Casos de uso y adaptad | UpdateHomeThresholdsServiceTest  | Caso de uso UpdateHomeThresholds: reglas de negocio y errores con puertos simulados           | 7       | RF-HOM-08                                                                                 | Aprobada             |
 | Web (controladores)    | HomeControllerTest               | Endpoints de hogares: crear, listar, unirse, favorito, expulsar, salir, eliminar y transferir | 26      | RF-HOM-01, RF-HOM-02, RF-HOM-03, RF-HOM-04, RF-HOM-06, RF-HOM-07, RF-HOM-08, RF-HOM-09, … | Aprobada             |
 | Web (controladores)    | HomeExceptionHandlerTest         | Respuesta del módulo cuando la solicitud no puede atribuirse a un usuario                     | 2       | RF-SEC-10                                                                                 | Aprobada             |
-| Integración con MySQL  | HomePersistenceTest              | Ida y vuelta de Home contra MySQL real                                                        | 6       | RF-HOM-01, RNF-MAN-03                                                                     | Por ejecutar (MySQL) |
-| Integración con MySQL  | HomeThresholdsPersistenceTest    | Ida y vuelta de HomeThresholds contra MySQL real                                              | 3       | RF-HOM-08                                                                                 | Por ejecutar (MySQL) |
-| Integración con MySQL  | HomeTypePersistenceTest          | Ida y vuelta de HomeType contra MySQL real                                                    | 3       | —                                                                                         | Por ejecutar (MySQL) |
-| Integración con MySQL  | HomeTypeSeedTest                 | El catálogo contiene exactamente los seis tipos de hogar sembrados                            | 1       | RF-HOM-01                                                                                 | Por ejecutar (MySQL) |
-| Integración con MySQL  | UserHomePersistenceTest          | Ida y vuelta de UserHome contra MySQL real                                                    | 7       | RF-HOM-05                                                                                 | Por ejecutar (MySQL) |
+| Integración con MySQL  | HomePersistenceTest              | Ida y vuelta de Home contra MySQL real                                                        | 6       | RF-HOM-01, RNF-MAN-03                                                                     | Aprobada             |
+| Integración con MySQL  | HomeThresholdsPersistenceTest    | Ida y vuelta de HomeThresholds contra MySQL real                                              | 3       | RF-HOM-08                                                                                 | Aprobada             |
+| Integración con MySQL  | HomeTypePersistenceTest          | Ida y vuelta de HomeType contra MySQL real                                                    | 3       | —                                                                                         | Aprobada             |
+| Integración con MySQL  | HomeTypeSeedTest                 | El catálogo contiene exactamente los seis tipos de hogar sembrados                            | 1       | RF-HOM-01                                                                                 | Aprobada             |
+| Integración con MySQL  | UserHomePersistenceTest          | Ida y vuelta de UserHome contra MySQL real                                                    | 7       | RF-HOM-05                                                                                 | Aprobada             |
 
 **Tabla 9**
 
@@ -245,8 +250,8 @@ Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada
 | Casos de uso y adaptad | RegisterMeasurementServiceTest      | Caso de uso RegisterMeasurement: reglas de negocio y errores con puertos simulados                  | 4       | RF-MED-02                       | Aprobada             |
 | Web (controladores)    | ConsumptionLevelControllerTest      | Códigos HTTP y cuerpo de ConsumptionLevelController                                                 | 1       | RF-MED-09                       | Aprobada             |
 | Web (controladores)    | MeasurementControllerTest           | Códigos HTTP y cuerpo de MeasurementController                                                      | 5       | RF-MED-07                       | Aprobada             |
-| Integración con MySQL  | ConsumptionLevelPersistenceTest     | Ida y vuelta de ConsumptionLevel contra MySQL real                                                  | 4       | RF-MED-09                       | Por ejecutar (MySQL) |
-| Integración con MySQL  | MeasurementPersistenceTest          | Ida y vuelta de Measurement contra MySQL real                                                       | 4       | RF-MED-02                       | Por ejecutar (MySQL) |
+| Integración con MySQL  | ConsumptionLevelPersistenceTest     | Ida y vuelta de ConsumptionLevel contra MySQL real                                                  | 4       | RF-MED-09                       | Aprobada             |
+| Integración con MySQL  | MeasurementPersistenceTest          | Ida y vuelta de Measurement contra MySQL real                                                       | 4       | RF-MED-02                       | Aprobada             |
 | MQTT y broker          | TelemetryMqttConsumerTest           | NUEVA. Ingesta de telemetría: el tópico identifica al dispositivo y se descartan mensajes inválidos | 8       | RF-DEV-07, RF-MED-02, RF-MED-03 | Aprobada             |
 
 **Tabla 11**
@@ -263,7 +268,7 @@ Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada
 | Casos de uso y adaptad | RegisterThresholdAlertServiceTest    | Alertas de consumo alto o crítico por nivel de potencia                            | 7       | RF-ALE-03            | Aprobada             |
 | Casos de uso y adaptad | ResolveAlertServiceTest              | Caso de uso ResolveAlert: reglas de negocio y errores con puertos simulados        | 4       | RF-ALE-05            | Aprobada             |
 | Web (controladores)    | AlertControllerTest                  | Endpoints de alertas: listar, consultar, leer, eliminar y 404                      | 7       | RF-ALE-05            | Aprobada             |
-| Integración con MySQL  | AlertPersistenceTest                 | Ida y vuelta de Alert contra MySQL real                                            | 4       | RF-ALE-05            | Por ejecutar (MySQL) |
+| Integración con MySQL  | AlertPersistenceTest                 | Ida y vuelta de Alert contra MySQL real                                            | 4       | RF-ALE-05            | Aprobada             |
 | Eventos entre módulos  | MeasurementRecordedListenerTest      | El evento MeasurementRecorded dispara el registro de alertas de umbral y de límite | 1       | RF-ALE-03, RF-ALE-06 | Aprobada             |
 
 **Tabla 12**
@@ -275,8 +280,8 @@ Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada
 | Dominio                | RecommendationRulesTest            | Cinco reglas de ahorro: hora punta, reposo, comparación semanal, proyección y aumento por dispositivo | 8       | RF-REC-01, RF-REC-02, RF-REC-03, RF-REC-04, RF-REC-05, RF-REC-06, RF-REC-07, RF-REC-09 | Aprobada             |
 | Casos de uso y adaptad | EvaluateRecommendationsServiceTest | Evaluación de reglas por hogar y no repetir en 7 días                                                 | 4       | RF-REC-01, RF-REC-07                                                                   | Aprobada             |
 | Casos de uso y adaptad | RecommendationInboxServiceTest     | Caso de uso RecommendationInbox: reglas de negocio y errores con puertos simulados                    | 4       | RF-REC-08                                                                              | Aprobada             |
-| Web (controladores)    | RecommendationControllerTest       | NUEVA. Bandeja de recomendaciones: listar, leer, eliminar, 404 y 409                                  | 7       | RF-REC-08                                                                              | Falla (DEF-02)       |
-| Integración con MySQL  | RecommendationPersistenceTest      | Ida y vuelta de Recommendation contra MySQL real                                                      | 3       | RF-REC-08                                                                              | Por ejecutar (MySQL) |
+| Web (controladores)    | RecommendationControllerTest       | NUEVA. Bandeja de recomendaciones: listar, leer, eliminar, 404 y 409                                  | 7       | RF-REC-08                                                                              | Aprobada             |
+| Integración con MySQL  | RecommendationPersistenceTest      | Ida y vuelta de Recommendation contra MySQL real                                                      | 3       | RF-REC-08                                                                              | Aprobada             |
 
 **Tabla 13**
 
@@ -289,11 +294,14 @@ Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada
 | Casos de uso y adaptad | AdminNotificationsTest                | Notificaciones de administrador: quién recibe cada evento y lecturas acotadas al llamante | 5       | —                                                      | Aprobada             |
 | Casos de uso y adaptad | EmailPasswordResetDeliveryAdapterTest | Envío del código de recuperación; nada sale si la transacción hace rollback               | 5       | RF-NOT-06, RF-SEC-06                                   | Aprobada             |
 | Casos de uso y adaptad | EmailSenderTest                       | Registro del intento antes del envío y envío del correo                                   | 9       | RF-NOT-01, RF-NOT-05, RF-NOT-06, RF-SEC-02, RNF-INT-02 | Aprobada             |
-| Casos de uso y adaptad | NotifyAlertTest                       | Entrega de cada alerta a los miembros por correo y push según preferencias                | 4       | RF-NOT-01, RF-NOT-07                                   | Aprobada             |
+| Casos de uso y adaptad | NotifyAlertTest                       | Entrega de alertas y recomendaciones a los miembros por correo y push según preferencias  | 8       | RF-NOT-01, RF-NOT-02, RF-NOT-07                        | Aprobada             |
 | Casos de uso y adaptad | SendPasswordResetEmailTest            | Mensaje de recuperación de contraseña y su registro                                       | 11      | RF-NOT-06, RF-SEC-06                                   | Aprobada             |
 | Casos de uso y adaptad | WebPushSenderTest                     | Cifrado del mensaje push (RFC 8291) como lo descifra un navegador                         | 2       | RF-NOT-01, RF-NOT-04                                   | Aprobada             |
-| Web (controladores)    | AdminNotificationsControllerWebTest   | Endpoints de notificaciones de administrador                                              | 5       | —                                                      | Por ejecutar (MySQL) |
-| Integración con MySQL  | NotificationPersistenceTest           | Bitácora de entregas contra el esquema real                                               | 4       | RF-NOT-05                                              | Por ejecutar (MySQL) |
+| Dominio                | PushDeviceTest                        | NUEVA (1.1). Invariantes del dispositivo móvil registrado para push                       | 5       | RF-NOT-01                                              | Aprobada             |
+| Casos de uso y adaptad | ExpoPushSenderTest                    | NUEVA (1.1). Interpretación de la respuesta del relé de push de Expo                      | 9       | RF-NOT-01                                              | Aprobada             |
+| Integración con MySQL  | PushDevicePersistenceTest             | NUEVA (1.1). Registro y baja de instalaciones móviles contra el esquema real              | 7       | RF-NOT-01                                              | Aprobada             |
+| Web (controladores)    | AdminNotificationsControllerWebTest   | Endpoints de notificaciones de administrador                                              | 5       | —                                                      | Aprobada             |
+| Integración con MySQL  | NotificationPersistenceTest           | Bitácora de entregas contra el esquema real                                               | 4       | RF-NOT-05                                              | Aprobada             |
 
 **Tabla 14**
 
@@ -301,14 +309,14 @@ Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada
 
 | Nivel                  | Clase de prueba                      | Qué verifica                                                                                 | Métodos | Requisitos que cubre  | Estado               |
 |------------------------|--------------------------------------|----------------------------------------------------------------------------------------------|---------|-----------------------|----------------------|
-| Seguridad              | AdminRbacIntegrationTest             | Rol ADMIN sembrado, códigos USER.READ, USER.MANAGE y ROLE.MANAGE y búsquedas del directorio  | 6       | RF-SEC-09             | Por ejecutar (MySQL) |
-| Seguridad              | HomeCallerIdentityIntegrationTest    | Identidad de quien llama a /homes por el filtro real y un JWT RS256; X-User-Id se ignora     | 4       | RF-SEC-10             | Por ejecutar (MySQL) |
-| Integración con MySQL  | AccountDeletionIntegrationTest       | Borrado de cuenta entre security y home contra el esquema real                               | 3       | RF-SEC-11             | Por ejecutar (MySQL) |
-| Integración con MySQL  | DeviceApiKeyStorageIntegrationTest   | Solo el hash SHA-256 de la api_key llega a la tabla; el acceso al broker sigue funcionando   | 3       | RF-DEV-02, RNF-SEG-09 | Por ejecutar (MySQL) |
-| Integración con MySQL  | EnergyMonitorBackendApplicationTests | Arranque del contexto completo de la aplicación                                              | 1       | —                     | Por ejecutar (MySQL) |
-| Integración con MySQL  | HomeDeletionIntegrationTest          | Eliminar un hogar borra membresías y umbrales y desvincula dispositivos; un miembro no puede | 2       | RF-DEV-06, RF-HOM-09  | Por ejecutar (MySQL) |
-| Integración con MySQL  | HomeOwnershipTransferIntegrationTest | Intercambio atómico de roles OWNER y MEMBER contra el esquema real                           | 4       | RF-HOM-05, RF-HOM-10  | Por ejecutar (MySQL) |
-| Arquitectura           | ModularityTests                      | ApplicationModules.verify(): los límites de los siete módulos se respetan                    | 2       | RNF-MAN-01            | Por ejecutar (MySQL) |
+| Seguridad              | AdminRbacIntegrationTest             | Rol ADMIN sembrado, códigos USER.READ, USER.MANAGE y ROLE.MANAGE y búsquedas del directorio  | 6       | RF-SEC-09             | Aprobada             |
+| Seguridad              | HomeCallerIdentityIntegrationTest    | Identidad de quien llama a /homes por el filtro real y un JWT RS256; X-User-Id se ignora     | 4       | RF-SEC-10             | Aprobada             |
+| Integración con MySQL  | AccountDeletionIntegrationTest       | Borrado de cuenta entre security y home contra el esquema real                               | 3       | RF-SEC-11             | Aprobada             |
+| Integración con MySQL  | DeviceApiKeyStorageIntegrationTest   | Solo el hash SHA-256 de la api_key llega a la tabla; el acceso al broker sigue funcionando   | 3       | RF-DEV-02, RNF-SEG-09 | Aprobada             |
+| Integración con MySQL  | EnergyMonitorBackendApplicationTests | Arranque del contexto completo de la aplicación                                              | 1       | —                     | Aprobada             |
+| Integración con MySQL  | HomeDeletionIntegrationTest          | Eliminar un hogar borra membresías y umbrales y desvincula dispositivos; un miembro no puede | 2       | RF-DEV-06, RF-HOM-09  | Aprobada             |
+| Integración con MySQL  | HomeOwnershipTransferIntegrationTest | Intercambio atómico de roles OWNER y MEMBER contra el esquema real                           | 4       | RF-HOM-05, RF-HOM-10  | Aprobada             |
+| Arquitectura           | ModularityTests                      | ApplicationModules.verify(): los límites de los siete módulos se respetan                    | 2       | RNF-MAN-01            | Aprobada             |
 
 **Tabla 15**
 
@@ -341,7 +349,7 @@ Las pruebas de la aplicación móvil no existen: el repositorio no tiene archivo
 
 ## Matriz de trazabilidad requisito → prueba
 
-Los 107 requisitos de la especificación se cruzan con las clases de prueba. «Cobertura» distingue lo que se ejecutó de lo que depende de MySQL. Resultado: 66 con prueba automatizada ejecutada, 1 con pruebas automatizadas que dependen de MySQL y 40 sin cobertura.
+Los 107 requisitos de la especificación se cruzan con las clases de prueba. «Cobertura» distingue lo que se ejecutó de lo que depende de MySQL. Resultado en la versión 1.0: 66 con prueba automatizada ejecutada, 1 con pruebas automatizadas que dependen de MySQL y 40 sin cobertura. Resultado en la versión 1.1: 68 con prueba automatizada ejecutada (RNF-MAN-01 ya se ejecuta y RF-NOT-02 queda cubierto por NotifyAlertTest) y 39 sin cobertura.
 
 **Tabla 16**
 
@@ -447,8 +455,8 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 
 | Requisito | Descripción                                                                                                 | Pruebas automatizadas                                                                        | Cobertura     |
 |-----------|-------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|---------------|
-| RF-NOT-01 | El sistema debe entregar cada alerta a todos los miembros del hogar por correo y por notificación del…      | NotifyAlertTest, NotificationTest, WebPushSenderTest, EmailSenderTest                        | Automatizada  |
-| RF-NOT-02 | El sistema debe entregar cada recomendación nueva por los mismos canales                                    | —                                                                                            | Sin cobertura |
+| RF-NOT-01 | El sistema debe entregar cada alerta a todos los miembros del hogar por correo y por notificación del…      | NotifyAlertTest, NotificationTest, WebPushSenderTest, EmailSenderTest, ExpoPushSenderTest, PushDeviceTest | Automatizada  |
+| RF-NOT-02 | El sistema debe entregar cada recomendación nueva por los mismos canales                                    | NotifyAlertTest                                                                              | Automatizada  |
 | RF-NOT-03 | El usuario debe poder consultar y modificar sus preferencias de notificación                                | —                                                                                            | Sin cobertura |
 | RF-NOT-04 | El usuario debe poder activar y desactivar las notificaciones del navegador                                 | WebPushSenderTest                                                                            | Automatizada  |
 | RF-NOT-05 | Cada intento de entrega debe quedar registrado como enviado o fallido, sin guardar el contenido del mensaje | NotificationTest, NotificationPersistenceTest, AbandonedDeliverySweeperTest, EmailSenderTest | Automatizada  |
@@ -525,7 +533,7 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 
 | Requisito  | Descripción                                                                                              | Pruebas automatizadas                                                 | Cobertura                                   |
 |------------|----------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|---------------------------------------------|
-| RNF-MAN-01 | El sistema debe organizarse en módulos funcionales (Gestión de Usuarios y Perfiles, Gestión de Hogares,… | ModularityTests                                                       | Automatizada (requiere MySQL, por ejecutar) |
+| RNF-MAN-01 | El sistema debe organizarse en módulos funcionales (Gestión de Usuarios y Perfiles, Gestión de Hogares,… | ModularityTests                                                       | Automatizada                                |
 | RNF-MAN-02 | Todo cambio en la estructura de los datos debe poder revertirse                                          | —                                                                     | Sin cobertura                               |
 | RNF-MAN-03 | Los datos eliminados deben conservarse marcados como eliminados y no borrarse físicamente                | HomePersistenceTest, UserPersonPersistenceTest, DeleteHomeServiceTest | Automatizada                                |
 | RNF-MAN-04 | El sistema debe contar con pruebas automáticas que verifiquen sus funciones principales                  | —                                                                     | Sin cobertura                               |
@@ -569,11 +577,15 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 | RNF-INT-04 | Las notificaciones del navegador solo deben funcionar en una conexión segura y requieren que el sistema…    | —                           | Sin cobertura |
 | RNF-INT-05 | La configuración del dispositivo por Bluetooth debe estar disponible hasta 10 minutos, no debe interrumpir… | —                           | Sin cobertura |
 
-Los requisitos sin cobertura son vacíos conocidos (ver riesgos y limitaciones). La administración de cuentas no tiene requisito en la especificación (DOC-01).
+Los requisitos sin cobertura son vacíos conocidos (ver riesgos y limitaciones). La administración de cuentas no tiene requisito en la especificación (DOC-01); su incorporación a la especificación está en curso `[POR CONFIRMAR]`.
 
 ## Resultados
 
-### Backend sin base de datos
+### Suite completa del backend con MySQL (versión 1.1)
+
+El 20 de octubre de 2026 la suite completa del servicio central (`./mvnw test`, perfil test, MySQL 8.4) terminó con **1131 pruebas, 0 fallos y 0 errores**. El mismo resultado lo da el *check* obligatorio `Tests` de GitHub Actions sobre `main` (commit `90ae5ef`, 23 min 9 s), que se ejecuta en cada *pull request* hacia `dev` y `main`. La distribución por módulo del reporte Surefire local más reciente (16 de octubre de 2026: 132 clases, 1124 pruebas, 0 fallos) está en [resumen-suite-completa.md](../../evidencias/ES/backend/resumen-suite-completa.md); entre ese reporte y la ejecución final se agregaron 7 pruebas.
+
+### Backend sin base de datos (ejecución de la versión 1.0, 14/10/2026)
 
 Se ejecutó `./mvnw -o test` limitado a las clases que no levantan contexto con base de datos (88 clases existentes) más las 4 clases nuevas. Los totales por módulo salen de target/surefire-reports y se detallan en [resumen-surefire.md](../../evidencias/ES/backend/resumen-surefire.md).
 
@@ -596,7 +608,7 @@ No se ejecutaron 37 clases que necesitan MySQL (270 métodos declarados) porque 
 
 ### Aplicación web
 
-Se ejecutó `npm test`: 20 archivos y 141 pruebas, todas aprobadas ([resumen-vitest.md](../../evidencias/ES/web/resumen-vitest.md)).
+Se ejecutó `npm test`: 20 archivos y 141 pruebas, todas aprobadas ([resumen-vitest.md](../../evidencias/ES/web/resumen-vitest.md)). En la versión 1.1 (20 de octubre de 2026, rama `main`, commit `2b41cb3`) `npx vitest run` repitió el resultado: 20 archivos y 141 pruebas aprobadas. El *check* `Tests and build` de GitHub Actions ejecuta estas pruebas y el build de producción en cada *pull request*.
 
 ### Pruebas nuevas
 
@@ -610,7 +622,7 @@ Se escribieron 4 clases para requisitos críticos sin ninguna cobertura automati
 |------------------------------|---------|-----------|----------|----------------------------------------------------------------------------------------------------------|-----------------------|
 | BrokerAuthControllerTest     | 12      | 12        | 0        | Autenticación y autorización de dispositivos ante el broker (seguridad); no había prueba del controlador | RF-DEV-07, RNF-SEG-09 |
 | HomeDeviceControllerTest     | 10      | 10        | 0        | Vinculación y credenciales de dispositivos; solo el caso de uso tenía prueba                             | RF-DEV-02 a RF-DEV-06 |
-| RecommendationControllerTest | 7       | 6         | 1        | Bandeja de recomendaciones; el controlador no tenía pruebas                                              | RF-REC-08             |
+| RecommendationControllerTest | 7       | 6         | 1        | Bandeja de recomendaciones; el controlador no tenía pruebas. En la versión 1.1, con DEF-02 cerrado, aprueban las 7 | RF-REC-08             |
 | TelemetryMqttConsumerTest    | 10      | 10        | 0        | Ingesta de lecturas y descarte de mensajes ajenos; el consumidor MQTT no tenía pruebas                   | RF-MED-02, RF-MED-03  |
 
 ### Defectos y observaciones
@@ -621,13 +633,13 @@ Se escribieron 4 clases para requisitos críticos sin ninguna cobertura automati
 
 | ID     | Severidad | Elemento                                                       | Descripción                                                                                                                                                                                                                                                                                                            | Estado  |
 |--------|-----------|----------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| DEF-01 | Baja      | SecuritySupportModelTest.refusesMissingNames                   | La prueba exige que Person rechace un apellido nulo, pero el código lo hizo opcional a propósito (changeset security-023: una cuenta de Google puede no tener apellido). La prueba quedó desactualizada; el código es correcto. No se modificó.                                                                        | Abierto |
-| DEF-02 | Media     | RecommendationControllerTest.listRequiresHomeId (prueba nueva) | Un parámetro obligatorio ausente (por ejemplo homeId en GET /api/v1/recommendations o /api/v1/alerts) responde 500 en lugar de 400: SecurityExceptionHandler declara @ExceptionHandler(Exception.class) con alcance global y atrapa MissingServletRequestParameterException. La prueba se dejó fallando; no se ajustó. | Abierto |
-| DOC-01 | Baja      | Documentación                                                  | La administración de cuentas (rutas /api/v1/admin, permisos USER.READ, USER.MANAGE y ROLE.MANAGE, pantalla /admin/users y notificaciones de administrador) existe en el código pero no tiene requisito en la especificación de requisitos ni está descrita en los manuales técnico y de administrador.                 | Abierto |
+| DEF-01 | Baja      | SecuritySupportModelTest.refusesMissingNames                   | La prueba exige que Person rechace un apellido nulo, pero el código lo hizo opcional a propósito (changeset security-023: una cuenta de Google puede no tener apellido). La prueba quedó desactualizada; el código es correcto. No se modificó. Versión 1.1: la prueba se actualizó; exige el nombre y acepta el apellido ausente, y aprueba. | Cerrado |
+| DEF-02 | Media     | RecommendationControllerTest.listRequiresHomeId (prueba nueva) | Un parámetro obligatorio ausente (por ejemplo homeId en GET /api/v1/recommendations o /api/v1/alerts) responde 500 en lugar de 400: SecurityExceptionHandler declara @ExceptionHandler(Exception.class) con alcance global y atrapa MissingServletRequestParameterException. La prueba se dejó fallando; no se ajustó. Versión 1.1: `handleUnexpected` conserva el estado 4xx de las excepciones del framework (`ErrorResponse`) y `TypeMismatchException` responde 400; la prueba aprueba. | Cerrado |
+| DOC-01 | Baja      | Documentación                                                  | La administración de cuentas (rutas /api/v1/admin, permisos USER.READ, USER.MANAGE y ROLE.MANAGE, pantalla /admin/users y notificaciones de administrador) existe en el código pero no tiene requisito en la especificación de requisitos ni está descrita en los manuales técnico y de administrador. Versión 1.1: los manuales técnico y de administrador ya la describen; falta el requisito en la especificación `[POR CONFIRMAR]`. | Parcial |
 
 ### Evidencias
 
-Las evidencias están en [evidencias](../../evidencias/ES/README.md): resumen de Surefire, log recortado de la ejecución y resumen de Vitest. No contienen secretos.
+Las evidencias están en [evidencias](../../evidencias/ES/README.md): resumen de Surefire, log recortado de la ejecución y resumen de Vitest de la versión 1.0, y resumen de la suite completa y nueva ejecución de Vitest de la versión 1.1. No contienen secretos.
 
 ## Riesgos, limitaciones y vacíos conocidos
 
@@ -637,7 +649,7 @@ Las evidencias están en [evidencias](../../evidencias/ES/README.md): resumen de
 
 | ID   | Riesgo o limitación                                                                                                                                                                                                                                                                                                                                                 | Efecto                                                                      | Recomendación                                                           |
 |------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------|
-| R-01 | Pruebas no herméticas: persistencia y contexto completo necesitan MySQL real y SPRING_DATASOURCE_PASSWORD                                                                                                                                                                                                                                                           | 37 clases no se ejecutaron en esta entrega                                  | Ejecutar la suite completa antes de la entrega y evaluar Testcontainers |
+| R-01 | Pruebas no herméticas: persistencia y contexto completo necesitan MySQL real y SPRING_DATASOURCE_PASSWORD                                                                                                                                                                                                                                                           | Mitigado en la versión 1.1: la suite completa corre con MySQL en local y en CI; siguen sin ser herméticas | Evaluar Testcontainers |
 | R-02 | La aplicación móvil no tiene pruebas automatizadas                                                                                                                                                                                                                                                                                                                  | Sin verificación automatizada                                               | Agregar pruebas de componentes y de servicios                           |
 | R-03 | MQTT con QoS 0                                                                                                                                                                                                                                                                                                                                                      | Una lectura puede perderse; no se prueba la pérdida                         | Evaluar QoS 1 y agregar una prueba de pérdida                           |
 | R-04 | Sin actualización por aire (OTA)                                                                                                                                                                                                                                                                                                                                    | El firmware se actualiza solo por USB                                       | Documentar el procedimiento de carga por USB                            |
@@ -647,9 +659,13 @@ Las evidencias están en [evidencias](../../evidencias/ES/README.md): resumen de
 | R-08 | Sin informe de cobertura (JaCoCo no está en el pom.xml)                                                                                                                                                                                                                                                                                                             | No se conoce el porcentaje de cobertura                                     | Agregar JaCoCo (no se agregó sin consultar)                             |
 | R-09 | Vacíos sin prueba automatizada: StatusMqttConsumer, DeviceInactivityScheduler, HomeDeletedListener, DeviceCommandListener, MqttDeviceCommandAdapter, RecommendationScheduler, NotificationChannelsController, HomeConsumptionController, ApplianceTypeController, RegisterConnectivityAlertService, DeviceConnectivityLostListener, BrokerAuthSecurityConfiguration | Sin cobertura automatizada directa                                          | Priorizar conectividad y alertas de desconexión                         |
 
+| R-10 | La suite completa del backend tarda unos 23 minutos en GitHub Actions | Los *pull requests* esperan ese tiempo para fusionarse | Paralelizar la suite o separar las pruebas de integración más lentas |
+
 ## Conclusiones y recomendaciones
 
 El servicio central cuenta con una suite amplia y rápida: 835 pruebas ejecutadas sin base de datos en 26 segundos, con 2 fallas que no son del código de producción (DEF-01) o que apuntan a un defecto de manejo de errores (DEF-02). La web aprueba sus 141 pruebas. Falta ejecutar las 37 clases con MySQL para cerrar la verificación. Recomendaciones: (1) definir SPRING_DATASOURCE_PASSWORD y ejecutar `./mvnw clean test` completo; (2) corregir DEF-02 con un manejador de MissingServletRequestParameterException; (3) actualizar la prueba de DEF-01; (4) incorporar Testcontainers para hacer herméticas las pruebas de persistencia; (5) agregar pruebas a la aplicación móvil; (6) incorporar JaCoCo y una integración continua; (7) escribir los requisitos de administración y sus pruebas.
+
+Versión 1.1: la verificación del servicio central quedó cerrada con la suite completa (1131 pruebas, 0 fallos) contra MySQL, en local y en GitHub Actions. Se cumplieron las recomendaciones (1), (2) y (3), y la integración continua de la (6) ya existe con *checks* obligatorios en `dev` y `main`. Siguen pendientes Testcontainers (4), las pruebas de la aplicación móvil (5), JaCoCo (6) y el requisito de administración en la especificación (7).
 
 ## Referencias
 

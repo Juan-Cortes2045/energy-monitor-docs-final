@@ -1,5 +1,7 @@
 # Log de la ejecución del backend sin base de datos
 
+> Evidencia histórica de la versión 1.0 (14/10/2026). En la versión 1.1 la suite completa aprueba con MySQL: ver [resumen-suite-completa.md](resumen-suite-completa.md).
+
 Log recortado de Maven: solo líneas de resultados. Sin variables de entorno ni credenciales.
 
 ```text

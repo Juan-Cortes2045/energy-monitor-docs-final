@@ -6,13 +6,18 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-Versión 2.0, 10 de octubre de 2026
+Versión 2.1, 20 de octubre de 2026
 
-16 de octubre de 2026
+16 de octubre de 2026 (actualizado el 20 de octubre de 2026)
+
+## Control de versiones
+
+- Versión 2.0 (10/10/2026): requisitos funcionales por módulo, requisitos no funcionales, 15 historias de usuario y 2 casos de uso.
+- Versión 2.1 (20/10/2026): Módulo de Administración de la Plataforma (RF-ADM-01 a RF-ADM-10), requisito de seguridad de las funciones de administración (RNF-SEG-11), integración y despliegue continuos (RNF-MAN-05), notificaciones push en la aplicación móvil, historia de usuario HU-16 y renumeración de las tablas 12 a 23.
 
 ## Resumen
 
-Este documento especifica lo que debe hacer EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, recibir alertas y obtener recomendaciones de ahorro. Se redacta desde la perspectiva del usuario y del negocio, sin definir cómo se construirá la solución. Presenta los requisitos funcionales, agrupados por módulo del sistema, los requisitos no funcionales (seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad) y 15 historias de usuario y 2 casos de uso con criterios de aceptación verificables. Los requisitos se identifican con códigos estables que son idénticos en las versiones en español e inglés. Los datos que no pudieron confirmarse en las fuentes se marcan como [POR CONFIRMAR].
+Este documento especifica lo que debe hacer EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, recibir alertas y obtener recomendaciones de ahorro. Se redacta desde la perspectiva del usuario y del negocio, sin definir cómo se construirá la solución. Presenta los requisitos funcionales, agrupados por módulo del sistema, los requisitos no funcionales (seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad) y 16 historias de usuario y 2 casos de uso con criterios de aceptación verificables. Los requisitos se identifican con códigos estables que son idénticos en las versiones en español e inglés. Los datos que no pudieron confirmarse en las fuentes se marcan como [POR CONFIRMAR].
 
 *Palabras clave:* especificación de requisitos, consumo eléctrico, alertas, recomendaciones de ahorro, hogares
 
@@ -49,6 +54,8 @@ La Tabla 1 define los términos y siglas empleados en el documento.
 | Umbral | Límite de consumo diario o mensual que define el propietario del hogar |
 | Alerta | Aviso que genera el sistema ante un consumo excesivo, un límite alcanzado o la desconexión de un dispositivo |
 | Recomendación | Sugerencia de ahorro que el sistema elabora a partir del consumo medido del hogar |
+| Rol global | Permiso sobre la plataforma completa, distinto de los roles de propietario y miembro de cada hogar. Hoy existe uno: administrador (ADMIN) |
+| Aviso de administración | Notificación que el sistema muestra dentro de la aplicación web a los administradores; no se envía por correo ni por push |
 
 ### Convención de códigos
 
@@ -68,6 +75,7 @@ Cada requisito tiene un código estable que es idéntico en las versiones en esp
 | `RF-REC` | Requisitos funcionales del Módulo de Recomendaciones de Ahorro |
 | `RF-NOT` | Requisitos funcionales del Módulo de Notificaciones |
 | `RF-CLI` | Requisitos funcionales de las aplicaciones web y móvil |
+| `RF-ADM` | Requisitos funcionales del Módulo de Administración de la Plataforma |
 | `RNF-SEG`, `RNF-REN`, `RNF-DIS`, `RNF-COM`, `RNF-MAN`, `RNF-I18`, `RNF-ESC`, `RNF-USA`, `RNF-INT` | Requisitos no funcionales: seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad |
 | `HU` | Historias de usuario |
 | `CU` | Casos de uso |
@@ -85,7 +93,7 @@ La Tabla 3 describe los tipos de usuario del sistema. Una persona puede pertenec
 
 | Tipo | Descripción |
 |---|---|
-| Administrador del sistema | Opera la plataforma y administra los permisos generales de los usuarios. No dispone de una pantalla propia de administración |
+| Administrador del sistema | Cuenta con el rol global de administrador. Consulta las cuentas de la plataforma, cambia su estado, concede o revoca el rol de administrador y recibe avisos de administración desde una pantalla propia de la aplicación web. El rol no le da acceso a ningún hogar |
 | Propietario del hogar | Gestiona el hogar, sus dispositivos, sus miembros y sus límites de consumo |
 | Miembro del hogar | Consulta el consumo, las alertas y las recomendaciones del hogar |
 | Dispositivo de medición | Actor técnico que envía las lecturas de consumo y su propio estado |
@@ -230,10 +238,10 @@ La Tabla 10 enumera los requisitos funcionales del Módulo de Notificaciones.
 
 | Código | Requisito |
 |---|---|
-| RF-NOT-01 | El sistema debe entregar cada alerta a todos los miembros del hogar por correo y por notificación del navegador, según las preferencias de cada usuario. Ambos canales están activos por defecto. |
+| RF-NOT-01 | El sistema debe entregar cada alerta a todos los miembros del hogar por correo y por notificación push (en el navegador o en la aplicación móvil Android donde el usuario la haya activado), según las preferencias de cada usuario. Ambos canales están activos por defecto. |
 | RF-NOT-02 | El sistema debe entregar cada recomendación nueva por los mismos canales. |
 | RF-NOT-03 | El usuario debe poder consultar y modificar sus preferencias de notificación. |
-| RF-NOT-04 | El usuario debe poder activar y desactivar las notificaciones del navegador. Si el servicio no está habilitado en el sistema, el correo sigue funcionando. |
+| RF-NOT-04 | El usuario debe poder activar y desactivar las notificaciones push del navegador y de la aplicación móvil. Si el servicio no está habilitado en el sistema, el correo sigue funcionando. |
 | RF-NOT-05 | Cada intento de entrega debe quedar registrado como enviado o fallido, sin guardar el contenido del mensaje. Los intentos que sigan sin cerrarse tras 30 minutos se marcan como fallidos. |
 | RF-NOT-06 | El sistema debe enviar por correo el código de verificación y el de recuperación de contraseña. Un fallo del correo no debe cambiar lo que el usuario ve en pantalla. |
 | RF-NOT-07 | Cada correo de alerta debe incluir un enlace a la aplicación web. |
@@ -248,20 +256,41 @@ La Tabla 11 recoge los requisitos funcionales de las aplicaciones web y móvil.
 
 | Código | Requisito |
 |---|---|
-| RF-CLI-01 | La aplicación web debe ofrecer registro, inicio de sesión (incluido Google), recuperación de contraseña, cuenta, hogares, favoritos, dispositivos, umbrales, consumo, historial y notificaciones. |
+| RF-CLI-01 | La aplicación web debe ofrecer registro, inicio de sesión (incluido Google), recuperación de contraseña, cuenta, hogares, favoritos, dispositivos, umbrales, consumo, historial y notificaciones. A las cuentas administradoras les ofrece, en su lugar, la administración de la plataforma (RF-ADM-06). |
 | RF-CLI-02 | La aplicación web debe mostrar una insignia con las alertas pendientes, un contador en el título de la pestaña y un aviso emergente cuando llega una alerta nueva, y actualizarse cada 30 segundos. |
 | RF-CLI-03 | La aplicación web debe vincular dispositivos por Bluetooth y permitir notificaciones del navegador, que llegan aunque la pestaña esté cerrada. |
-| RF-CLI-04 | La aplicación móvil debe estar disponible solo para Android y permitir el acceso a la cuenta, los hogares, las alertas, las recomendaciones y las preferencias de notificación. La eliminación de hogares y la transferencia de propiedad aún no están disponibles en la aplicación móvil. |
+| RF-CLI-04 | La aplicación móvil debe estar disponible solo para Android y permitir el acceso a la cuenta, los hogares, las alertas, las recomendaciones y las preferencias de notificación, y recibir notificaciones push en el teléfono. La eliminación de hogares y la transferencia de propiedad aún no están disponibles en la aplicación móvil. |
 | RF-CLI-05 | Ambas aplicaciones deben permitir elegir el idioma entre español, inglés, francés y portugués. |
 | RF-CLI-06 | Las aplicaciones deben permitir elegir una paleta de colores con modo oscuro. |
+
+### Módulo de Administración de la Plataforma
+
+La Tabla 12 enumera los requisitos funcionales del Módulo de Administración de la Plataforma.
+
+**Tabla 12**
+
+*Requisitos funcionales del Módulo de Administración de la Plataforma*
+
+| Código | Requisito |
+|---|---|
+| RF-ADM-01 | El sistema debe contar con un rol global de administrador con tres permisos: consultar las cuentas, cambiar el estado de las cuentas y gestionar los roles globales. Ninguna cuenta es administradora al instalar el sistema: el primer administrador se designa desde el servidor sobre una cuenta ya registrada, y los siguientes desde la aplicación web. |
+| RF-ADM-02 | El administrador debe poder consultar el directorio de cuentas activas, de la más reciente a la más antigua, buscar por correo, nombre o apellido y recorrerlo por páginas de hasta 50 cuentas. De cada cuenta se muestran el correo, el nombre, el estado, si el correo está verificado, la fecha de registro, el último acceso y los roles globales. |
+| RF-ADM-03 | El administrador debe poder cambiar el estado de otra cuenta a activa, inactiva o bloqueada. Una cuenta que deja de estar activa no puede iniciar sesión y sus sesiones abiertas se cierran. La aplicación web pide confirmación antes de aplicar el cambio. |
+| RF-ADM-04 | El administrador debe poder conceder y revocar el rol de administrador a otra cuenta. Repetir una concesión o una revocación no cambia nada. La aplicación web pide confirmación antes de revocar el rol. |
+| RF-ADM-05 | El sistema debe impedir que un administrador cambie el estado o los roles de su propia cuenta, y rechazar la solicitud con un mensaje legible. |
+| RF-ADM-06 | El rol de administrador no debe dar acceso a ningún hogar. En la aplicación web, una cuenta administradora entra directamente a la administración y su menú solo muestra Administración, Notificaciones y Ajustes; las pantallas de hogares y favoritos no están disponibles para ella y Ajustes no muestra las preferencias de notificación de los hogares. |
+| RF-ADM-07 | El sistema debe avisar dentro de la aplicación web a cada administrador activo cuando se registra una cuenta nueva (también con el primer acceso con Google) y cuando otro administrador cambia el estado o el rol de una cuenta. Quien hizo el cambio no recibe el aviso y una acción que no cambia nada no genera avisos. |
+| RF-ADM-08 | El administrador debe poder consultar sus 50 avisos más recientes, ver cuáles no ha leído, marcarlos como leídos uno por uno o todos a la vez y eliminarlos. Solo puede ver y modificar sus propios avisos. La aplicación muestra el número de avisos sin leer. |
+| RF-ADM-09 | Cada cambio de estado o de rol hecho por un administrador debe quedar en el registro de auditoría, con la dirección de origen. |
+| RF-ADM-10 | Pendiente: gestión de solicitudes de soporte y edición de la documentación desde Ajustes, y entrega de los avisos de administración por correo o por notificación push. |
 
 ## Requisitos no funcionales
 
 ### Seguridad
 
-La Tabla 12 establece los requisitos de seguridad.
+La Tabla 13 establece los requisitos de seguridad.
 
-**Tabla 12**
+**Tabla 13**
 
 *Requisitos no funcionales de seguridad*
 
@@ -277,12 +306,13 @@ La Tabla 12 establece los requisitos de seguridad.
 | RNF-SEG-08 | El sistema debe proteger la información de los usuarios conforme a la Ley 1581 de 2012 (Congreso de la República de Colombia, 2012). |
 | RNF-SEG-09 | Las credenciales de los dispositivos deben comprobarse de forma segura. Solo se conserva una huella protegida (hash) de cada clave. |
 | RNF-SEG-10 | Las contraseñas y claves del sistema no deben quedar expuestas en los archivos compartidos del proyecto. |
+| RNF-SEG-11 | Las funciones de administración deben exigir en cada solicitud el permiso global que corresponde a la acción. Sin sesión se rechazan como no autenticadas, sin el permiso como no autorizadas, y cualquier función de administración que no tenga un permiso asignado se rechaza siempre. |
 
 ### Rendimiento
 
-La Tabla 13 establece los requisitos de rendimiento.
+La Tabla 14 establece los requisitos de rendimiento.
 
-**Tabla 13**
+**Tabla 14**
 
 *Requisitos no funcionales de rendimiento*
 
@@ -294,9 +324,9 @@ La Tabla 13 establece los requisitos de rendimiento.
 
 ### Disponibilidad y tolerancia a fallos
 
-La Tabla 14 establece los requisitos de disponibilidad y tolerancia a fallos.
+La Tabla 15 establece los requisitos de disponibilidad y tolerancia a fallos.
 
-**Tabla 14**
+**Tabla 15**
 
 *Requisitos no funcionales de disponibilidad y tolerancia a fallos*
 
@@ -311,9 +341,9 @@ La Tabla 14 establece los requisitos de disponibilidad y tolerancia a fallos.
 
 ### Compatibilidad
 
-La Tabla 15 establece los requisitos de compatibilidad.
+La Tabla 16 establece los requisitos de compatibilidad.
 
-**Tabla 15**
+**Tabla 16**
 
 *Requisitos no funcionales de compatibilidad*
 
@@ -326,24 +356,25 @@ La Tabla 15 establece los requisitos de compatibilidad.
 
 ### Mantenibilidad
 
-La Tabla 16 establece los requisitos de mantenibilidad.
+La Tabla 17 establece los requisitos de mantenibilidad.
 
-**Tabla 16**
+**Tabla 17**
 
 *Requisitos no funcionales de mantenibilidad*
 
 | Código | Requisito |
 |---|---|
-| RNF-MAN-01 | El sistema debe organizarse en módulos funcionales (Gestión de Usuarios y Perfiles, Gestión de Hogares, Gestión de Dispositivos, Mediciones y Consumo, Alertas, Recomendaciones de Ahorro y Notificaciones), de modo que cada uno pueda modificarse sin afectar a los demás. |
+| RNF-MAN-01 | El sistema debe organizarse en módulos funcionales (Gestión de Usuarios y Perfiles, Gestión de Hogares, Gestión de Dispositivos, Mediciones y Consumo, Alertas, Recomendaciones de Ahorro, Notificaciones y Administración de la Plataforma), de modo que cada uno pueda modificarse sin afectar a los demás. |
 | RNF-MAN-02 | Todo cambio en la estructura de los datos debe poder revertirse. |
 | RNF-MAN-03 | Los datos eliminados deben conservarse marcados como eliminados y no borrarse físicamente. |
 | RNF-MAN-04 | El sistema debe contar con pruebas automáticas que verifiquen sus funciones principales. |
+| RNF-MAN-05 | Todo cambio debe pasar las pruebas automáticas antes de integrarse, y su publicación en producción debe requerir una aprobación, comprobar el estado de salud del sistema y volver a la versión anterior si la comprobación falla. |
 
 ### Internacionalización
 
-La Tabla 17 establece los requisitos de internacionalización.
+La Tabla 18 establece los requisitos de internacionalización.
 
-**Tabla 17**
+**Tabla 18**
 
 *Requisitos no funcionales de internacionalización*
 
@@ -355,9 +386,9 @@ La Tabla 17 establece los requisitos de internacionalización.
 
 ### Escalabilidad
 
-La Tabla 18 establece los requisitos de escalabilidad.
+La Tabla 19 establece los requisitos de escalabilidad.
 
-**Tabla 18**
+**Tabla 19**
 
 *Requisitos no funcionales de escalabilidad*
 
@@ -368,9 +399,9 @@ La Tabla 18 establece los requisitos de escalabilidad.
 
 ### Usabilidad
 
-La Tabla 19 establece los requisitos de usabilidad.
+La Tabla 20 establece los requisitos de usabilidad.
 
-**Tabla 19**
+**Tabla 20**
 
 *Requisitos no funcionales de usabilidad*
 
@@ -380,9 +411,9 @@ La Tabla 19 establece los requisitos de usabilidad.
 
 ### Interoperabilidad
 
-La Tabla 20 establece los requisitos de interoperabilidad con servicios externos y con el dispositivo de medición.
+La Tabla 21 establece los requisitos de interoperabilidad con servicios externos y con el dispositivo de medición.
 
-**Tabla 20**
+**Tabla 21**
 
 *Requisitos no funcionales de interoperabilidad*
 
@@ -539,13 +570,24 @@ Requisitos relacionados: RF-HOM-05, RF-HOM-09, RF-HOM-10, RF-DEV-06.
 - CA-33. Dado un hogar en el que soy miembro, cuando intento eliminarlo o transferir su propiedad, entonces el sistema lo rechaza por falta de permiso.
 - CA-34. Dado un hogar con propietario y miembros, cuando el propietario transfiere la propiedad a un miembro, entonces el nuevo propietario asume el rol, el anterior queda como miembro y el hogar sigue teniendo un único propietario.
 
+#### HU-16 Administrar las cuentas de la plataforma
+
+Como administrador del sistema, quiero consultar las cuentas, cambiar su estado y gestionar el rol de administrador, para mantener la plataforma bajo control sin entrar a la base de datos.
+
+Requisitos relacionados: RF-ADM-01 a RF-ADM-09, RNF-SEG-11.
+
+- CA-35. Dada una cuenta sin el rol de administrador, cuando intenta abrir la administración, entonces el sistema la rechaza por falta de permiso.
+- CA-36. Dada una cuenta activa con sesiones abiertas, cuando un administrador la bloquea, entonces la cuenta ya no puede iniciar sesión y sus sesiones se cierran.
+- CA-37. Dado un administrador, cuando intenta cambiar el estado o los roles de su propia cuenta, entonces el sistema lo rechaza con un mensaje legible y no modifica nada.
+- CA-38. Dados dos administradores, cuando uno de ellos concede el rol de administrador a otra cuenta, entonces el otro administrador recibe un aviso dentro de la aplicación y quien hizo el cambio no lo recibe.
+
 ### Casos de uso
 
 #### CU-01 Vincular un dispositivo de medición
 
-La Tabla 21 resume el caso de uso de vinculación de un dispositivo.
+La Tabla 22 resume el caso de uso de vinculación de un dispositivo.
 
-**Tabla 21**
+**Tabla 22**
 
 *Caso de uso CU-01 Vincular un dispositivo de medición*
 
@@ -574,9 +616,9 @@ Flujos alternos:
 
 #### CU-02 Atender una alerta de desconexión
 
-La Tabla 22 resume el caso de uso de la alerta por desconexión de un dispositivo.
+La Tabla 23 resume el caso de uso de la alerta por desconexión de un dispositivo.
 
-**Tabla 22**
+**Tabla 23**
 
 *Caso de uso CU-02 Atender una alerta de desconexión*
 

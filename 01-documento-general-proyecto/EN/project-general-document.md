@@ -6,11 +6,18 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Technologist in Software Analysis and Development (ADSO), group (ficha) 3145556
 
-October 16, 2026
+October 16, 2026 (updated October 20, 2026)
+
+## Version Control
+
+| Version | Date       | Description of change                                                                                      | Authors                                       |
+|---------|------------|------------------------------------------------------------------------------------------------------------|-----------------------------------------------|
+| 1.0     | 10/16/2026 | First version of the project charter: justification, objectives, scope, budget, schedule and team.         | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.1     | 10/20/2026 | Alignment with the deployed system: account administration in scope, budget with the production server and the estimated total cost, go-live at `https://energy-monitor.tech` with continuous integration and deployment, and status of objectives and milestones as of October 20. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Abstract
 
-This document is the project charter of EnergyMonitor, a solution that lets households see the electrical consumption of each appliance, identify the periods of highest demand, receive alerts and get saving recommendations. It defines why the project is being done and the value it provides, its objectives with measurable indicators, the scope included and excluded, the budget, the phases, the milestones and the schedule until the delivery date, October 16, 2026, and the work team with its roles. The solution integrates a measuring device that attaches to each appliance, a web application and an Android mobile application. At the time of writing, the project is in its final phase, devoted to consolidation, testing and delivery. The detail of the functions is developed in the requirements specification.
+This document is the project charter of EnergyMonitor, a solution that lets households see the electrical consumption of each appliance, identify the periods of highest demand, receive alerts and get saving recommendations. It defines why the project is being done and the value it provides, its objectives with measurable indicators, the scope included and excluded, the budget, the phases, the milestones and the schedule until the delivery date, October 28, 2026, and the work team with its roles. The solution integrates a measuring device that attaches to each appliance, a web application and an Android mobile application. As of October 20, 2026 the system is deployed in production at `https://energy-monitor.tech` and is updated through continuous integration and deployment. The detail of the functions is developed in the requirements specification.
 
 *Keywords:* project charter, electrical consumption, energy saving, households, alerts
 
@@ -20,7 +27,7 @@ This document is the project charter of EnergyMonitor, a solution that lets hous
 
 EnergyMonitor lets households see the electrical consumption of each appliance, identify the periods of highest demand, receive alerts and get recommendations to save energy. Measurement is done by a purpose-built device that attaches to the appliance and sends real readings of its consumption. Users consult the data from a web application and an Android mobile application.
 
-The project is a formative project of the Technologist in Software Analysis and Development (ADSO) program at SENA, developed by two trainees and due on October 16, 2026.
+The project is a formative project of the Technologist in Software Analysis and Development (ADSO) program at SENA, developed by two trainees and due on October 28, 2026.
 
 ### Problem Addressed
 
@@ -44,19 +51,19 @@ Develop an energy resource control system that monitors household electrical con
 
 ### Specific Objectives
 
-Each specific objective has a measurable indicator and an achievable target within the project timeframe. Table 1 presents them together with their coverage as of October 12, 2026.
+Each specific objective has a measurable indicator and an achievable target within the project timeframe. Table 1 presents them together with their coverage as of October 20, 2026.
 
 **Table 1**
 
 *Specific Objectives, Indicators and Coverage*
 
-| Code | Objective | Indicator and target | Coverage as of October 12, 2026 |
+| Code | Objective | Indicator and target | Coverage as of October 20, 2026 |
 |---|---|---|---|
 | OBJ-01 | Measure the electrical consumption of each appliance in the home | One reading every 60 seconds of voltage, current, active power and accumulated energy for each connected measuring device | Covered. Measuring device operational |
-| OBJ-02 | Show consumption clearly in a web and a mobile application | Consumption summary and history per home on the web, and consultation of homes, alerts and recommendations in the Android application, in Spanish, English, French and Portuguese | Web application in final adjustments. Mobile application under development |
+| OBJ-02 | Show consumption clearly in a web and a mobile application | Consumption summary and history per home on the web, and consultation of homes, alerts and recommendations in the Android application, in Spanish, English, French and Portuguese | Web application deployed in production. Mobile application under development, integrated with the API |
 | OBJ-03 | Issue automatic alerts for unusual or excessive consumption | Four alert types (device linked, disconnection, high or critical consumption, daily or monthly limit). A disconnection is detected in at most 150 seconds | Covered |
 | OBJ-04 | Encourage responsible habits through recommendations based on measured data | Five saving rules evaluated every hour. The same recommendation is not repeated within 7 days | Covered |
-| OBJ-05 | Deliver the system working end to end | Live demonstration, from a physical device measurement to an alert or recommendation on a phone, with no manual intervention, on October 16, 2026 | Pending |
+| OBJ-05 | Deliver the system working end to end | Live demonstration, from a physical device measurement to an alert or recommendation on a phone, with no manual intervention, on October 28, 2026 | System deployed in production. Live demonstration planned for the October 28 delivery; linking a meter in production is pending evidence |
 
 ## General Scope
 
@@ -71,15 +78,17 @@ Table 2 lists what the project builds and the system module responsible for each
 | Item | Description | Module or component |
 |---|---|---|
 | Users and profiles | Registration, sign-in, email verification, password recovery, Google sign-in, profile and account deletion | User and Profile Management Module |
+| Administration | Account lookup, status changes, granting and revoking the administrator role, and notices for administrators | User and Profile Management Module |
 | Homes | Homes, members, owner and member roles, favorites, consumption limits, home deletion and ownership transfer | Home Management Module |
 | Devices | Registration, linking, editing and unlinking of measuring devices | Device Management Module |
 | Measurements | Reception of readings, device status, consumption history and statistics | Measurements and Consumption Module |
 | Alerts | Consumption alerts and device connection alerts | Alerts Module |
 | Recommendations | Saving suggestions based on measured consumption | Savings Recommendations Module |
-| Notifications | Notices by email and in the browser, preferences and delivery log | Notifications Module |
+| Notifications | Notices by email and in the browser, in-app notices for administrators, preferences and delivery log | Notifications Module |
 | Web application | Full client for management, history and statistics | Web application |
 | Mobile application | Android client for consultation and alerts | Mobile application |
 | Measuring device | Physical device that measures the consumption of each appliance and sends the readings | Measuring device |
+| Deployment | Publication of the system on a server with HTTPS, and updates with automated tests, approval and rollback | Infrastructure |
 
 ### Out of Scope
 
@@ -93,7 +102,7 @@ Table 3 explicitly lists what the project does not build and the reason.
 |---|---|
 | iPhone application (iOS) | The mobile application is developed for Android only. |
 | Manual entry of consumption from the utility bill | The measuring device records consumption automatically, so manual capture is not provided. |
-| Administration screen for general permissions | Those functions are operated directly by the technical team. |
+| Support and content management from the administration | The current administration covers accounts, statuses, roles and notices; the rest is left for a later version. |
 | Cost estimation in local currency | There is no agreement with an energy provider that supplies tariffs. The system reports energy in kWh. |
 | Remote update of the measuring device's software | The device is updated by connecting it with a cable. |
 | Service for several organizations at once | Each installation serves a single organization. |
@@ -108,8 +117,8 @@ Table 4 gathers the assumptions and constraints that condition the project.
 
 | Type | Description |
 |---|---|
-| Time | Delivery on October 16, 2026, per the ADSO program calendar for group 3145556. |
-| Budget | Approximately COP 180,000 invested in the components of the measuring device. No budget for paid hosting or services. |
+| Time | Delivery on October 28, 2026, the date set for the evaluation of group 3145556 in the ADSO program, per the ADSO program calendar for group 3145556. |
+| Budget | Approximately COP 180,000 invested in the components of the measuring device and COP 48,000 in one month of server. The domain was obtained at no cost. |
 | Technology | The tools defined for the formative project are used, detailed in the technical proposal. |
 | Team | Two trainees of the ADSO program. |
 | Regulation | Protection of user information, with reference to Law 1581 of 2012 (Congreso de la República de Colombia, 2012). |
@@ -125,9 +134,10 @@ Table 5 summarizes the project budget.
 
 | Item | Amount |
 |---|---|
-| Measuring device components | Approximately COP 180,000 |
-| Hosting and paid services | Not contemplated |
-| Total project cost | `[TO BE CONFIRMED]`, consolidated in the technical and cost report |
+| Measuring device components | Approximately COP 180,000 (COP 173,997 according to the technical proposal breakdown) |
+| Hosting | COP 48,000: Hostinger KVM 2 VPS contracted for one month (COP 27,900 per month on a yearly contract) |
+| Domain and certificates | No cost: free `energy-monitor.tech` domain and Let's Encrypt certificates |
+| Estimated total project cost | COP 57,021,997, including the development team's equipment and the estimated human resources (details in the technical proposal) |
 
 ## Schedule and Milestones
 
@@ -144,9 +154,9 @@ The project started on May 1, 2026 and was planned in four phases with one-week 
 | 1. Foundation and core loop | May 1 to June 30 | A user registers, creates or joins a home, registers a device and sees its measurements arrive. | A registered user logs in, creates a home, links a device and sees at least one real measurement recorded. |
 | 2. Consumption visibility and alerts | July 1 to August 31 | Consumption is visible and the system warns when something is abnormal. | A home exceeding its limit produces a visible alert on web and mobile and a notification is delivered. |
 | 3. Recommendations and internationalization | September 1 to 30 | Close the product loop with proactive guidance and finish the cross-cutting interface work. | A home with one week of history receives at least one recommendation based on its own consumption, and the interface is verified in more than one language. |
-| 4. Consolidation and delivery | October 1 to 16 | Leave the system ready for demonstration and defense. | The system is demonstrated live, from a physical device measurement to an alert or recommendation on a phone. |
+| 4. Consolidation and delivery | October 1 to 28 | Leave the system ready for demonstration and defense. | The system is demonstrated live, from a physical device measurement to an alert or recommendation on a phone. |
 
-**Status as of October 12, 2026:** the project is in phase 4. The functions of phases 1 to 3 are built.
+**Status as of October 20, 2026:** the functions of phases 1 to 3 are built and, during phase 4, the system went live at `https://energy-monitor.tech`, with continuous integration and deployment.
 
 ### Milestones
 
@@ -156,20 +166,21 @@ Table 7 gathers the project milestones with their estimated date.
 
 *Project Milestones*
 
-| Code | Milestone | Estimated date | Status as of October 12, 2026 |
+| Code | Milestone | Estimated date | Status as of October 20, 2026 |
 |---|---|---|---|
 | H-01 | Project start | May 1, 2026 | Done |
 | H-02 | End of phase 1: a registered user links a device and sees a real measurement | June 30, 2026 | Done |
 | H-03 | End of phase 2: an alert for exceeding a limit, visible on web and mobile with its notification | August 31, 2026 | Done |
 | H-04 | End of phase 3: recommendation based on the home's own consumption and interface in more than one language | September 30, 2026 | Done |
 | H-05 | Complete bilingual documentation (project charter and requirements specification) | October 12, 2026 | In progress |
-| H-06 | End-to-end tests and user, technical and installation manuals | October 14, 2026 | Pending |
-| H-07 | Technical and cost report, and rehearsal of the demonstration | October 15, 2026 | Pending |
-| H-08 | Final delivery and live demonstration | October 16, 2026 | Pending |
+| H-06 | End-to-end tests and user, technical and installation manuals | October 14, 2026 | `[TO BE CONFIRMED]`. End-to-end tests in production are pending evidence |
+| H-07 | Technical and cost report, and rehearsal of the demonstration | October 15, 2026 | `[TO BE CONFIRMED]` |
+| H-08 | Final delivery and live demonstration | October 28, 2026 | Pending |
+| H-09 | Go-live at `https://energy-monitor.tech` with continuous integration and deployment | October 19, 2026 | Done |
 
 ### Final Phase Plan
 
-Table 8 details the activities of the period between October 10 and 16, 2026, which corresponds to phase 4.
+Table 8 details the activities of the period between October 10 and 28, 2026, which corresponds to phase 4, with the go-live and the delivery.
 
 **Table 8**
 
@@ -180,9 +191,10 @@ Table 8 details the activities of the period between October 10 and 16, 2026, wh
 | October 10 to 12 | Confirm and record the pending changes. Complete the project charter and the requirements specification (ES and EN) | Bilingual documents in APA 7 format |
 | October 13 and 14 | End-to-end tests. User manuals (web and mobile), technical and installation manual | Test plan and evidence. Manuals |
 | October 15 | Technical and cost report. Rehearsal of the live demonstration | Technical and cost report |
-| October 16 | Final delivery | Working system and complete documentation |
+| October 16 to 20 | Deployment on the production server, GitHub Actions pipelines and implementation and deployment manual | System in production and implementation and deployment manual |
+| October 28 | Final delivery and live demonstration | Working system and complete documentation |
 
-Two groups of items have no date within this plan and are carried out only if time allows: security improvements to the devices' credentials and reliability improvements in the sending of readings. The only pending item of home and device management, which is device history management by linking period, also has no assigned date.
+The security improvement to the devices' credentials has already been applied: the system stores only the hash of each device's key. The reliability improvement in the sending of readings has no date within this plan and is carried out only if time allows. The only pending item of home and device management, which is device history management by linking period, also has no assigned date.
 
 ## Work Team and Roles
 
