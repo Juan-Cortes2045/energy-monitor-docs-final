@@ -17,7 +17,6 @@ Group: 3145556
 | **Item**           | **Information**                                                                   |
 |--------------------|-----------------------------------------------------------------------------------|
 | Team members       | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga                         |
-| Instructor         | `[TO BE CONFIRMED]`                                                               |
 | Training center    | Center for Industry, Business and Services (CIES) – SENA Huila Regional           |
 | Program            | Technology in Software Analysis and Development (ADSO)                            |
 | Group              | 3145556                                                                           |
