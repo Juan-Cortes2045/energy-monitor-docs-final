@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Technologist in Software Analysis and Development (ADSO), group (ficha) 3145556
 
-October 12, 2026 (updated October 20, 2026)
+October 12, 2026 (updated October 24, 2026)
 
 ## Version Control
 
@@ -14,12 +14,13 @@ October 12, 2026 (updated October 20, 2026)
 |---------|------------|------------------------------------------------------------------------------------------------------------|-----------------------------------------------|
 | 1.0     | 10/12/2026 | First version: technology stack, architecture, infrastructure, costs, schedule, risks and discrepancies.    | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.1     | 10/20/2026 | Alignment with the deployed system: actual production infrastructure (Hostinger KVM 2 VPS for one month, free domain, Nginx, Let's Encrypt), continuous integration and deployment with GitHub Actions, recalculated costs, global administration and new events, status by component, and updated risks and discrepancies. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.2     | 10/24/2026 | Architecture in production: API gateway and security, device and measurement microservices; the core service remains a modular monolith with home, alert, recommendation and notification, whose migration is in progress; communication through internal REST and events on RabbitMQ with a *transactional outbox*; updated stack, infrastructure, status by component and risks. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Abstract
 
-This document presents the technical proposal of EnergyMonitor, a system that lets households see the electrical consumption of each appliance, identify the periods of highest demand, receive alerts and get saving recommendations. It describes the chosen technology stack and its justification, the adopted software architecture (a modular monolith with internal events), the hosting infrastructure and the project costs. The solution integrates an ESP32 device with a PZEM-004T V3 sensor, a core service in Java 21 with Spring Boot 4.1.1, a MySQL 8.4 database, a Mosquitto message broker with TLS, a React 19 web application and an Android mobile application with Expo SDK 57. The system is deployed at `https://energy-monitor.tech`, on a Hostinger KVM 2 VPS with Docker Compose, and is updated through continuous integration and deployment with GitHub Actions. The estimated total cost is COP 57,021,997, of which COP 8,073,997 is hardware, COP 48,000 is infrastructure (one month of server; the domain was obtained at no cost) and COP 48,900,000 is human resources. The document also includes the schedule, the status by component, the pending technical risks and the differences with the project charter.
+This document presents the technical proposal of EnergyMonitor, a system that lets households see the electrical consumption of each appliance, identify the periods of highest demand, receive alerts and get saving recommendations. It describes the chosen technology stack and its justification, the adopted software architecture (security, device and measurement microservices behind an API gateway, alongside a core service that is still a modular monolith and whose migration is in progress), the hosting infrastructure and the project costs. The solution integrates an ESP32 device with a PZEM-004T V3 sensor, services in Java 21 with Spring Boot 4.1.1, a MySQL 8.4 database, a RabbitMQ 4.1 message queue, a Mosquitto message broker with TLS, a React 19 web application and an Android mobile application with Expo SDK 57. The system is deployed at `https://energy-monitor.tech`, on a Hostinger KVM 2 VPS with Docker Compose, and is updated through continuous integration and deployment with GitHub Actions. The estimated total cost is COP 57,021,997, of which COP 8,073,997 is hardware, COP 48,000 is infrastructure (one month of server; the domain was obtained at no cost) and COP 48,900,000 is human resources. The document also includes the schedule, the status by component, the pending technical risks and the differences with the project charter.
 
-*Keywords:* technical proposal, architecture, modular monolith, costs, infrastructure, continuous integration, Internet of Things
+*Keywords:* technical proposal, architecture, microservices, modular monolith, costs, infrastructure, continuous integration, Internet of Things
 
 ## Introduction
 
@@ -33,7 +34,7 @@ Data that the team has not yet defined is marked `[TO BE CONFIRMED]` and is not 
 
 ### Solution Overview
 
-Data flows through five pieces. The ESP32 device reads the PZEM-004T V3 sensor over Modbus RTU at 9600 baud (GPIO16 as receive and GPIO17 as transmit, firmware 1.3.8) and publishes over MQTT 3.1.1 with TLS on port 8883 to the Mosquitto broker. The Java core service receives the readings, stores them in MySQL, evaluates alerts and recommendations and sends notifications. The web application and the Android mobile application query the service through a REST API. The device sends telemetry every 60 seconds and its status every five minutes. Linking is done over Bluetooth Low Energy from the web, with a configuration portal as an alternative. In production, the web app and the API are published at `https://energy-monitor.tech` and devices connect to `mqtt.energy-monitor.tech:8883`.
+Data flows through five pieces. The ESP32 device reads the PZEM-004T V3 sensor over Modbus RTU at 9600 baud (GPIO16 as receive and GPIO17 as transmit, firmware 1.3.8) and publishes over MQTT 3.1.1 with TLS on port 8883 to the Mosquitto broker. The Java services receive the readings: the measurement service stores them in MySQL and announces each one, and the core service evaluates alerts and recommendations and sends notifications. The web application and the Android mobile application query the services through a REST API, always through the API gateway. The device sends telemetry every 60 seconds and its status every five minutes. Linking is done over Bluetooth Low Energy from the web, with a configuration portal as an alternative. In production, the web app and the API are published at `https://energy-monitor.tech` and devices connect to `mqtt.energy-monitor.tech:8883`.
 
 ### Decisions by Layer
 
@@ -45,20 +46,21 @@ Table 1 summarizes the technology chosen for each layer and the reason that supp
 
 | Layer | Chosen technology | Justification | Market alternatives |
 |---|---|---|---|
-| Core service | Java 21, Spring Boot 4.1.1, Spring Modulith, Spring Security, Spring Data JPA | Free software tools with efficiency, scalability and ease of integration. Spring Modulith splits the system into modules with controlled dependencies inside a single application. | Node.js with NestJS or Express: broad ecosystem and fast development, but without the verifiable modularity of Spring Modulith. Django (Python) and ASP.NET Core (C#): valid, with less team experience. |
+| Services | Java 21, Spring Boot 4.1.1, Spring Modulith (core service), Spring Security, Spring Data JPA; Spring Cloud Gateway Server Web MVC (Spring Boot 4.0.8, Spring Cloud 2025.1.3) in the API gateway | Free software tools with efficiency, scalability and ease of integration. Spring Modulith splits the core service into modules with controlled dependencies and made it easier to extract contexts into their own services; Spring Cloud Gateway gives the API a single entry point with the same stack. | Node.js with NestJS or Express: broad ecosystem and fast development, but without the verifiable modularity of Spring Modulith. Django (Python) and ASP.NET Core (C#): valid, with less team experience. Gateways such as Kong or NGINX: another technology to maintain. |
+| Messaging between services | RabbitMQ 4.1 with a *transactional outbox* | Free software. The message row is written in the same transaction as the change and a relay publishes it with broker confirmation, so no event is lost when services are separated. | Kafka: more capacity and complexity than a single server needs. Synchronous HTTP calls for everything: they couple the availability of the services. |
 | Database | MySQL 8.4 with Liquibase migrations | Free software. Liquibase versions database changes with rollback, which gives traceability. | PostgreSQL: equally free and richer in advanced features, unnecessary at this volume. MongoDB: flexible, but the project data is relational (homes, members, devices). Firebase: usage-based cost and provider dependency. |
 | Messaging with the device | MQTT 3.1.1 with TLS on Eclipse Mosquitto | Standard Internet of Things protocol, suitable for small devices (OASIS, 2014). Mosquitto is free and the certificates come from Let's Encrypt. Encryption protects readings in transit. | Periodic HTTP from the device: simpler, but uses more of the microcontroller's resources and has no last will mechanism. CoAP: less support in brokers and tools. Brokers such as EMQX or HiveMQ: more capacity than a single server needs. |
 | Device | ESP32 with PZEM-004T V3 sensor | Low-cost microcontroller with Wi-Fi and Bluetooth (COP 24,000) and an energy sensor of COP 70,000. It records voltage, current, active power and accumulated energy. | Arduino with a Wi-Fi module or Raspberry Pi: the first needs more components and the second has higher cost and consumption. Sensors such as the SCT-013 (current clamp) need calibration and their own circuit, while the PZEM-004T delivers already computed values. |
 | Web application | React 19, Vite 8, Zustand, Axios, React Router, React Hook Form, Zod, i18next, Recharts | Free software. It supports interactive charts, validated forms and an interface in several languages. Web Bluetooth enables linking the device directly from the browser. | Angular or Vue: equally viable, with less prior team knowledge. Next.js: adds server-side rendering, which the application does not need. Create React App: deprecated in favor of Vite. |
 | Mobile application | React Native 0.86 with Expo SDK 57, expo-router, Redux Toolkit | Free software. It reuses the team's React knowledge and serves Android only, which is the defined scope. | Flutter (Dart): good performance, but requires another language and does not reuse what was learned on the web. Native Kotlin: maximum control on Android, at a higher development cost. A progressive web app: less access to phone features. |
-| Infrastructure | Docker Compose on a Hostinger KVM 2 VPS, Nginx with Let's Encrypt certificates and continuous integration and deployment with GitHub Actions | Reproducible deployment on a single low-cost server. The same server hosts the core service, the database, the broker and the web application. GitHub Actions is already integrated with the team's repositories and allows approving each deployment. | AWS, Google Cloud or Azure: more services and automatic scaling, with variable cost and higher complexity. PaaS platforms: many publish only HTTP and do not accept MQTT port 8883. Other VPS providers (DigitalOcean, Contabo): comparable. Jenkins or GitLab CI: require another server or migrating the repositories. |
+| Infrastructure | Docker Compose on a Hostinger KVM 2 VPS, Nginx with Let's Encrypt certificates and continuous integration and deployment with GitHub Actions | Reproducible deployment on a single low-cost server. The same server hosts the API gateway, the services, the database, the message queue, the broker and the web application. GitHub Actions is already integrated with the team's repositories and allows approving each deployment. | AWS, Google Cloud or Azure: more services and automatic scaling, with variable cost and higher complexity. PaaS platforms: many publish only HTTP and do not accept MQTT port 8883. Other VPS providers (DigitalOcean, Contabo): comparable. Jenkins or GitLab CI: require another server or migrating the repositories. |
 
 ### General Selection Criteria
 
 The decisions in Table 1 share three criteria that guided the selection:
 
 - Zero license cost: all software in the stack is free, and only the server is paid. The domain was obtained at no cost.
-- A single server: the expected load of a formative project does not justify several independent services. The system can grow by increasing the server's resources, without migrating to microservices.
+- A single server: the expected load of a formative project fits on one VPS. The microservices run on the same server with Docker Compose and share a single MySQL database; the system can grow by increasing the server's resources.
 - Team knowledge: the stack uses tools that both members handle, which lowers the risk of delivering on time.
 
 ### Accepted Limitations
@@ -69,69 +71,75 @@ Two decisions have known limits. Web Bluetooth works only in compatible browsers
 
 ### Chosen Architectural Pattern
 
-EnergyMonitor is a modular monolith built with Spring Modulith. It is a single deployable application, divided internally into seven modules with clear boundaries. It does not use microservices, Kafka or an API Gateway. Table 2 describes each module.
+EnergyMonitor started as a modular monolith built with Spring Modulith: a single deployable application, divided into seven modules with clear boundaries. Since October 24, 2026 the architecture in production combines microservices and that modular monolith. Three contexts (security, devices and measurements) were extracted into independent services, each with its own repository, container and pipeline, and an API gateway, the single entry point of the API, sits in front of all of them. The four remaining modules (home, alert, recommendation and notification) stay in the core service (`energy-monitor-backend`), which keeps the modular monolith structure; their migration to microservices is in progress, carried out by Miguel Ángel García Artunduaga. The extraction did not change the public API routes for clients. Kafka is not used. Table 2 describes each component.
 
 **Table 2**
 
-*Core Service Modules*
+*System Services and Modules*
 
-| Module | Responsibility |
+| Component | Responsibility |
 |---|---|
-| security | Registration, authentication, sessions, permissions, email verification, password recovery, Google Sign-In, profile, account deletion and global administration of accounts and roles (`ADMIN` role) |
-| home | Homes, members, OWNER and MEMBER roles, favorites, thresholds, home deletion and ownership transfer |
-| device | Registration, linking, editing and unlinking of devices, credentials, MQTT authorization and detection of lost connectivity |
-| measurement | Measurements, telemetry and status messages |
-| alert | Consumption and connectivity alerts |
-| recommendation | Saving rules |
-| notification | Deliveries, preferences, email, Web Push and in-app notices for administrators |
+| API gateway (`en-monitor-api-gateway`, port 8080) | Single entry point of the API. Answers CORS, validates the token (RS256, issuer and expiration) except on public endpoints, reads the token from the web's HttpOnly cookie, limits public account POSTs (20 per IP and route per minute), rejects `/internal/**` and responds 503 if a service does not answer or 504 if it takes more than 30 s |
+| Security service (`en-monitor-security-service`, port 8082) | Registration with email verification, authentication, Google Sign-In, JWT and rotating refresh token, HttpOnly cookie sessions for the web, password recovery, profile, account deletion, RBAC and global administration of accounts and roles (`ADMIN` role), support contacts |
+| Device service (`en-monitor-device-service`, port 8084) | Linking, editing, credential reissue and unlinking of devices, appliance catalog, MQTT authentication and authorization, commands to the modules and connectivity (offline after 150 s without data) |
+| Measurement service (`en-monitor-measurement-service`, port 8085) | The only one that stores telemetry; history, latest reading, statistics, home consumption and consumption levels; announces each reading |
+| Core service (`energy-monitor-backend`, port 8083): home module | Homes, members, OWNER and MEMBER roles, favorites, thresholds, home deletion and ownership transfer |
+| Core service: alert module | Consumption and connectivity alerts |
+| Core service: recommendation module | Saving rules |
+| Core service: notification module | Deliveries, preferences, email (the only one that sends email), Web Push, mobile push and in-app notices for administrators |
+| Core service: security, device and measurement packages | Intermediaries with no domain and no tables: they query the services through their internal API (with a cache) and turn their events into the internal events the modules already used |
 
 ### Organization Rules
 
-- Modules depend on each other only through their `api` packages.
-- Hexagonal architecture is applied inside each module.
-- Database changes are made with Liquibase changesets that include rollback.
+- Inside the core service, modules depend on each other only through their `api` packages; `ModularityTests` (Spring Modulith) verifies those boundaries.
+- Every service and every module applies hexagonal architecture (`domain`, `application`, `adapter`, `infrastructure`, `api`). The gateway has no domain.
+- All services use a single MySQL 8.4 database (`energy_monitor`); each one owns its tables and applies only its own Liquibase changesets, which include rollback. There are no foreign keys between services.
 - Identifiers are VARCHAR(10) and deletion is logical through `deleted_at`.
 
-### Communication between Modules
+### Communication between Modules and Services
 
-Modules communicate through internal Spring events, in memory, without Kafka. Table 3 lists them.
+Services query each other through internal REST under `/internal/**`, which is accepted only from the Docker network and with the `X-Internal-Token` header, and which the gateway never forwards. Changes are announced with events on RabbitMQ 4.1 through a *transactional outbox*: the message row is written in the same transaction as the change, a relay publishes it every second with broker confirmation, delivery is at least once and the queues are durable, with *dead-letter* after three attempts. Inside the core service the modules still use internal Spring events, in memory. Table 3 lists them.
 
 **Table 3**
 
-*Internal Events between Modules*
+*Events between Modules and Services*
 
-| Event | Source | Destination |
-|---|---|---|
-| MeasurementRecorded | measurement | alert |
-| DeviceConnectivityLost / DeviceConnectivityRestored | device | alert |
-| AlertRaised | alert | notification |
-| RecommendationCreated | recommendation | notification |
-| AccountRegistered / AccountAdministered | security | notification |
-| AccountDeleted | security | home |
-| HomeDeleted | home | device |
-| HomeOwnershipTransferred | home | no consumer |
+| Event | Source | Destination | Channel |
+|---|---|---|---|
+| `measurement.recorded` (MeasurementRecorded) | measurement service | core service: alert | RabbitMQ; the intermediary republishes it in memory |
+| `device.connectivity-lost` / `device.connectivity-restored` (DeviceConnectivityLost / DeviceConnectivityRestored) | device service | core service: alert | RabbitMQ; the intermediary republishes it in memory |
+| `device.linked` / `device.unlinked` | device service | core service (cache) and measurement service (cache) | RabbitMQ |
+| AlertRaised | alert | notification | In memory |
+| RecommendationCreated | recommendation | notification | In memory |
+| `account.registered` / `account.administered` | security service | core service: notification | RabbitMQ |
+| `account.deleted` | security service | core service: home | RabbitMQ |
+| `mail.email-verification` / `mail.password-reset` | security service | core service: notification | RabbitMQ |
+| `home.deleted` | core service: home | device service | RabbitMQ |
+| HomeOwnershipTransferred | home | no consumer | In memory |
 
-The recommendation module does not listen to measurement events: it evaluates recommendations every hour through a scheduler (`RecommendationScheduler`). A device's loss of connectivity is identified through the status records and the last will and silence mechanisms of the MQTT protocol; the device module announces it with `DeviceConnectivityLost` and its recovery with `DeviceConnectivityRestored`. Registering an account and the status or role changes made by an administrator produce in-app notices for the other administrators.
+The recommendation module does not listen to measurement events: it evaluates recommendations every hour through a scheduler (`RecommendationScheduler`) and asks the measurement service for the hourly energy. A device's loss of connectivity is identified through the status records and the last will and silence mechanisms of the MQTT protocol; the device service announces it with `device.connectivity-lost` and its recovery with `device.connectivity-restored`. On receiving `home.deleted`, the device service unlinks the home's modules and sends them the `unlink` command. Registering an account and the status or role changes made by an administrator produce in-app notices for the other administrators. Only the core service sends email: the security service requests the verification and recovery emails from it through RabbitMQ.
 
 ### Interfaces
 
-The API is REST under `/api/v1` and covers authentication, accounts, homes, members, thresholds, devices, measurements, statistics, alerts, recommendations, notification preferences and administration (`/api/v1/admin`: users, roles and notices, with the `USER.READ`, `USER.MANAGE` and `ROLE.MANAGE` permissions). It includes Actuator and Swagger; in production Swagger does not go through the proxy. There are also internal MQTT authentication and authorization endpoints for Mosquitto, with a five-minute cache, which are not exposed to the Internet.
+The API is REST under `/api/v1` and covers authentication, accounts, homes, members, thresholds, devices, measurements, statistics, alerts, recommendations, notification preferences and administration (`/api/v1/admin`: users, roles and notices, with the `USER.READ`, `USER.MANAGE` and `ROLE.MANAGE` permissions). The API gateway distributes the routes: `/api/v1/auth/**`, `/api/v1/admin/users/**`, `/api/v1/admin/roles/**` and `/api/v1/support/**` to the security service; `/api/v1/homes/{homeId}/devices/**` and `/api/v1/appliance-types/**` to the device service; `/api/v1/measurements/**`, `/api/v1/consumption-levels/**` and `/api/v1/homes/{homeId}/consumption/**` to the measurement service; and the rest of `/api/v1/**` to the core service. Every service includes Actuator and Swagger (the gateway, only Actuator); in production Swagger does not go through the proxy. There are also internal MQTT authentication and authorization endpoints for Mosquitto in the device service, with a five-minute cache, which are not exposed to the Internet.
 
 ### Security
 
 - JWT tokens signed with RS256. The access token lasts 15 minutes.
 - Opaque, stateful refresh tokens with rotation and reuse detection, stored in the database.
-- Global permissions queried dynamically on every request, with no roles inside the JWT.
+- Global permissions queried dynamically, with no roles inside the JWT; the core service requests them from the security service through its internal API, with a short cache.
+- The web keeps the session in HttpOnly cookies set by the security service; the gateway reads the token from that cookie.
 - Identity is taken from the `sub` claim through CurrentUserResolver. The X-User-Id header is ignored.
-- CORS closed by default, with origins defined through environment variables. In production the web app and the API share one origin.
+- CORS closed by default, with origins defined through environment variables; it is answered by the API gateway. In production the web app and the API share one origin.
 - Google Sign-In requires configured OAuth credentials.
-- Devices authenticate to the broker with `device_code` and `api_key`; the core service stores only the SHA-256 hash of the key.
+- Devices authenticate to the broker with `device_code` and `api_key`; the device service stores only the SHA-256 hash of the key.
+- Internal calls between services require the Docker network and the `X-Internal-Token` header, compared in constant time.
 - In production: HTTPS and MQTT with Let's Encrypt certificates, `/internal/**` routes not publicly exposed, and `X-Forwarded-For` replaced with the real IP at the proxy.
 - The protection of users' personal data refers to Law 1581 of 2012 (Congreso de la República de Colombia, 2012).
 
 ### Relevant Domain Rules
 
-Global roles are managed by security, while the OWNER and MEMBER roles are per home, so a user can belong to several homes with different roles. The global `ADMIN` role grants access to no home, and an administrator cannot change their own status or roles. Thresholds belong to the home, with default values of 6 kWh daily and 180 kWh monthly. The power levels are LOW (0 to 500 W), MEDIUM (500 to 1500 W), HIGH (1500 to 3000 W) and CRITICAL (from 3000 W). Account deletion is transactional: it validates the password, closes the sessions, logically deletes personal data, releases the email and manages memberships.
+Global roles are managed by the security service, while the OWNER and MEMBER roles are per home, so a user can belong to several homes with different roles. The global `ADMIN` role grants access to no home, and an administrator cannot change their own status or roles. Thresholds belong to the home, with default values of 6 kWh daily and 180 kWh monthly. The power levels are LOW (0 to 500 W), MEDIUM (500 to 1500 W), HIGH (1500 to 3000 W) and CRITICAL (from 3000 W). Account deletion is transactional: it validates the password, closes the sessions, logically deletes personal data, releases the email and manages memberships.
 
 ### Clients
 
@@ -139,7 +147,7 @@ The web application separates its features by characteristic, manages texts with
 
 ### Development Conventions
 
-Code is written in English and academic deliverables in Spanish. Commits follow Conventional Commits with a module scope and an imperative English message. Branches are `feat/*`, `fix/*` or `chore/*`, with integration through a pull request to `dev` and then to `main`; the infrastructure repository integrates directly into `main`. Every pull request must pass its automated tests in GitHub Actions before being merged.
+Code is written in English and academic deliverables in Spanish. Commits follow Conventional Commits with a module scope and an imperative English message. Branches are `feat/*`, `fix/*` or `chore/*`, with integration through a pull request to `dev` and then to `main` in every repository. Every pull request must pass its automated tests in GitHub Actions before being merged.
 
 ## Infrastructure and Costs
 
@@ -156,7 +164,7 @@ Table 4 describes the production infrastructure.
 | Provider | Hostinger |
 | Plan | VPS KVM 2: 2 vCPU, 8 GB of RAM and 100 GB NVMe, with Ubuntu 26.04 LTS |
 | Contract | One month, for COP 48,000. On a yearly contract the plan costs COP 27,900 per month |
-| Deployment | Docker Compose from the `energy-monitor-infra` repository, with the core service, MySQL 8.4, Mosquitto and the web application |
+| Deployment | Docker Compose from the `energy-monitor-infra` repository, with the API gateway, the security, device and measurement services, the core service, MySQL 8.4, RabbitMQ 4.1, Mosquitto and the web application |
 | Access | Nginx on the server as the only HTTPS entry point; only ports 80, 443 and 8883 are published |
 | Certificates | Let's Encrypt, free of charge and renewed automatically |
 | Domain | `energy-monitor.tech` (web and API) and `mqtt.energy-monitor.tech` (broker), obtained at no cost |
@@ -164,7 +172,7 @@ Table 4 describes the production infrastructure.
 
 ### Continuous Integration and Deployment
 
-The repositories of the core service, the web application and the infrastructure have GitHub Actions pipelines. Every pull request runs the tests (1131 core service tests against MySQL 8.4, the web tests and build, and validation of the infrastructure configuration), which are required to merge. Every change that reaches `main` is deployed to the server after a manual approval. The deployment takes a database backup, rebuilds only the changed component, checks its health and, if it fails, goes back to the previous version. The details are in the implementation and deployment manual (Cortés Parra & García Artunduaga, 2026).
+The repositories of the API gateway, the security, device and measurement services, the core service, the web application and the infrastructure have GitHub Actions pipelines. Every pull request runs the tests (as of October 24, 2026: 481 for the core service, 151 for the measurement service, 130 for the device service and 57 for the gateway, and 660 for the security service as of October 22, against MySQL 8.4 for those that need it; the web tests and build; and validation of the infrastructure configuration), which are required to merge. Every change that reaches `main` is deployed to the server after a manual approval. The deployment takes a database backup, rebuilds only the changed component, checks its health and, if it fails, goes back to the previous version. The details are in the implementation and deployment manual (Cortés Parra & García Artunduaga, 2026).
 
 ### Hardware Cost
 
@@ -202,7 +210,8 @@ All software in the stack is free and generates no license cost. Table 6 separat
 
 | Item | Type | Cost |
 |---|---|---|
-| Java 21 (OpenJDK), Spring Boot, Spring Modulith, Spring Security, Spring Data JPA | Free | 0 |
+| Java 21 (OpenJDK), Spring Boot, Spring Modulith, Spring Security, Spring Data JPA, Spring Cloud Gateway | Free | 0 |
+| RabbitMQ | Free | 0 |
 | MySQL 8.4 and Liquibase | Free | 0 |
 | Eclipse Mosquitto | Free | 0 |
 | Docker, Docker Compose and Nginx | Free | 0 |
@@ -293,7 +302,7 @@ The software and hardware are licensed under a free-use modality with community 
 
 ### Schedule
 
-The project started on May 1, 2026 and is delivered on October 28, 2026, the date set for the evaluation; the go-live took place between October 16 and 20, before the delivery. Table 11 shows the phases.
+The project started on May 1, 2026 and is delivered on October 28, 2026, the date set for the evaluation; the go-live took place between October 16 and 20, before the delivery, and the services architecture reached production on October 24. Table 11 shows the phases.
 
 **Table 11**
 
@@ -305,25 +314,29 @@ The project started on May 1, 2026 and is delivered on October 28, 2026, the dat
 | 2. Consumption visibility and alerts | July 1 to August 31 | Consumption is visible and the system warns when something is abnormal |
 | 3. Recommendations and internationalization | September 1 to 30 | Recommendations based on own consumption and an interface in more than one language |
 | 4. Consolidation | October 1 to 16 | System ready for demonstration and defense |
-| 5. Go-live and delivery | October 16 to 28 | System published at `https://energy-monitor.tech` with continuous integration and deployment (October 16 to 20), and delivery with its defense on October 28 |
+| 5. Go-live and delivery | October 16 to 28 | System published at `https://energy-monitor.tech` with continuous integration and deployment (October 16 to 20), security, device and measurement microservices with an API gateway in production (October 24) and delivery with its defense on October 28 |
 
 ### Status by Component
 
-Table 12 presents progress as of October 20, 2026.
+Table 12 presents progress as of October 24, 2026.
 
 **Table 12**
 
-*Status by Component as of October 20, 2026*
+*Status by Component as of October 24, 2026*
 
 | Component | Status |
 |---|---|
 | Measuring device (firmware 1.3.8) | Operational. Linking a meter in production is pending evidence |
-| Core service (seven modules) | Deployed in production; 1131 automated tests on every pull request |
+| API gateway | Deployed in production; 57 automated tests on every pull request |
+| Security service | Deployed in production; 660 automated tests (October 22) |
+| Device service | Deployed in production; 130 automated tests |
+| Measurement service | Deployed in production; 151 automated tests |
+| Core service (home, alert, recommendation and notification) | Deployed in production; 481 automated tests and `ModularityTests` green. Migration of its four modules to microservices in progress |
 | Web application | Deployed in production at `https://energy-monitor.tech` |
 | Android mobile application | Under development, integrated with the API; outside the production deployment |
-| Infrastructure | Hostinger KVM 2 VPS with Docker Compose, Nginx, Let's Encrypt and GitHub Actions |
+| Infrastructure | Hostinger KVM 2 VPS with Docker Compose, Nginx, Let's Encrypt, RabbitMQ and GitHub Actions; end-to-end tests of the services on the local stack (21/21 and 25/25) |
 
-Pending in the core service is device history management by linking period. In production, the functional evidence listed in the implementation and deployment manual is still missing: linked meter, email, administration, scheduled backup and certificate renewal.
+Pending are device history management by linking period and the migration to microservices of the four modules that remain in the core service, which is in progress. In production, the functional evidence listed in the implementation and deployment manual is still missing: linked meter, email, administration, scheduled backup and certificate renewal.
 
 ## Pending Technical Risks
 
@@ -335,7 +348,7 @@ Pending in the core service is device history management by linking period. In p
 |---|---|---|
 | RT-01 | Mitigated: the device `api_key` is no longer stored in clear; only its SHA-256 hash is kept (`api_key_hash`, changesets `device-007` and `device-008`) | Keys of already linked devices are renewed when they are linked again |
 | RT-02 | Telemetry uses MQTT with QoS 0 | Possible loss of readings. QoS 1 will be evaluated |
-| RT-03 | Web tokens are stored in localStorage | Risk of theft through XSS, acknowledged |
+| RT-03 | Mitigated: the web no longer stores the tokens in localStorage; the session travels in HttpOnly cookies set by the security service, which no script can read | Risk of theft through XSS reduced |
 | RT-04 | No over-the-air (OTA) firmware update | The device is updated only by cable |
 | RT-05 | Authentication attempt limits are kept in memory | They reset when the service restarts |
 | RT-06 | Partially mitigated: persistence tests require an active database, but in GitHub Actions they run against a MySQL 8.4 service container | Locally a MySQL of one's own is still needed |
