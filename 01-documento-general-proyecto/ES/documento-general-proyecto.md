@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-16 de octubre de 2026 (actualizado el 20 de octubre de 2026)
+16 de octubre de 2026 (actualizado el 24 de octubre de 2026)
 
 ## Control de versiones
 
@@ -14,6 +14,7 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 |---------|------------|-----------------------------------------------------------------------------------------------------------------|-----------------------------------------------|
 | 1.0     | 16/10/2026 | Primera versión del acta de constitución: justificación, objetivos, alcance, presupuesto, cronograma y equipo.   | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.1     | 20/10/2026 | Alineación con el sistema desplegado: administración de cuentas dentro del alcance, presupuesto con el servidor en producción y el costo total estimado, puesta en producción en `https://energy-monitor.tech` con integración y despliegue continuos, y estado de objetivos e hitos al 20 de octubre. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.2     | 24/10/2026 | Componentes del alcance según la arquitectura en producción: usuarios, dispositivos y mediciones como servicios independientes detrás de un API gateway, y migración en curso de los módulos restantes. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
@@ -90,6 +91,8 @@ La Tabla 2 enumera lo que el proyecto construye y el módulo del sistema que res
 | Dispositivo de medición | Aparato físico que mide el consumo de cada electrodoméstico y envía las lecturas | Dispositivo de medición |
 | Despliegue | Publicación del sistema en un servidor con HTTPS, y actualización con pruebas automáticas, aprobación y reversión | Infraestructura |
 
+Desde el 24 de octubre de 2026, los módulos de Gestión de Usuarios y Perfiles (incluida la administración), de Gestión de Dispositivos y de Mediciones y Consumo funcionan en producción como servicios independientes, detrás de un punto de entrada único para la API. Los módulos de Hogares, Alertas, Recomendaciones y Notificaciones siguen en el servicio central, y su separación en servicios está en curso. El detalle técnico está en la propuesta técnica.
+
 ### Fuera del alcance
 
 La Tabla 3 lista de forma explícita lo que el proyecto no construye y el motivo.
@@ -156,7 +159,7 @@ El proyecto inició el 1 de mayo de 2026 y se planificó en cuatro fases con ava
 | 3. Recomendaciones e internacionalización | 1 a 30 de septiembre | Cerrar el ciclo del producto con orientación proactiva y terminar el trabajo transversal de la interfaz. | Un hogar con una semana de historial recibe al menos una recomendación basada en su propio consumo, y la interfaz se verifica en más de un idioma. |
 | 4. Consolidación y entrega | 1 a 28 de octubre | Dejar el sistema listo para demostración y defensa. | El sistema se demuestra en vivo, desde la medición de un dispositivo físico hasta una alerta o recomendación en un teléfono. |
 
-**Estado al 20 de octubre de 2026:** las funciones de las fases 1 a 3 están construidas y, durante la fase 4, el sistema se puso en producción en `https://energy-monitor.tech`, con integración y despliegue continuos.
+**Estado al 20 de octubre de 2026:** las funciones de las fases 1 a 3 están construidas y, durante la fase 4, el sistema se puso en producción en `https://energy-monitor.tech`, con integración y despliegue continuos. El 24 de octubre de 2026 se puso en producción la separación de los módulos de usuarios, dispositivos y mediciones en servicios independientes, sin cambios para los usuarios.
 
 ### Hitos
 
@@ -192,9 +195,10 @@ La Tabla 8 detalla las actividades del periodo comprendido entre el 10 y el 28 d
 | 13 y 14 de octubre | Pruebas de extremo a extremo. Manuales de usuario (web y móvil), manual técnico y de instalación | Plan y evidencias de pruebas. Manuales |
 | 15 de octubre | Informe técnico y de costos. Ensayo de la demostración en vivo | Informe técnico y de costos |
 | 16 a 20 de octubre | Despliegue en el servidor de producción, pipelines de GitHub Actions y manual de implementación y despliegue | Sistema en producción y manual de implementación y despliegue |
+| Hasta el 24 de octubre | Separación de los módulos de usuarios, dispositivos y mediciones en servicios independientes, con un punto de entrada único para la API | Servicios en producción y documentación actualizada |
 | 28 de octubre | Entrega final y demostración en vivo | Sistema funcionando y documentación completa |
 
-La mejora de seguridad de las credenciales de los dispositivos ya se aplicó: el sistema solo guarda el hash de la clave de cada dispositivo. Queda sin fecha, y se ejecuta solo si el tiempo lo permite, la mejora de confiabilidad en el envío de lecturas. El único pendiente de la gestión de hogares y dispositivos, que es la gestión del historial del dispositivo según el periodo de vinculación, tampoco tiene fecha asignada.
+La mejora de seguridad de las credenciales de los dispositivos ya se aplicó: el sistema solo guarda el hash de la clave de cada dispositivo. Queda sin fecha, y se ejecuta solo si el tiempo lo permite, la mejora de confiabilidad en el envío de lecturas. El único pendiente de la gestión de hogares y dispositivos, que es la gestión del historial del dispositivo según el periodo de vinculación, tampoco tiene fecha asignada. La separación en servicios de los módulos de Hogares, Alertas, Recomendaciones y Notificaciones está en curso, a cargo de Miguel Ángel García Artunduaga.
 
 ## Equipo de trabajo y roles
 
