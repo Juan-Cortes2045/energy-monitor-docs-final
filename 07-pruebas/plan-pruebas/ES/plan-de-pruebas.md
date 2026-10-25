@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-14 de octubre de 2026 (actualizado el 20 de octubre de 2026)
+14 de octubre de 2026 (actualizado el 24 de octubre de 2026)
 
 ## Control de versiones
 
@@ -18,12 +18,15 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 |---------|------------|-------------------------------------------------------------------------------------------|-----------------------------------------------|
 | 1.0     | 14/10/2026 | Primera versión: inventario, trazabilidad y resultados de la ejecución sin base de datos. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.1     | 20/10/2026 | Ejecución de la suite completa contra MySQL (1131 pruebas, 0 fallos) en local y en GitHub Actions; cierre de DEF-01 y DEF-02; 3 clases de prueba nuevas de notificaciones push; trazabilidad, riesgos y evidencias actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.2     | 24/10/2026 | Arquitectura de servicios: elementos bajo prueba por repositorio (gateway, servicios de seguridad, dispositivos y mediciones, backend) con los commits de `main` en producción, totales de cada suite, pruebas de punta a punta de `energy-monitor-infra` y pipelines por repositorio. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
 Este documento es el plan y reporte de pruebas de EnergyMonitor. Inventaría las 129 clases de prueba automatizadas del servicio central (1097 métodos de prueba declarados) y las 20 suites de la aplicación web (141 pruebas), traza los 107 requisitos funcionales y no funcionales de la especificación contra esas pruebas, y registra la ejecución del 14 de octubre de 2026. La suite del servicio central sin base de datos ejecutó 835 pruebas, con 833 aprobadas y 2 fallidas; la web ejecutó 141 pruebas, todas aprobadas. Las 37 clases que necesitan MySQL no se ejecutaron porque falta la variable SPRING_DATASOURCE_PASSWORD. La aplicación móvil no tiene pruebas automatizadas. Se escribieron 4 clases de prueba nuevas y se registraron 2 defectos y 1 observación documental.
 
 La versión 1.1 (20 de octubre de 2026) registra la ejecución de la suite completa del servicio central contra MySQL 8.4: 1131 pruebas en 132 clases, 0 fallos, tanto en local como en el *check* obligatorio `Tests` de GitHub Actions. Las 37 clases pendientes ya se ejecutan, los defectos DEF-01 y DEF-02 están cerrados y la web vuelve a aprobar sus 141 pruebas. La trazabilidad queda en 68 requisitos con prueba automatizada ejecutada y 39 sin cobertura.
+
+La versión 1.2 (24 de octubre de 2026) corresponde a la arquitectura de servicios en producción: los módulos security, device y measurement salieron del servicio central a sus propios repositorios (`en-monitor-security-service`, `en-monitor-device-service` y `en-monitor-measurement-service`), detrás de un API gateway (`en-monitor-api-gateway`), y el servicio central conserva home, alert, recommendation y notification. Cada repositorio ejecuta su suite en su pipeline: backend 481 pruebas, servicio de mediciones 151, servicio de dispositivos 130 y gateway 57 (24 de octubre), y servicio de seguridad 660 (22 de octubre), todas en verde, con `ModularityTests` en verde. Dos pruebas de punta a punta sobre la pila local (`infra/e2e/device-flow.sh`, 21/21, y `infra/e2e/measurement-flow.sh`, 25/25) verifican lo que cruza los servicios. El inventario por clase y la trazabilidad de este documento siguen siendo los de la versión 1.1.
 
 *Palabras clave:* pruebas de software, trazabilidad, JUnit, Vitest, Spring Modulith, EnergyMonitor
 
@@ -35,7 +38,7 @@ Documentar las pruebas que ya existen y se ejecutan en EnergyMonitor, y mostrar 
 
 ### Alcance
 
-Se prueba el servicio central (siete módulos: security, home, device, measurement, alert, recommendation y notification), la aplicación web, la ingesta MQTT y la autorización del broker. El firmware del dispositivo, el broker Mosquitto, Bluetooth, las notificaciones push y la aplicación móvil Android quedan fuera de las pruebas automatizadas y se declaran como vacíos conocidos. No se prueban el rendimiento, la carga ni la accesibilidad (WCAG), que la especificación deja como `[POR CONFIRMAR]`.
+Se prueba el servicio central (siete módulos: security, home, device, measurement, alert, recommendation y notification), la aplicación web, la ingesta MQTT y la autorización del broker. Desde la versión 1.2 esos contextos se reparten entre el API gateway, los servicios de seguridad, dispositivos y mediciones y el servicio central (home, alert, recommendation y notification); cada uno se prueba en su repositorio, y las pruebas de punta a punta de `energy-monitor-infra` verifican la comunicación entre ellos (rutas del gateway, API interna, broker y eventos en RabbitMQ). El firmware del dispositivo, el broker Mosquitto, Bluetooth, las notificaciones push y la aplicación móvil Android quedan fuera de las pruebas automatizadas y se declaran como vacíos conocidos. No se prueban el rendimiento, la carga ni la accesibilidad (WCAG), que la especificación deja como `[POR CONFIRMAR]`.
 
 ### Referencias del documento
 
@@ -43,7 +46,7 @@ La trazabilidad usa los códigos de la especificación de requisitos (RF-SEC, RF
 
 ## Elementos bajo prueba
 
-La Tabla 2 lista los elementos, la rama y el commit con el que se ejecutó cada prueba en la versión 1.1. La ejecución de la versión 1.0 usó `dev` (backend `d03bbd3`, web `e6edc12`).
+La Tabla 2 lista los elementos bajo prueba en la versión 1.2, con la rama y el commit de `main` en producción el 24 de octubre de 2026. La versión 1.1 usó `main` (backend `90ae5ef`, web `2b41cb3`, infra `7324110`, móvil `dev` `4ebccfb`) y la 1.0, `dev` (backend `d03bbd3`, web `e6edc12`).
 
 **Tabla 2**
 
@@ -51,11 +54,15 @@ La Tabla 2 lista los elementos, la rama y el commit con el que se ejecutó cada 
 
 | Elemento                  | Versión                         | Rama | Commit  | Observación                                                              |
 |---------------------------|---------------------------------|------|---------|--------------------------------------------------------------------------|
-| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1     | main | 90ae5ef | Servicio central y firmware (`firmware/`, versión 1.3.8)                 |
-| energy-monitor-web        | React 19 · Vite 8               | main | 2b41cb3 | Aplicación web                                                           |
-| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev  | 4ebccfb | Sin pruebas automatizadas                                                |
-| energy-monitor-infra      | Docker Compose · Mosquitto 2    | main | 7324110 | Compose, broker y scripts validados en CI; reemplaza a `devices`, retirado |
-| energy-monitor-docs-final | Markdown ES/EN                  | dev  | 00806c6 | Documentación final (este documento)                                     |
+| en-monitor-api-gateway    | Java 21 · Spring Boot 4.0.8 · Spring Cloud Gateway | main | c070cec | API gateway; 57 pruebas                                  |
+| en-monitor-security-service | Java 21 · Spring Boot 4.1.1   | main | 334691a | Servicio de seguridad; 660 pruebas (22/10/2026)                          |
+| en-monitor-device-service | Java 21 · Spring Boot 4.1.1     | main | f8b8526 | Servicio de dispositivos; 130 pruebas                                    |
+| en-monitor-measurement-service | Java 21 · Spring Boot 4.1.1 | main | ee2cb81 | Servicio de mediciones; 151 pruebas                                     |
+| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1 · Spring Modulith | main | aa9a713 | Servicio central (home, alert, recommendation y notification) y firmware (`firmware/`, versión 1.3.8); 481 pruebas |
+| energy-monitor-web        | React 19 · Vite 8               | main | e59bece | Aplicación web                                                           |
+| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | main | 894b65a | Sin pruebas automatizadas                                                |
+| energy-monitor-infra      | Docker Compose · Mosquitto 2 · RabbitMQ 4.1 | main | eaf961b | Compose, broker y scripts validados en CI; pruebas de punta a punta `e2e/`; reemplaza a `devices`, retirado |
+| energy-monitor-docs-final | Markdown ES/EN                  | dev  | —       | Documentación final (este documento)                                     |
 
 ## Estrategia de pruebas
 
@@ -97,7 +104,8 @@ Se combinan pruebas de caja blanca (dominio y casos de uso con puertos simulados
 | Vitest / Testing Library (React)               | 5.0.3 / 16.3.3             | Pruebas de la aplicación web (jsdom)                                 |
 | Java / Node.js / Docker                        | 21.0.12 / 22.22.2 / 29.8.2 | Entorno de ejecución                                                 |
 | JaCoCo                                         | No está en el pom.xml      | Sin reporte de cobertura (ver recomendaciones)                       |
-| GitHub Actions                                 | runner ubuntu-latest       | Integración continua: *checks* `Tests` (backend) y `Tests and build` (web) |
+| GitHub Actions                                 | runner ubuntu-latest       | Integración continua: *checks* `Tests` (gateway, servicios y backend), `Tests and build` (web) y `Validate compose and scripts` (infra) |
+| Scripts de punta a punta (`infra/e2e/`)         | bash, `jq`, `openssl`, `mosquitto_pub` | Recorridos entre servicios sobre la pila local completa (versión 1.2) |
 
 ## Entorno de pruebas
 
@@ -128,7 +136,7 @@ Las pruebas de persistencia y las de contexto completo corren contra MySQL 8.4 r
 
 ## Inventario de pruebas automatizadas
 
-Cada tabla corresponde a un módulo del servicio central. «Estado» es Aprobada, Falla (con su defecto) o «Por ejecutar (MySQL)» para las clases que levantan contexto con base de datos. Las clases nuevas están marcadas con NUEVA en su descripción. En la versión 1.1 todas las clases se ejecutaron contra MySQL y aprobaron, por lo que el estado de todas es «Aprobada».
+Cada tabla corresponde a un módulo del servicio central tal como estaba en la versión 1.1, cuando los siete módulos vivían en `energy-monitor-backend`. Desde la versión 1.2 el código de security, device y measurement está en sus propios repositorios, que tienen sus propias suites (Tabla 2); este inventario no se rehízo por clase para la versión 1.2. «Estado» es Aprobada, Falla (con su defecto) o «Por ejecutar (MySQL)» para las clases que levantan contexto con base de datos. Las clases nuevas están marcadas con NUEVA en su descripción. En la versión 1.1 todas las clases se ejecutaron contra MySQL y aprobaron, por lo que el estado de todas es «Aprobada».
 
 **Tabla 7**
 
@@ -585,6 +593,23 @@ Los requisitos sin cobertura son vacíos conocidos (ver riesgos y limitaciones).
 
 El 20 de octubre de 2026 la suite completa del servicio central (`./mvnw test`, perfil test, MySQL 8.4) terminó con **1131 pruebas, 0 fallos y 0 errores**. El mismo resultado lo da el *check* obligatorio `Tests` de GitHub Actions sobre `main` (commit `90ae5ef`, 23 min 9 s), que se ejecuta en cada *pull request* hacia `dev` y `main`. La distribución por módulo del reporte Surefire local más reciente (16 de octubre de 2026: 132 clases, 1124 pruebas, 0 fallos) está en [resumen-suite-completa.md](../../evidencias/ES/backend/resumen-suite-completa.md); entre ese reporte y la ejecución final se agregaron 7 pruebas.
 
+### Suites por repositorio (versión 1.2, 24/10/2026)
+
+Con la arquitectura de servicios, cada repositorio ejecuta su propia suite con `./mvnw test` (contra MySQL 8.4 los que lo necesitan) en local y en el *check* `Tests` de su pipeline. Resultados, todos en verde:
+
+- `energy-monitor-backend` (home, alert, recommendation, notification e intermediarios): 481 pruebas; `ModularityTests` en verde.
+- `en-monitor-measurement-service`: 151 pruebas.
+- `en-monitor-device-service`: 130 pruebas.
+- `en-monitor-api-gateway`: 57 pruebas.
+- `en-monitor-security-service`: 660 pruebas (ejecución del 22 de octubre de 2026).
+
+Pruebas de punta a punta sobre la pila local completa (`energy-monitor-infra`, con los cinco servicios `healthy`):
+
+- `e2e/device-flow.sh` (21/21): rutas del gateway, vinculación de un módulo (el servicio de dispositivos consulta al backend), autenticación del broker contra el servicio de dispositivos con clave correcta e incorrecta, telemetría (`ONLINE` y lectura guardada por el servicio de mediciones), estado `offline` (evento `device.connectivity-lost` y alerta `CONNECTIVITY` en el backend) y borrado del hogar (`home.deleted`, el módulo queda desvinculado y recibe `unlink`).
+- `e2e/measurement-flow.sh` (25/25): dos lecturas publicadas por el broker que el servicio de mediciones guarda una sola vez y anuncia por su *outbox* (`measurement.recorded`), alerta `THRESHOLD` levantada y resuelta en el backend, consumo, historial, estadísticas y niveles por el gateway, y la cola `energy-monitor-backend.measurement.recorded` y su `.dlq` vacías.
+
+No se adjuntan reportes de Surefire de la versión 1.2 en las evidencias.
+
 ### Backend sin base de datos (ejecución de la versión 1.0, 14/10/2026)
 
 Se ejecutó `./mvnw -o test` limitado a las clases que no levantan contexto con base de datos (88 clases existentes) más las 4 clases nuevas. Los totales por módulo salen de target/surefire-reports y se detallan en [resumen-surefire.md](../../evidencias/ES/backend/resumen-surefire.md).
@@ -639,7 +664,7 @@ Se escribieron 4 clases para requisitos críticos sin ninguna cobertura automati
 
 ### Evidencias
 
-Las evidencias están en [evidencias](../../evidencias/ES/README.md): resumen de Surefire, log recortado de la ejecución y resumen de Vitest de la versión 1.0, y resumen de la suite completa y nueva ejecución de Vitest de la versión 1.1. No contienen secretos.
+Las evidencias están en [evidencias](../../evidencias/ES/README.md): resumen de Surefire, log recortado de la ejecución y resumen de Vitest de la versión 1.0, resumen de la suite completa y nueva ejecución de Vitest de la versión 1.1, y el estado de la versión 1.2 (totales por repositorio y pruebas de punta a punta). No contienen secretos.
 
 ## Riesgos, limitaciones y vacíos conocidos
 
@@ -666,6 +691,8 @@ Las evidencias están en [evidencias](../../evidencias/ES/README.md): resumen de
 El servicio central cuenta con una suite amplia y rápida: 835 pruebas ejecutadas sin base de datos en 26 segundos, con 2 fallas que no son del código de producción (DEF-01) o que apuntan a un defecto de manejo de errores (DEF-02). La web aprueba sus 141 pruebas. Falta ejecutar las 37 clases con MySQL para cerrar la verificación. Recomendaciones: (1) definir SPRING_DATASOURCE_PASSWORD y ejecutar `./mvnw clean test` completo; (2) corregir DEF-02 con un manejador de MissingServletRequestParameterException; (3) actualizar la prueba de DEF-01; (4) incorporar Testcontainers para hacer herméticas las pruebas de persistencia; (5) agregar pruebas a la aplicación móvil; (6) incorporar JaCoCo y una integración continua; (7) escribir los requisitos de administración y sus pruebas.
 
 Versión 1.1: la verificación del servicio central quedó cerrada con la suite completa (1131 pruebas, 0 fallos) contra MySQL, en local y en GitHub Actions. Se cumplieron las recomendaciones (1), (2) y (3), y la integración continua de la (6) ya existe con *checks* obligatorios en `dev` y `main`. Siguen pendientes Testcontainers (4), las pruebas de la aplicación móvil (5), JaCoCo (6) y el requisito de administración en la especificación (7).
+
+Versión 1.2: con la arquitectura de servicios, la verificación se reparte entre los repositorios y todas las suites están en verde (backend 481, mediciones 151, dispositivos 130, gateway 57 y seguridad 660), con `ModularityTests` en verde y las dos pruebas de punta a punta de `energy-monitor-infra` aprobadas (21/21 y 25/25) sobre la pila local. Siguen pendientes las mismas recomendaciones (4) a (7), ahora en cada servicio Java; JaCoCo no está en ninguno de los `pom.xml`. Rehacer el inventario por clase y la trazabilidad por repositorio queda pendiente.
 
 ## Referencias
 

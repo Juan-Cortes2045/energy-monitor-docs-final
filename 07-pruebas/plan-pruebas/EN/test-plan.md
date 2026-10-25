@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Technologist in Software Analysis and Development (ADSO), group (ficha) 3145556
 
-October 14, 2026 (updated October 20, 2026)
+October 14, 2026 (updated October 24, 2026)
 
 ## Version Control
 
@@ -18,12 +18,15 @@ October 14, 2026 (updated October 20, 2026)
 |---------|------------|-----------------------------------------------------------------------------------|-----------------------------------------------|
 | 1.0     | 10/14/2026 | First version: inventory, traceability and results of the run without a database. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.1     | 10/20/2026 | Run of the full suite against MySQL (1131 tests, 0 failures) locally and in GitHub Actions; DEF-01 and DEF-02 closed; 3 new push notification test classes; traceability, risks and evidence updated. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.2     | 10/24/2026 | Services architecture: items under test per repository (gateway, security, device and measurement services, backend) with the `main` commits in production, totals of each suite, end-to-end tests of `energy-monitor-infra` and pipelines per repository. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Abstract
 
 This document is the test plan and report of EnergyMonitor. It inventories the 129 automated test classes of the core service (1097 declared test methods) and the 20 suites of the web application (141 tests), traces the 107 functional and non-functional requirements of the specification against those tests, and records the run of October 14, 2026. The core service suite without a database ran 835 tests, 833 passed and 2 failed; the web ran 141 tests, all passed. The 37 classes that need MySQL were not run because the SPRING_DATASOURCE_PASSWORD variable is missing. The mobile application has no automated tests. 4 new test classes were written and 2 defects and 1 documentary observation were recorded.
 
 Version 1.1 (October 20, 2026) records the run of the full core service suite against MySQL 8.4: 1131 tests in 132 classes, 0 failures, both locally and in the required `Tests` check of GitHub Actions. The 37 pending classes now run, defects DEF-01 and DEF-02 are closed and the web passes its 141 tests again. Traceability stands at 68 requirements with an automated test run and 39 with no coverage.
+
+Version 1.2 (October 24, 2026) corresponds to the services architecture in production: the security, device and measurement modules left the core service for their own repositories (`en-monitor-security-service`, `en-monitor-device-service` and `en-monitor-measurement-service`), behind an API gateway (`en-monitor-api-gateway`), and the core service keeps home, alert, recommendation and notification. Each repository runs its suite in its pipeline: backend 481 tests, measurement service 151, device service 130 and gateway 57 (October 24), and security service 660 (October 22), all green, with `ModularityTests` green. Two end-to-end tests on the local stack (`infra/e2e/device-flow.sh`, 21/21, and `infra/e2e/measurement-flow.sh`, 25/25) verify what crosses the services. The per-class inventory and the traceability of this document are still those of version 1.1.
 
 *Keywords:* software testing, traceability, JUnit, Vitest, Spring Modulith, EnergyMonitor
 
@@ -35,7 +38,7 @@ To document the tests that already exist and run in EnergyMonitor, and show whic
 
 ### Scope
 
-The core service (seven modules: security, home, device, measurement, alert, recommendation and notification), the web application, MQTT ingestion and broker authorization are tested. The device firmware, the Mosquitto broker, Bluetooth, push notifications and the Android mobile application are outside the automated tests and are declared as known gaps. Performance, load and accessibility (WCAG) are not tested; the specification leaves them as `[TO BE CONFIRMED]`.
+The core service (seven modules: security, home, device, measurement, alert, recommendation and notification), the web application, MQTT ingestion and broker authorization are tested. Since version 1.2 those contexts are split between the API gateway, the security, device and measurement services and the core service (home, alert, recommendation and notification); each one is tested in its own repository, and the end-to-end tests of `energy-monitor-infra` verify the communication between them (gateway routes, internal API, broker and events on RabbitMQ). The device firmware, the Mosquitto broker, Bluetooth, push notifications and the Android mobile application are outside the automated tests and are declared as known gaps. Performance, load and accessibility (WCAG) are not tested; the specification leaves them as `[TO BE CONFIRMED]`.
 
 ### Document references
 
@@ -43,7 +46,7 @@ Traceability uses the codes of the requirements specification (RF-SEC, RF-HOM, R
 
 ## Items Under Test
 
-The Table 2 lists the items, the branch and the commit with which each test was run in version 1.1. The version 1.0 run used `dev` (backend `d03bbd3`, web `e6edc12`).
+Table 2 lists the items under test in version 1.2, with the branch and the `main` commit in production on October 24, 2026. Version 1.1 used `main` (backend `90ae5ef`, web `2b41cb3`, infra `7324110`, mobile `dev` `4ebccfb`) and version 1.0, `dev` (backend `d03bbd3`, web `e6edc12`).
 
 **Table 2**
 
@@ -51,11 +54,15 @@ The Table 2 lists the items, the branch and the commit with which each test was 
 
 | Item                      | Version                         | Branch | Commit  | Remark                                                    |
 |---------------------------|---------------------------------|--------|---------|-----------------------------------------------------------|
-| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1     | main   | 90ae5ef | Core service and firmware (`firmware/`, version 1.3.8)    |
-| energy-monitor-web        | React 19 · Vite 8               | main   | 2b41cb3 | Web application                                           |
-| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev    | 4ebccfb | No automated tests                                        |
-| energy-monitor-infra      | Docker Compose · Mosquitto 2    | main   | 7324110 | Compose, broker and scripts validated in CI; replaces the retired `devices` |
-| energy-monitor-docs-final | Markdown ES/EN                  | dev    | 00806c6 | Final documentation (this document)                       |
+| en-monitor-api-gateway    | Java 21 · Spring Boot 4.0.8 · Spring Cloud Gateway | main | c070cec | API gateway; 57 tests                                |
+| en-monitor-security-service | Java 21 · Spring Boot 4.1.1   | main   | 334691a | Security service; 660 tests (10/22/2026)                  |
+| en-monitor-device-service | Java 21 · Spring Boot 4.1.1     | main   | f8b8526 | Device service; 130 tests                                 |
+| en-monitor-measurement-service | Java 21 · Spring Boot 4.1.1 | main  | ee2cb81 | Measurement service; 151 tests                            |
+| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1 · Spring Modulith | main | aa9a713 | Core service (home, alert, recommendation and notification) and firmware (`firmware/`, version 1.3.8); 481 tests |
+| energy-monitor-web        | React 19 · Vite 8               | main   | e59bece | Web application                                           |
+| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | main   | 894b65a | No automated tests                                        |
+| energy-monitor-infra      | Docker Compose · Mosquitto 2 · RabbitMQ 4.1 | main | eaf961b | Compose, broker and scripts validated in CI; end-to-end tests `e2e/`; replaces the retired `devices` |
+| energy-monitor-docs-final | Markdown ES/EN                  | dev    | —       | Final documentation (this document)                       |
 
 ## Test Strategy
 
@@ -97,7 +104,8 @@ White-box tests (domain and use cases with mocked ports) and black-box tests (HT
 | Vitest / Testing Library (React)               | 5.0.3 / 16.3.3             | Web application tests (jsdom)                                  |
 | Java / Node.js / Docker                        | 21.0.12 / 22.22.2 / 29.8.2 | Execution environment                                          |
 | JaCoCo                                         | Not in pom.xml             | No coverage report (see recommendations)                       |
-| GitHub Actions                                 | ubuntu-latest runner       | Continuous integration: `Tests` (backend) and `Tests and build` (web) checks |
+| GitHub Actions                                 | ubuntu-latest runner       | Continuous integration: `Tests` (gateway, services and backend), `Tests and build` (web) and `Validate compose and scripts` (infra) checks |
+| End-to-end scripts (`infra/e2e/`)              | bash, `jq`, `openssl`, `mosquitto_pub` | Walkthroughs across services on the full local stack (version 1.2) |
 
 ## Test Environment
 
@@ -128,7 +136,7 @@ Persistence and full-context tests run against real MySQL 8.4 (container energy-
 
 ## Inventory of Automated Tests
 
-Each table corresponds to a module of the core service. “Status” is Passed, Fails (with its defect) or “To run (MySQL)” for the classes that boot a context with a database. New classes are marked NEW in their description. In version 1.1 every class ran against MySQL and passed, so the status of all of them is “Passed”.
+Each table corresponds to a module of the core service as it was in version 1.1, when the seven modules lived in `energy-monitor-backend`. Since version 1.2 the code of security, device and measurement is in their own repositories, which have their own suites (Table 2); this inventory was not redone per class for version 1.2. “Status” is Passed, Fails (with its defect) or “To run (MySQL)” for the classes that boot a context with a database. New classes are marked NEW in their description. In version 1.1 every class ran against MySQL and passed, so the status of all of them is “Passed”.
 
 **Table 7**
 
@@ -585,6 +593,23 @@ Requirements with no coverage are known gaps (see risks and limitations). Accoun
 
 On October 20, 2026 the full core service suite (`./mvnw test`, test profile, MySQL 8.4) finished with **1131 tests, 0 failures and 0 errors**. The required `Tests` check of GitHub Actions gives the same result on `main` (commit `90ae5ef`, 23 min 9 s), and it runs on every pull request to `dev` and `main`. The per-module distribution of the most recent local Surefire report (October 16, 2026: 132 classes, 1124 tests, 0 failures) is in [full-suite-summary.md](../../evidencias/EN/backend/full-suite-summary.md); 7 tests were added between that report and the final run.
 
+### Suites per repository (version 1.2, 10/24/2026)
+
+With the services architecture, each repository runs its own suite with `./mvnw test` (against MySQL 8.4 for those that need it) locally and in the `Tests` check of its pipeline. Results, all green:
+
+- `energy-monitor-backend` (home, alert, recommendation, notification and intermediaries): 481 tests; `ModularityTests` green.
+- `en-monitor-measurement-service`: 151 tests.
+- `en-monitor-device-service`: 130 tests.
+- `en-monitor-api-gateway`: 57 tests.
+- `en-monitor-security-service`: 660 tests (run of October 22, 2026).
+
+End-to-end tests on the full local stack (`energy-monitor-infra`, with the five services `healthy`):
+
+- `e2e/device-flow.sh` (21/21): gateway routes, linking a module (the device service queries the backend), broker authentication against the device service with a correct and a wrong key, telemetry (`ONLINE` and the reading stored by the measurement service), `offline` status (`device.connectivity-lost` event and `CONNECTIVITY` alert in the backend) and home deletion (`home.deleted`, the module is unlinked and receives `unlink`).
+- `e2e/measurement-flow.sh` (25/25): two readings published through the broker that the measurement service stores only once and announces through its *outbox* (`measurement.recorded`), a `THRESHOLD` alert raised and resolved in the backend, consumption, history, statistics and levels through the gateway, and the `energy-monitor-backend.measurement.recorded` queue and its `.dlq` empty.
+
+No Surefire reports of version 1.2 are attached to the evidence.
+
 ### Backend without a database (version 1.0 run, 10/14/2026)
 
 `./mvnw -o test` was run limited to the classes that do not boot a context with a database (88 existing classes) plus the 4 new classes. The totals per module come from target/surefire-reports and are detailed in [surefire-summary.md](../../evidencias/EN/backend/surefire-summary.md).
@@ -639,7 +664,7 @@ On October 20, 2026 the full core service suite (`./mvnw test`, test profile, My
 
 ### Evidence
 
-The evidence is in [evidence](../../evidencias/EN/README.md): Surefire summary, trimmed execution log and Vitest summary from version 1.0, and the full suite summary and new Vitest run from version 1.1. It contains no secrets.
+The evidence is in [evidence](../../evidencias/EN/README.md): Surefire summary, trimmed execution log and Vitest summary from version 1.0, the full suite summary and new Vitest run from version 1.1, and the status of version 1.2 (totals per repository and end-to-end tests). It contains no secrets.
 
 ## Risks, Limitations and Known Gaps
 
@@ -666,6 +691,8 @@ The evidence is in [evidence](../../evidencias/EN/README.md): Surefire summary, 
 The core service has a broad and fast suite: 835 tests run without a database in 26 seconds, with 2 failures that are not production code (DEF-01) or that point to an error-handling defect (DEF-02). The web passes its 141 tests. The 37 classes with MySQL remain to be run to close the verification. Recommendations: (1) define SPRING_DATASOURCE_PASSWORD and run the full `./mvnw clean test`; (2) fix DEF-02 with a MissingServletRequestParameterException handler; (3) update the DEF-01 test; (4) adopt Testcontainers to make the persistence tests hermetic; (5) add tests to the mobile application; (6) add JaCoCo and continuous integration; (7) write the administration requirements and their tests.
 
 Version 1.1: the verification of the core service is closed with the full suite (1131 tests, 0 failures) against MySQL, locally and in GitHub Actions. Recommendations (1), (2) and (3) were carried out, and the continuous integration of (6) now exists with required checks on `dev` and `main`. Testcontainers (4), mobile application tests (5), JaCoCo (6) and the administration requirement in the specification (7) remain pending.
+
+Version 1.2: with the services architecture, verification is split across the repositories and every suite is green (backend 481, measurement 151, device 130, gateway 57 and security 660), with `ModularityTests` green and the two end-to-end tests of `energy-monitor-infra` passed (21/21 and 25/25) on the local stack. The same recommendations (4) to (7) remain pending, now in every Java service; JaCoCo is in none of the `pom.xml` files. Redoing the per-class inventory and the traceability per repository remains pending.
 
 ## References
 
