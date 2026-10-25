@@ -22,8 +22,8 @@ Ficha: 3145556
 | Programa             | Tecnología en Análisis y Desarrollo de Software (ADSO)                          |
 | Ficha                | 3145556                                                                         |
 | Tipo de documento    | Manual técnico de software                                                      |
-| Versión              | 1.2                                                                             |
-| Fecha de elaboración | 07 de octubre de 2026 (actualización: 24 de octubre de 2026)                    |
+| Versión              | 1.3                                                                             |
+| Fecha de elaboración | 07 de octubre de 2026 (actualización: 25 de octubre de 2026)                    |
 
 Año 2026
 
@@ -37,6 +37,7 @@ El historial de cambios del presente manual se registra en la siguiente tabla. C
 | 1.0         | 07/10/2026 | Incorporación de los diagramas oficialmente aprobados: MER, diagrama de clases, arquitectura y secuencia de autenticación, además del diccionario de datos.                                                                  | Equipo desarrollador |
 | 1.1         | 13/10/2026 | Actualización al estado final: siete módulos activos, 29 tablas, dispositivos y broker MQTT, API completa, identidad desde el JWT, hash de claves de dispositivo, aplicación móvil integrada con la API y limitaciones vigentes. | Equipo desarrollador |
 | 1.2         | 24/10/2026 | Actualización a la arquitectura en producción (https://energy-monitor.tech): API gateway (8080) y microservicios de seguridad (8082), dispositivos (8084) y mediciones (8085); backend como monolito modular con home, alert, recommendation y notification (8083); REST interno `/internal/**` y eventos en RabbitMQ con transactional outbox; repositorios, variables, despliegue y trabajos pendientes (migración de los cuatro módulos restantes en curso). | Equipo desarrollador |
+| 1.3         | 25/10/2026 | Diccionario de datos: se agrega la tabla push_device (instalaciones de la app móvil con push por el relay de Expo); 30 tablas documentadas. |
 
 # 3. Tabla de contenido
 
@@ -558,9 +559,9 @@ Energy-Monitor-Mobile/
 
 **Motor:** MySQL 8.4, ejecutado en contenedor Docker (repositorio energy-monitor-infra) con collation utf8mb4_unicode_ci.
 
-**Esquema:** energy_monitor, una sola base compartida por los servicios (ADR-003). Este capítulo documenta 29 tablas de negocio distribuidas en siete contextos. El usuario de aplicación es energy_app.
+**Esquema:** energy_monitor, una sola base compartida por los servicios (ADR-003). Este capítulo documenta 30 tablas de negocio distribuidas en siete contextos. El usuario de aplicación es energy_app.
 
-**Dueño de cada contexto:** cada servicio es dueño de sus tablas y aplica solo sus changesets: el servicio de seguridad, las del contexto Security; el servicio de dispositivos, las de Devices; el servicio de mediciones, las de Monitoring and measurements; y energy-monitor-backend, las de Home Management, Alerts, Recommendations y Notifications. El backend también tiene `push_device` (tokens de push de la app móvil, módulo notification), que todavía no se incluye en este diccionario.
+**Dueño de cada contexto:** cada servicio es dueño de sus tablas y aplica solo sus changesets: el servicio de seguridad, las del contexto Security; el servicio de dispositivos, las de Devices; el servicio de mediciones, las de Monitoring and measurements; y energy-monitor-backend, las de Home Management, Alerts, Recommendations y Notifications.
 
 **Gestión del esquema:** Liquibase aplica los changesets versionados en src/main/resources/db/changelog de cada servicio; todos comparten la tabla DATABASECHANGELOG, y los changesets que salieron del backend conservaron su ruta, por lo que no se vuelven a ejecutar. Hibernate está configurado con ddl-auto = validate, es decir, sólo valida que el esquema coincida con las entidades y nunca crea tablas por sí mismo.
 
@@ -576,7 +577,7 @@ El siguiente diagrama muestra las entidades del sistema, agrupadas por contexto 
 
 ## 11.2 Tablas principales
 
-La tabla siguiente lista las 29 tablas de negocio documentadas, el contexto al que pertenecen (y, con él, el servicio dueño indicado en la introducción de esta sección), su descripción, su llave primaria y las relaciones declaradas en el diccionario de datos.
+La tabla siguiente lista las 30 tablas de negocio documentadas, el contexto al que pertenecen (y, con él, el servicio dueño indicado en la introducción de esta sección), su descripción, su llave primaria y las relaciones declaradas en el diccionario de datos.
 
 | **Tabla**              | **Contexto**                | **Descripción**                                                                                                                                                                                                    | **Llave primaria**   | **Relaciones**                                                                                                                                                          |
 |------------------------|-----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -609,6 +610,7 @@ La tabla siguiente lista las 29 tablas de negocio documentadas, el contexto al q
 | Notification           | Notifications               | Registro de entrega de un mensaje al usuario. Alert y Recommendation son eventos; Notification registra si el mensaje fue entregado, por qué canal y su estado de lectura.                                         | —                    | Notification N:1 User (referencia aplicación); Notification N:1 Home (referencia aplicación); Notification referencia Alert/Recommendation por (source_type, source_id) |
 | NotificationPreference | Notifications               | Preferencias de canal de notificación de cada usuario (correo y push).                                                                                                                                             | user_id              | NotificationPreference 1:1 User (referencia aplicación)                                                                                                                 |
 | PushSubscription       | Notifications               | Suscripciones de notificaciones push de los navegadores del usuario.                                                                                                                                               | id_push_subscription | PushSubscription N:1 User (referencia aplicación)                                                                                                                       |
+| PushDevice             | Notifications               | Instalaciones de la app móvil que reciben push por el relay de Expo, una fila por instalación. | id_push_device | PushDevice N:1 User (referencia aplicación) |
 
 ## 11.3 Diccionario de datos
 
@@ -1041,6 +1043,19 @@ El diccionario de datos describe campo por campo cada tabla del esquema: restric
 | auth                 | VARCHAR  | 50         | NOT NULL          | Secreto de autenticación de la suscripción        |
 
 **Relaciones:** PushSubscription N:1 User (referencia aplicación)
+
+### PushDevice — Notifications
+
+*Instalaciones de la app móvil que reciben notificaciones push por el relay de Expo (una fila por instalación). No es otro tipo de PushSubscription: el token del relay no lleva endpoint ni claves de cifrado.*
+
+| **Campo**      | **Tipo** | **Tamaño** | **Restricción**   | **Descripción**                                                          |
+|----------------|----------|------------|-------------------|--------------------------------------------------------------------------|
+| id_push_device | VARCHAR  | 10         | PK / NOT NULL     | Identificador de la instalación                                          |
+| user_id        | VARCHAR  | 10         | NOT NULL          | Usuario dueño de la instalación (con índice)                             |
+| token          | VARCHAR  | 255        | UNIQUE / NOT NULL | Token de push de la instalación; si se registra otra vez, cambia de dueño |
+| platform       | VARCHAR  | 10         | NOT NULL          | Plataforma de la instalación (la app publicada es Android: ANDROID)      |
+
+**Relaciones:** PushDevice N:1 User (referencia aplicación)
 
 
 # 12. Módulos técnicos
