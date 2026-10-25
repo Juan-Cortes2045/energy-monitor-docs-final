@@ -22,8 +22,8 @@ Group (Ficha): 3145556
 | Program              | Technology in Software Analysis and Development (ADSO)                          |
 | Group (Ficha)        | 3145556                                                                         |
 | Document type        | Software technical manual                                                       |
-| Version              | 1.2                                                                             |
-| Date prepared        | October 7, 2026 (update: October 24, 2026)                                      |
+| Version              | 1.3                                                                             |
+| Date prepared        | October 7, 2026 (update: October 25, 2026)                                      |
 
 Year 2026
 
@@ -37,6 +37,7 @@ The change history of this manual is recorded in the following table. Every rele
 | 1.0         | 10/07/2026 | Incorporation of the officially approved diagrams: ERD, class diagram, architecture and authentication sequence, plus the data dictionary.                                                                                      | Development team     |
 | 1.1         | 10/13/2026 | Update to the final state: seven active modules, 29 tables, devices and MQTT broker, complete API, identity taken from the JWT, device key hashing, mobile application integrated with the API and current limitations.        | Development team     |
 | 1.2         | 10/24/2026 | Update to the architecture in production (https://energy-monitor.tech): API gateway (8080) and security (8082), device (8084) and measurement (8085) microservices; backend as a modular monolith with home, alert, recommendation and notification (8083); internal REST `/internal/**` and RabbitMQ events with transactional outbox; repositories, variables, deployment and pending work (migration of the four remaining modules in progress). | Development team     |
+| 1.3         | 10/25/2026 | Data dictionary: the push_device table is added (mobile app installations with push through the Expo relay); 30 documented tables. |
 
 # 3. Table of contents
 
@@ -558,9 +559,9 @@ Energy-Monitor-Mobile/
 
 **Engine:** MySQL 8.4, run in a Docker container (energy-monitor-infra repository) with collation utf8mb4_unicode_ci.
 
-**Schema:** energy_monitor, a single database shared by the services (ADR-003). This chapter documents 29 business tables distributed across seven contexts. The application user is energy_app.
+**Schema:** energy_monitor, a single database shared by the services (ADR-003). This chapter documents 30 business tables distributed across seven contexts. The application user is energy_app.
 
-**Owner of each context:** each service owns its tables and applies only its changesets: the security service, those of the Security context; the device service, those of Devices; the measurement service, those of Monitoring and measurements; and energy-monitor-backend, those of Home Management, Alerts, Recommendations and Notifications. The backend also has `push_device` (push tokens of the mobile app, notification module), which is not yet included in this dictionary.
+**Owner of each context:** each service owns its tables and applies only its changesets: the security service, those of the Security context; the device service, those of Devices; the measurement service, those of Monitoring and measurements; and energy-monitor-backend, those of Home Management, Alerts, Recommendations and Notifications.
 
 **Schema management:** Liquibase applies the versioned changesets in src/main/resources/db/changelog of each service; all of them share the DATABASECHANGELOG table, and the changesets that left the backend kept their path, so they are not run again. Hibernate is configured with ddl-auto = validate, that is, it only checks that the schema matches the entities and never creates tables by itself.
 
@@ -576,7 +577,7 @@ The following diagram shows the system entities, grouped by context (Security, H
 
 ## 11.2 Main tables
 
-The following table lists the 29 documented business tables, the context they belong to (and, with it, the owning service stated in the introduction of this section), their description, their primary key and the relationships declared in the data dictionary.
+The following table lists the 30 documented business tables, the context they belong to (and, with it, the owning service stated in the introduction of this section), their description, their primary key and the relationships declared in the data dictionary.
 
 | **Table**              | **Context**                 | **Description**                                                                                                                                                                                               | **Primary key**      | **Relationships**                                                                                                                                                      |
 |------------------------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -609,6 +610,7 @@ The following table lists the 29 documented business tables, the context they be
 | Notification           | Notifications               | Record of the delivery of a message to the user. Alert and Recommendation are events; Notification records whether the message was delivered, through which channel and its read status.                      | —                    | Notification N:1 User (application reference); Notification N:1 Home (application reference); Notification references Alert/Recommendation by (source_type, source_id) |
 | NotificationPreference | Notifications               | Notification channel preferences of each user (email and push).                                                                                                                                               | user_id              | NotificationPreference 1:1 User (application reference)                                                                                                                |
 | PushSubscription       | Notifications               | Push notification subscriptions of the user's browsers.                                                                                                                                                       | id_push_subscription | PushSubscription N:1 User (application reference)                                                                                                                      |
+| PushDevice             | Notifications               | Mobile app installations that receive push through the Expo relay, one row per installation. | id_push_device | PushDevice N:1 User (application reference) |
 
 ## 11.3 Data dictionary
 
@@ -1041,6 +1043,19 @@ The data dictionary describes each table of the schema field by field: key const
 | auth                 | VARCHAR  | 50       | NOT NULL          | Authentication secret of the subscription    |
 
 **Relationships:** PushSubscription N:1 User (application reference)
+
+### PushDevice — Notifications
+
+*Mobile app installations that receive push notifications through the Expo relay (one row per installation). It is not another kind of PushSubscription: a relay token carries no endpoint or encryption keys.*
+
+| **Field**      | **Type** | **Size** | **Constraint**    | **Description**                                                         |
+|----------------|----------|----------|-------------------|-------------------------------------------------------------------------|
+| id_push_device | VARCHAR  | 10       | PK / NOT NULL     | Installation identifier                                                 |
+| user_id        | VARCHAR  | 10       | NOT NULL          | User who owns the installation (indexed)                                |
+| token          | VARCHAR  | 255      | UNIQUE / NOT NULL | Push token of the installation; registering it again changes its owner |
+| platform       | VARCHAR  | 10       | NOT NULL          | Platform of the installation (the published app is Android: ANDROID)    |
+
+**Relationships:** PushDevice N:1 User (application reference)
 
 
 # 12. Technical modules
