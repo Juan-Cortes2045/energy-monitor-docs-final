@@ -22,8 +22,8 @@ Group (Ficha): 3145556
 | Program              | Technology in Software Analysis and Development (ADSO)                          |
 | Group (Ficha)        | 3145556                                                                         |
 | Document type        | Software technical manual                                                       |
-| Version              | 1.1                                                                             |
-| Date prepared        | October 7, 2026 (update: October 13, 2026)                                      |
+| Version              | 1.2                                                                             |
+| Date prepared        | October 7, 2026 (update: October 24, 2026)                                      |
 
 Year 2026
 
@@ -36,6 +36,7 @@ The change history of this manual is recorded in the following table. Every rele
 | 1.0         | 10/07/2026 | Initial creation of the technical manual: general description, technologies, architecture, folder structure, database, modules, API and security of the current software version.                                                | Development team     |
 | 1.0         | 10/07/2026 | Incorporation of the officially approved diagrams: ERD, class diagram, architecture and authentication sequence, plus the data dictionary.                                                                                      | Development team     |
 | 1.1         | 10/13/2026 | Update to the final state: seven active modules, 29 tables, devices and MQTT broker, complete API, identity taken from the JWT, device key hashing, mobile application integrated with the API and current limitations.        | Development team     |
+| 1.2         | 10/24/2026 | Update to the architecture in production (https://energy-monitor.tech): API gateway (8080) and security (8082), device (8084) and measurement (8085) microservices; backend as a modular monolith with home, alert, recommendation and notification (8083); internal REST `/internal/**` and RabbitMQ events with transactional outbox; repositories, variables, deployment and pending work (migration of the four remaining modules in progress). | Development team     |
 
 # 3. Table of contents
 
@@ -94,29 +95,32 @@ The change history of this manual is recorded in the following table. Every rele
 
 This document is the technical manual of the "Electrical Consumption Monitor" software, a project developed by trainees of the Software Analysis and Development program, group (ficha) 3145556, of the Center for Industry, Business and Services (CIES) – SENA Huila Regional.
 
-The system monitors the consumption of electrical energy in households: a measuring device (ESP32 with a PZEM-004T V3 sensor) sends its readings over MQTT, the backend stores them, computes statistics, generates alerts and saving recommendations and sends notifications by email and through the browser, and the web and mobile applications let users consult the information. The solution is made up of a REST API, an MQTT broker, a measuring device, a web application, an Android mobile application and a MySQL database.
+The system monitors the consumption of electrical energy in households: a measuring device (ESP32 with a PZEM-004T V3 sensor) sends its readings over MQTT, the measurement service stores them and computes statistics, the backend generates alerts and saving recommendations and sends notifications by email, through the browser and to the mobile app, and the web and mobile applications let users consult the information. The solution is made up of an API gateway, three microservices (security, devices and measurements), a modular backend (households, alerts, recommendations and notifications), a RabbitMQ message broker, an MQTT broker, a measuring device, a web application, an Android mobile application and a MySQL database. Everything has been in production at https://energy-monitor.tech since October 24, 2026.
 
 This manual is aimed at developers, technical support staff, the evaluating instructor and, in general, anyone who needs to understand, extend or maintain the software. Its purpose is to describe how the system is built, not how it is used: the user manual covers day-to-day use, the installation manual covers start-up, and the administrator manual covers account and backup management.
 
-The information recorded here was obtained directly from the source code of the project's repositories (backend, web, mobile and devices), from the Liquibase changesets and from the documents of this final documentation, so that it corresponds to the final version of the delivered software.
+The information recorded here was obtained directly from the source code of the project's repositories (API gateway, security, device and measurement services, backend, web, mobile and infrastructure), from the Liquibase changesets and from the documents of this final documentation, so that it corresponds to the final version of the delivered software.
 
 | **Information source**            | **Location**                                                                                                                                      |
 |-----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Backend source code               | energy-monitor-backend (Java 21 + Spring Boot 4.1.1)                                                                                              |
+| API gateway                       | en-monitor-api-gateway (Java 21 + Spring Boot 4.0.8 + Spring Cloud Gateway Server Web MVC)                                                        |
+| Microservices                     | en-monitor-security-service, en-monitor-device-service and en-monitor-measurement-service (Java 21 + Spring Boot 4.1.1)                         |
+| Backend source code               | energy-monitor-backend (Java 21 + Spring Boot 4.1.1 + Spring Modulith): home, alert, recommendation and notification                             |
 | Web application source code       | Energy-Monitor-application (React 19 + Vite 8)                                                                                                   |
 | Mobile application source code    | Energy-Monitor-Mobile (Expo SDK 57 + React Native 0.86)                                                                                           |
-| Firmware and MQTT broker          | energy-monitor-devices (ESP32 + PZEM-004T V3, firmware 1.3.8; Mosquitto 2)                                                                        |
+| Device firmware                   | `firmware/` folder of energy-monitor-backend (ESP32 + PZEM-004T V3, firmware 1.3.8)                                                               |
+| Infrastructure and MQTT broker    | energy-monitor-infra (Docker Compose, Mosquitto 2 with mosquitto-go-auth, RabbitMQ 4.1, MySQL 8.4, deployment)                                   |
 | Requirements specification        | [`02-especificacion-requisitos`](../../02-especificacion-requisitos/EN/requirements-specification.md) (RF-xxx and RNF-xxx codes)                  |
 | Software design                   | [`05-diseno-software`](../../05-diseno-software/EN/README.md): architectural model (05.1), data model (05.2), class model (05.3), patterns (05.4) and interfaces (05.5) |
-| Data model                        | Liquibase changesets in `src/main/resources/db/changelog` and [`05.2-data-model.md`](../../05-diseno-software/EN/05.2-data-model.md)             |
+| Data model                        | Liquibase changesets in `src/main/resources/db/changelog` of each service and [`05.2-data-model.md`](../../05-diseno-software/EN/05.2-data-model.md)             |
 
 # 5. Objective
 
 > To document the architecture, technologies, project structure, database, technical modules, API, security and maintenance recommendations of the "Electrical Consumption Monitor" system, so that a developer outside the team can understand the software, continue its development and support it without prior knowledge of the project.
 
-- Describe the architecture of the modular monolith, the communication with the devices and the design patterns used in each component.
+- Describe the microservice architecture with an API gateway and the modular monolith that still accompanies it, the communication between services (internal REST and RabbitMQ events), the communication with the devices and the design patterns used in each component.
 
-- Detail the exact technologies and versions used in the backend, in the two front-ends and in the device.
+- Detail the exact technologies and versions used in the backend services, in the two front-ends and in the device.
 
 - Explain the organization of the source code and the function of each folder.
 
@@ -134,16 +138,16 @@ The technical manual covers the following aspects of the system:
 
 | **Covers**                                                                              | **Does not cover**                                                                                                   |
 |-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| General architecture, layers and design patterns of the backend and the front-ends.     | Installation, start-up and production deployment procedures (covered by the installation manual).                    |
+| General architecture, services, layers and design patterns of the backend and the front-ends. | Installation, start-up and production deployment procedures (covered by the installation manual).                    |
 | Technologies, libraries and versions used, as well as their dependencies.               | Usage steps, screens and messages for the end user (covered by the user manual).                                     |
 | Folder and file structure of the project's repositories.                                | Management of users, roles, administrative reports and backups (covered by the administrator manual).                |
 | Database: ERD, tables, relationships and data dictionary.                               | Electrical design and wiring of the measuring device (described in the installation manual).                         |
-| Technical modules of the backend, web front and mobile front, with their files and tables. | User stories, use cases and acceptance criteria (analysis documents).                                             |
-| REST API: method, route, parameters, authentication and responses, and the MQTT contract. | Load testing.                                                                                                      |
+| Technical modules of the backend services, web front and mobile front, with their repository, files and tables. | User stories, use cases and acceptance criteria (analysis documents).                                             |
+| REST API: method, route, parameters, authentication and responses; gateway routes, internal communication between services and the MQTT contract. | Load testing.                                                                                                      |
 | Security: authentication, authorization, encryption, validations and known limitations. | Costs, project plan and management reports.                                                                         |
 | Version control and maintenance recommendations.                                        |                                                                                                                      |
 
-**Documented version:** software available in the repositories as of October 13, 2026. Work that remains pending is described in sections 14.2 and 16.4.
+**Documented version:** software in production at https://energy-monitor.tech and on the `main` branch of the repositories as of October 24, 2026 (commits in section 15). Work that remains pending, including the ongoing migration of the remaining backend modules to microservices, is described in sections 14.2 and 16.4.
 
 # 7. General system description
 
@@ -155,13 +159,18 @@ The technical manual covers the following aspects of the system:
 
 | **Component**        | **Type**                                  | **Function**                                                                                                                                                                                  |
 |----------------------|-------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| REST API             | Server (Java 21 + Spring Boot)            | Exposes the authentication, household, device, measurement, alert, recommendation and notification services. It is the only source of truth for the data.                                     |
+| API gateway          | Server (Java 21 + Spring Cloud Gateway, port 8080) | Single entry point of the API: routes each request to the owning service, answers CORS, validates the token (except on the public endpoints), limits the public account POSTs and refuses `/internal/**`. |
+| Security service     | Microservice (Java 21 + Spring Boot, port 8082) | Accounts, registration with email verification, sign-in (including Google), JWT RS256 and rotating refresh token, HttpOnly cookie sessions for the web, password recovery, profile, account deletion, RBAC, user administration and support contacts. |
+| Device service       | Microservice (Java 21 + Spring Boot, port 8084) | Linking, editing, credentials and unlinking of devices, appliance catalog, MQTT broker authentication and ACL, MQTT commands and module connectivity. |
+| Measurement service  | Microservice (Java 21 + Spring Boot, port 8085) | The only subscriber that stores telemetry; history, latest reading, statistics, household consumption and consumption levels; publishes each reading as `measurement.recorded`. |
+| Backend              | Modular monolith (Java 21 + Spring Boot + Spring Modulith, port 8083) | Households, members and thresholds (`home`), alerts (`alert`), recommendations (`recommendation`) and notifications by email, Web Push, mobile push (Expo) and in-app administrator notices (`notification`). It does not connect to the MQTT broker. |
+| Message broker       | RabbitMQ 4.1                              | Carries the events between services (accounts, households, devices and measurements) published with transactional outbox.                                                                    |
 | Web application      | SPA (React 19 + Vite 8)                   | Query and management interface: sign-in, household panel, consumption, history, users, devices (Bluetooth linking), thresholds, alerts, recommendations and settings.                         |
-| Mobile application   | Android app (Expo SDK 57)                 | Mobile interface connected to the REST API: account, households, alerts, recommendations and notification preferences. Android only.                                                          |
-| MQTT broker          | Eclipse Mosquitto 2 + mosquitto-go-auth   | Receives the telemetry and status of the devices over MQTT 3.1.1 with TLS and authenticates each client against the backend.                                                                  |
+| Mobile application   | Android app (Expo SDK 57)                 | Mobile interface connected to the REST API through the gateway: account, households, alerts, recommendations and notification preferences. Android only.                                     |
+| MQTT broker          | Eclipse Mosquitto 2 + mosquitto-go-auth   | Receives the telemetry and status of the devices over MQTT 3.1.1 with TLS and authenticates each client against the device service.                                                           |
 | Device               | ESP32 + PZEM-004T V3 sensor (firmware 1.3.8) | Measures voltage, current, active power and energy; publishes one reading every 60 seconds and its status every five minutes.                                                             |
-| Database             | MySQL 8.4                                 | Stores users, households, devices, measurements, alerts, recommendations and notifications (29 tables).                                                                                       |
-| Email                | SMTP (Mailpit locally)                    | Sends verification and recovery codes and alert and recommendation emails.                                                                                                                    |
+| Database             | MySQL 8.4                                 | A single database (`energy_monitor`) shared by the services; each service owns its tables and applies only its changesets. Stores users, households, devices, measurements, alerts, recommendations and notifications. |
+| Email                | SMTP (Mailpit locally)                    | Sends, from the backend, the verification and recovery codes requested by the security service and the alert and recommendation emails.                                                     |
 
 ## 7.3 System roles
 
@@ -170,8 +179,8 @@ The technical manual covers the following aspects of the system:
 | Household owner (OWNER)      | Creates and manages a household: invites members, configures thresholds, manages devices, transfers ownership or deletes the household. | OWNER enum of the user_home table, with domain permissions in the home module (per-role strategy). Each household has exactly one OWNER. |
 | Household member (MEMBER)    | Views the consumption, history, alerts and configuration of the household they were invited to.  | MEMBER enum of the user_home table. A user can be OWNER in one household and MEMBER in another.                                       |
 | System user                  | Personal account with profile, language, theme and notification preferences.                     | user table with status ACTIVE / INACTIVE / BLOCKED.                                                                                  |
-| Access control (RBAC)        | Global functional permissions grouped into system roles (codes such as METER.READ, ALERT.READ).  | system_role, permission, user_system_role and system_role_permission tables; checked on every request with CheckPermission (they do not travel in the JWT). |
-| Administrator                | Global management of the system and accounts.                                                    | Partial: the role assignment ports exist in the security module; the administrative interface is not yet exposed over HTTP.         |
+| Access control (RBAC)        | Global functional permissions grouped into system roles (codes such as METER.READ, ALERT.READ).  | system_role, permission, user_system_role and system_role_permission tables of the security service; checked on every request with CheckPermission (they do not travel in the JWT). The backend asks for them through `GET /internal/users/{id}/permissions` (30-second cache). |
+| Administrator                | Global management of the system and accounts.                                                    | Global ADMIN role of the security service (USER.READ, USER.MANAGE and ROLE.MANAGE): user directory, status and role changes at `/api/v1/admin/users` and `/api/v1/admin/roles`; in-app notices in the backend (`/api/v1/admin/notifications`). The first administrator is granted with `make-admin.sh` of the energy-monitor-infra repository. ADMIN gives no access to any household. |
 
 ## 7.4 Implementation status by domain
 
@@ -179,13 +188,13 @@ The system is documented as it is built. The table relates each group of require
 
 | **Requirements group**                            | **Software module**                                | **Status**                                                                                                                                                                                       |
 |---------------------------------------------------|----------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| RF-SEC – User and Profile Management              | security (backend) + auth and account (web and mobile) | Implemented: registration, email verification, sign-in (including Google), token renewal and sign-out, password recovery and change, profile, permissions and account deletion.            |
+| RF-SEC – User and Profile Management              | en-monitor-security-service + auth and account (web and mobile) | Implemented: registration, email verification, sign-in (including Google), token renewal and sign-out, password recovery and change, profile, permissions, user administration and account deletion. |
 | RF-HOM – Household Management                     | home (backend) + dashboard and DetailHome (web)    | Implemented: create household, access code, members, favorites, thresholds, household deletion and ownership transfer. Pending: device history by linking period (RF-HOM-11).                  |
-| RF-DEV – Device Management                        | device (backend) + devices (web)                   | Implemented: appliance catalog, Bluetooth linking, editing, new Wi-Fi credentials, unlinking and MQTT authorization.                                                                            |
-| RF-MED – Measurements and Consumption             | measurement (backend) + Consumption (web)          | Implemented: MQTT ingestion of telemetry and status, statistics, household consumption summary and history.                                                                                     |
+| RF-DEV – Device Management                        | en-monitor-device-service + devices (web)          | Implemented: appliance catalog, Bluetooth linking, editing, new Wi-Fi credentials, unlinking, MQTT authorization and connectivity.                                                              |
+| RF-MED – Measurements and Consumption             | en-monitor-measurement-service + Consumption (web) | Implemented: MQTT ingestion of telemetry, statistics, household consumption summary and history (the connection status is recorded by the device service).                                     |
 | RF-ALE – Alerts                                   | alert (backend) + Notifications (web and mobile)   | Implemented: device linked, disconnection, high or critical consumption and daily or monthly limit alerts.                                                                                      |
 | RF-REC – Saving Recommendations                   | recommendation (backend)                           | Implemented: five saving rules evaluated every hour.                                                                                                                                             |
-| RF-NOT – Notifications                            | notification (backend)                             | Implemented: delivery by email and Web Push according to each user's preferences.                                                                                                               |
+| RF-NOT – Notifications                            | notification (backend)                             | Implemented: delivery by email, Web Push and mobile push (Expo) according to each user's preferences, and in-app notices to administrators.                                                     |
 | RF-CLI – Web and mobile applications              | Web application and mobile application             | Web implemented. Mobile integrated with the API; deleting and transferring a household only exist on the web.                                                                                   |
 
 # 8. Technologies used
@@ -194,20 +203,25 @@ The following table records the languages, frameworks, libraries, database tools
 
 | **Component**                  | **Technology**                           | **Version / detail**                                                                               |
 |--------------------------------|------------------------------------------|----------------------------------------------------------------------------------------------------|
-| Backend language               | Java                                     | Java 21 (LTS)                                                                                      |
-| Backend framework              | Spring Boot                              | Spring Boot 4.1.1 (Spring Framework 7)                                                             |
-| Architectural style            | Spring Modulith + hexagonal architecture | spring-modulith 2.1.1, 7 modules (bounded contexts)                                                |
-| Backend build                  | Maven Wrapper                            | mvnw / mvnw.cmd, spring-boot-maven-plugin                                                          |
+| Backend language               | Java                                     | Java 21 (LTS) in the five services                                                                 |
+| Backend framework              | Spring Boot                              | Spring Boot 4.1.1 (Spring Framework 7) in security, device, measurement and backend; 4.0.8 in the gateway |
+| API gateway                    | Spring Cloud Gateway Server Web MVC      | Spring Cloud 2025.1.3, Apache HttpClient 5 and Caffeine; routing, security, ratelimit and error packages |
+| Architectural style            | Microservices + Spring Modulith + hexagonal architecture | 3 microservices (security, devices and measurements) behind the gateway; backend with spring-modulith 2.1.1 and 4 modules (home, alert, recommendation and notification) plus 3 proxy packages |
+| Backend build                  | Maven Wrapper                            | mvnw / mvnw.cmd in each repository, spring-boot-maven-plugin                                       |
 | Persistence                    | Spring Data JPA + Hibernate              | ddl-auto = validate (the schema is defined by Liquibase)                                           |
-| Database migrations            | Liquibase                                | db/changelog with changesets per module and rollback                                               |
-| Database engine                | MySQL                                    | MySQL 8.4, collation utf8mb4_unicode_ci, schema energy_monitor                                     |
-| Authentication and authorization | Spring Security + OAuth2 Resource Server | JWT RS256 with RSA key pair (PEM), BCrypt for passwords                                          |
+| Database migrations            | Liquibase                                | db/changelog with changesets and rollback in each service; shared DATABASECHANGELOG table          |
+| Database engine                | MySQL                                    | MySQL 8.4, collation utf8mb4_unicode_ci, shared energy_monitor schema (ADR-003)                    |
+| Authentication and authorization | Spring Security + OAuth2 Resource Server | JWT RS256 signed only by the security service (PEM private key); the gateway and the services validate it with the public key; BCrypt for passwords |
 | Data validation                | Jakarta Bean Validation                  | @NotBlank, @Size, @NotNull, @Positive, @Pattern                                                    |
-| API documentation              | springdoc-openapi                        | springdoc 3.1.1, Swagger UI and /v3/api-docs                                                       |
-| Email and push                 | spring-boot-starter-mail + Web Push      | SMTP with STARTTLS (Mailpit locally); push notifications with VAPID keys                           |
-| Messaging with devices         | MQTT 3.1.1 with TLS                      | Eclipse Mosquitto 2 + mosquitto-go-auth; the backend subscribes as an MQTT client                  |
-| Monitoring and health          | Spring Boot Actuator                     | /actuator/health and /actuator/info                                                                |
-| Backend tests                  | JUnit 5 + Spring Boot Test               | 131 test files in src/test/java (more than 1,000 cases)                                            |
+| API documentation              | springdoc-openapi                        | springdoc 3.1.1, Swagger UI and /v3/api-docs in each service                                       |
+| Email and push                 | spring-boot-starter-mail + Web Push + Expo | SMTP with STARTTLS (Mailpit locally), only from the backend; browser push with VAPID keys and mobile app push with Expo |
+| Messaging between services     | RabbitMQ 4.1 + Spring AMQP               | Exchanges per context, transactional outbox with a relay every second, durable queues with dead-letter |
+| Internal communication         | REST `/internal/**`                      | X-Internal-Token header (INTERNAL_API_TOKEN) from loopback or the Docker network; Caffeine caches |
+| Messaging with devices         | MQTT 3.1.1 with TLS                      | Eclipse Mosquitto 2 + mosquitto-go-auth; the device and measurement services subscribe as MQTT clients (Eclipse Paho) |
+| Monitoring and health          | Spring Boot Actuator                     | /actuator/health and /actuator/info in each service                                                |
+| Backend tests                  | JUnit 5 + Spring Boot Test               | backend 481, security service 660, measurement service 151, device service 130 and gateway 57 tests, all green (October 24, 2026; security, October 22) |
+| Containers and deployment      | Docker Compose + Nginx + Certbot         | energy-monitor-infra repository: local, development and production modes; HTTPS with Let's Encrypt |
+| Continuous integration and deployment | GitHub Actions                    | tests and build on every PR and push to dev and main; deployment from main with approval of the production environment |
 | Web front-end                  | React + Vite                             | React 19.2, Vite 8.0, JavaScript (ESM), no TypeScript                                              |
 | Web routing                    | react-router-dom                         | react-router-dom 7.17 with protected routes and nested layouts                                     |
 | API consumption (web)          | axios                                    | axios 1.17 with request and response interceptors                                                  |
@@ -228,16 +242,20 @@ The following table records the languages, frameworks, libraries, database tools
 
 ## 8.1 Main backend dependencies (pom.xml)
 
-The backend's pom.xml declares as core dependencies spring-boot-starter-webmvc, spring-boot-starter-data-jpa, spring-boot-starter-security, spring-boot-starter-oauth2-resource-server, spring-boot-starter-validation, spring-boot-starter-liquibase, spring-boot-starter-mail, spring-boot-starter-actuator, spring-modulith-starter-core (with its observability and actuator modules), springdoc-openapi-starter-webmvc-ui 3.1.1, mysql-connector-j (runtime) and the set of test starters (\*-test and spring-modulith-starter-test).
+The pom.xml of energy-monitor-backend declares as core dependencies spring-boot-starter-webmvc, spring-boot-starter-data-jpa, spring-boot-starter-security, spring-boot-starter-security-oauth2-resource-server, spring-boot-starter-validation, spring-boot-starter-liquibase, spring-boot-starter-mail, spring-boot-starter-actuator, spring-boot-starter-amqp, spring-modulith-starter-core (with its observability and actuator modules), springdoc-openapi-starter-webmvc-ui 3.1.1, caffeine, mysql-connector-j (runtime) and the set of test starters (\*-test, spring-boot-starter-amqp-test and spring-modulith-starter-test). It no longer includes an MQTT client.
+
+The security, device and measurement microservices share the base (webmvc, data-jpa, security, security-oauth2-resource-server, validation, liquibase, actuator, amqp, springdoc and mysql-connector-j); the device and measurement services add spring-integration-mqtt with Eclipse Paho, and the measurement service, caffeine. The gateway declares spring-cloud-starter-gateway-server-webmvc, httpclient5, spring-boot-starter-security, spring-boot-starter-security-oauth2-resource-server, spring-boot-starter-actuator and caffeine.
 
 ## 8.2 Available scripts
 
 | **Repository** | **Script**                      | **Function**                                                                       |
 |----------------|---------------------------------|------------------------------------------------------------------------------------|
-| backend        | mvnw spring-boot:run            | Builds and starts the API at http://localhost:8080.                                |
-| backend        | mvnw test                       | Runs the test suite (requires MySQL running).                                      |
-| backend        | mvnw package                    | Generates the executable JAR in /target.                                           |
-| backend        | docker compose up -d            | Starts the MySQL 8.4 container with the energy_monitor schema.                     |
+| gateway and services | mvnw spring-boot:run      | Builds and starts each service: gateway on 8080, security on 8082, backend on 8083, devices on 8084 and measurements on 8085. |
+| gateway and services | mvnw test                 | Runs the repository's test suite (the services with a database require MySQL running). |
+| gateway and services | mvnw package              | Generates the executable JAR in /target.                                           |
+| infra          | docker compose up -d --build    | Starts the full local stack (MySQL, RabbitMQ, Mosquitto, the five Java services and the web). |
+| infra          | docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d mysql rabbitmq mosquitto | Development mode: only MySQL, RabbitMQ and Mosquitto in Docker; the services run with ./mvnw. |
+| infra          | e2e/device-flow.sh and e2e/measurement-flow.sh | End-to-end tests on the local stack.                               |
 | web            | npm run dev                     | Starts the Vite development server at http://localhost:5173.                       |
 | web            | npm run build / npm run preview | Builds the application in /dist and serves it for review.                          |
 | web            | npm test                        | Runs the tests with Vitest.                                                        |
@@ -245,67 +263,121 @@ The backend's pom.xml declares as core dependencies spring-boot-starter-webmvc, 
 | mobile         | npm run start                   | Starts the Expo Metro Bundler.                                                     |
 | mobile         | npm run android                 | Runs the application on an Android emulator or device.                             |
 | mobile         | npm run lint                    | Analyzes the code with ESLint (there are no automated tests).                      |
-| devices        | docker compose up -d            | Starts the development Mosquitto broker (devices/docker folder).                   |
-| devices        | arduino-cli compile / upload    | Builds and uploads the firmware over USB (no over-the-air, OTA, update).           |
+| firmware (backend/firmware) | arduino-cli compile / upload | Builds and uploads the firmware over USB (no over-the-air, OTA, update).    |
 
 # 9. System architecture
 
 ## 9.1 General architecture
 
-The system adopts a layered client-server architecture with an additional channel for the devices. The presentation layer is made up of the web application and the mobile application; the logic layer is the REST API built in Spring Boot; the data layer is MySQL, accessed through JPA/Hibernate and managed with Liquibase; and the measuring devices publish their readings over MQTT with TLS to a Mosquitto broker that queries the backend to authenticate them.
+The system adopts a layered client-server architecture, with the logic split into microservices behind an API gateway and an additional channel for the devices. The presentation layer is made up of the web application and the mobile application, which only call the gateway; the logic layer is formed by three microservices (security, devices and measurements) and the backend, which is still a modular monolith with the home, alert, recommendation and notification contexts; the services communicate through internal REST (`/internal/**`) and RabbitMQ events; the data layer is a single shared MySQL database, accessed through JPA/Hibernate and managed with Liquibase, in which each service owns its tables; and the measuring devices publish their readings over MQTT with TLS to a Mosquitto broker that queries the device service to authenticate them. The migration of the four modules that remain in the backend to microservices is in progress (section 16.4).
 
 > **Images and diagrams (Figures 1 to 11):** all the figures of this document are in the following Google Drive folder.  
 > https://drive.google.com/drive/folders/1tIzih2FKP8xte4vKYEtrWThFmZxR1oBX?usp=sharing
 >
-> **Figures possibly out of date (`[TO BE CONFIRMED]` after reviewing them in the folder):** Figures 3 and 5 to 8 (ERD) were drawn before the latest tables and columns and do not include `notification_preference`, `push_subscription`, `user.google_subject`, `home_thresholds.limit_period` or `device.api_key_hash`; Figures 4 and 9 to 11 (class diagram) may still show the per-role strategy classes and the device and recommendation modules as pending; and Figures 1 and 2 (architecture and authentication sequence) may show the X-User-Id header or a system without devices or broker.
+> **Figures possibly out of date (`[TO BE CONFIRMED]` after reviewing them in the folder):** Figures 3 and 5 to 8 (ERD) were drawn before the latest tables and columns and do not include `notification_preference`, `push_subscription`, `user.google_subject`, `home_thresholds.limit_period` or `device.api_key_hash`; Figures 4 and 9 to 11 (class diagram) may still show the per-role strategy classes and the device and recommendation modules as pending; and Figures 1 and 2 (architecture and authentication sequence) may show the X-User-Id header, a system without devices or broker, or the backend as a single application, without API gateway or microservices; the current architecture is the one described by the tables of this section.
 
 **Figure 1.** *General system architecture (three layers: presentation, logic and data).*
 
 | **Layer**        | **Technology**                                        | **Responsibility**                                                                                                   |
 |------------------|-------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| Presentation     | React 19 (web) and Expo SDK 57 (mobile, Android)      | User interface, form validation, session handling and consumption of the REST API.                                  |
-| Logic            | Spring Boot 4.1.1 + Spring Security + Spring Modulith | Authentication, authorization, use cases, business rule validation, MQTT ingestion and event publishing.            |
-| Data             | MySQL 8.4 + Spring Data JPA + Liquibase               | Persistence of the 29 tables, versioned schema and optimized queries.                                                |
-| Devices          | ESP32 + PZEM-004T V3 + Mosquitto 2                    | Measurement, MQTT publishing with TLS (port 8883) and authentication of each device against the backend.            |
-| Cross-cutting    | Docker Compose, Mailpit and Actuator                  | Database and broker containers, test email and service health check endpoint.                                        |
+| Presentation     | React 19 (web) and Expo SDK 57 (mobile, Android)      | User interface, form validation, session handling and consumption of the REST API through the gateway.              |
+| Entry            | Spring Cloud Gateway (en-monitor-api-gateway, 8080)   | Routing by path prefix, CORS, token validation, request limiting and refusal of `/internal/**`.                      |
+| Logic            | Spring Boot 4.1.1 + Spring Security; Spring Modulith in the backend | Security, device and measurement microservices and modular backend: authentication, authorization, use cases, business rules, MQTT ingestion and event publishing. |
+| Messaging        | RabbitMQ 4.1 + transactional outbox                   | Events between services with at-least-once delivery and dead-letter queues.                                         |
+| Data             | MySQL 8.4 + Spring Data JPA + Liquibase               | A single shared database; each service owns its tables and applies only its changesets; no foreign keys between services. |
+| Devices          | ESP32 + PZEM-004T V3 + Mosquitto 2                    | Measurement, MQTT publishing with TLS (port 8883) and authentication of each device against the device service.     |
+| Cross-cutting    | Docker Compose (energy-monitor-infra), Nginx + Certbot, GitHub Actions, Mailpit and Actuator | Containers, HTTPS in production, continuous integration and deployment, test email and health of each service. |
+
+**Backend services.** All in Java 21; Spring Boot 4.1.1 except the gateway (4.0.8). The microservices follow hexagonal architecture (ports and adapters) with the `domain`, `application`, `adapter`, `infrastructure` and `api` layers; the gateway has no domain (`routing`, `security`, `ratelimit` and `error` packages).
+
+| **Service (repository)**         | **Port**   | **Responsibility**                                                                                                                                                        |
+|----------------------------------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| en-monitor-api-gateway           | 8080       | Single entry point of the API (Spring Cloud Gateway Server Web MVC, Spring Cloud 2025.1.3). Answers CORS, validates the token (RS256, issuer and expiry) except on the public endpoints, reads the token from the web's HttpOnly `em_access` cookie (`AccessTokenCookieFilter`), limits the public account POSTs (20 per IP and path per minute, then 429), refuses `/internal/**`, answers 503 when the service does not answer and 504 when it takes more than 30 seconds. |
+| en-monitor-security-service      | 8082       | Accounts, registration with email verification, sign-in, Google, JWT RS256 (15-minute access token) and rotating refresh token, HttpOnly cookie sessions for the web, password recovery, profile, account deletion, RBAC and user administration, support contacts (`GET /api/v1/support/contacts`, public). |
+| en-monitor-device-service        | 8084       | Devices: linking, editing, credential reissue (API key stored as a SHA-256 hash), unlinking, appliance catalog, MQTT broker authentication and ACL (Mosquitto go-auth asks it), MQTT commands to the modules and connectivity (subscribed to telemetry and status; offline after 150 seconds without data). |
+| en-monitor-measurement-service   | 8085       | Measurements: the only subscriber that stores telemetry (MQTT), history, latest reading, statistics, household consumption (summary and history) and consumption levels; publishes each reading as `measurement.recorded` and offers an internal API to the backend. |
+| energy-monitor-backend           | 8083       | Modular monolith (Spring Modulith): households, members and thresholds (`home`), alerts (`alert`), recommendations (`recommendation`), notifications by email, Web Push (VAPID), mobile push (Expo) and in-app administrator notices (`notification`), plus the `security`, `device` and `measurement` proxy packages. It no longer connects to the MQTT broker. |
 
 ## 9.2 Architectural style and design patterns
 
-- **Modular monolith (Spring Modulith).** The backend is a single application organized into seven modules or bounded contexts (security, home, device, measurement, alert, recommendation and notification). Each module declares its allowed dependencies in the package-info.java file and can only communicate with the others through the types of its api package; this restriction is verified automatically by the ModularityTests test.
+- **Microservices behind an API gateway.** The security, device and measurement contexts were extracted from the backend into their own services (en-monitor-security-service, en-monitor-device-service and en-monitor-measurement-service), each with its repository, its deployment and its tables. The gateway (en-monitor-api-gateway) is the single entry point of the API and routes by path prefix, most specific first; the clients call the same routes as always, so the migration did not change the public API.
 
-- **Hexagonal architecture per module.** Inside each module live the api, domain, application (inbound ports `port/in`, outbound ports `port/out`, use cases `usecase`), adapter (inbound `adapter/in/web`, `adapter/in/event`, `adapter/in/scheduler` and outbound `adapter/out/persistence`, `out/event`, `out/client`) and infrastructure layers with the Spring configuration.
+- **Modular monolith (Spring Modulith) in the backend.** energy-monitor-backend is still a single application with four bounded contexts (home, alert, recommendation and notification) and three proxy packages (security, device and measurement) that serve the `api` contract the other modules already used, with no domain or tables: they call the internal API of the corresponding service (`adapter/out/remote`, cached) and turn its RabbitMQ events into in-memory events (`adapter/in/messaging`). Each module declares its allowed dependencies in the package-info.java file and can only communicate with the others through the types of its api package; this restriction is verified automatically by the ModularityTests test.
 
-- **In-process events (no Kafka).** Modules communicate through in-memory Spring events: `MeasurementRecorded` (measurement → alert), `AlertRaised` (alert → notification), `RecommendationCreated` (recommendation → notification), `AccountDeleted` (security → home), `HomeDeleted` (home → device) and `HomeOwnershipTransferred` (home, no consumer yet). A device's loss of connectivity is detected through `device_status_log` (last will message or 150 seconds of silence) and reaches alert as `DeviceConnectivityLost`.
+- **Hexagonal architecture per module and per service.** Inside each backend module and each microservice live the api, domain, application (inbound ports `port/in`, outbound ports `port/out`, use cases `usecase`), adapter (inbound `adapter/in/web`, `adapter/in/internal`, `adapter/in/messaging`, `adapter/in/mqtt`, `adapter/in/event`, `adapter/in/scheduler` and outbound `adapter/out/persistence`, `out/messaging`, `out/event`, `out/client` or `out/remote`) and infrastructure layers with the Spring configuration.
 
-- **Recommendations through a scheduler.** The recommendation module does not listen to `MeasurementRecorded`: `RecommendationScheduler` runs the saving rules every hour and publishes `RecommendationCreated` for each new recommendation.
+- **Events between services with RabbitMQ and transactional outbox.** What a service must tell another is written to its outbox table in the same transaction as the change; a relay publishes it every second with broker confirmation. Delivery is at least once, consumers tolerate duplicates and every queue is durable, with dead-letter after three attempts (details in section 9.3).
 
-- **Stateless REST API.** No cookies or HTTP sessions are used: each request carries a JWT in the Authorization header. The CORS policy is configured explicitly and is closed by default.
+- **In-process events inside the backend (no Kafka).** The backend modules communicate through in-memory Spring events: `AlertRaised` (alert → notification), `RecommendationCreated` (recommendation → notification), `MeasurementRecorded` and `DeviceConnectivityLost` / `DeviceConnectivityRestored` (republished by the measurement and device proxies when the RabbitMQ message arrives → alert) and `HomeOwnershipTransferred` (home, no consumer yet). A device's loss of connectivity is detected by the device service (last will message or 150 seconds of silence) and published as `device.connectivity-lost`.
 
-- **Feature-based front-end.** Both the web and the mobile app organize code in folders by functional capability (auth, dashboard, homes, notifications…) with their own components, styles, zod validations and tests. Global state is handled with React Context and the session is persisted in localStorage (web).
+- **Shared database (ADR-003).** All the services use the same MySQL database; each one owns its tables and applies only its Liquibase changesets. There are no foreign keys between services: other contexts are referenced by identifier.
+
+- **Recommendations through a scheduler.** The recommendation module does not listen to `MeasurementRecorded`: `RecommendationScheduler` runs the saving rules every hour with the hourly energy it asks the measurement service for, and publishes `RecommendationCreated` for each new recommendation.
+
+- **API without server-side HTTP session.** The services keep no HTTP session: each request carries a JWT. The mobile app sends it in the Authorization header; the web receives it in HttpOnly cookies (`em_access` and `em_refresh`) that the gateway turns into `Authorization: Bearer`. The CORS policy is resolved only in the gateway, explicitly and closed by default.
+
+- **Feature-based front-end.** Both the web and the mobile app organize code in folders by functional capability (auth, dashboard, homes, notifications…) with their own components, styles, zod validations and tests. Global state is handled with React Context; the web keeps in localStorage only the non-secret session data (account, profile, permissions and session id), never the tokens.
 
 ## 9.3 Communication between components
 
-The client applications communicate with the API through HTTP requests in JSON format under the /api/v1 prefix. Every authenticated request includes the header Authorization: Bearer \<accessToken\>. The user's identity is obtained exclusively from the `sub` claim of the JWT through `CurrentUserResolver`; the X-User-Id header is ignored. The web front automatically renews the access token on a 401 response through POST /auth/refresh, with refresh token rotation and locking between tabs using the Web Locks API.
+The client applications communicate only with the API gateway through HTTP requests in JSON format under the /api/v1 prefix; in production Nginx terminates HTTPS at https://energy-monitor.tech and the requests to /api/ reach the gateway through the web container's nginx. The gateway validates the token and forwards each request to the service that owns the route. The mobile app sends the header Authorization: Bearer \<accessToken\>; the web receives the tokens in HttpOnly cookies and the gateway turns the `em_access` cookie into that header (only when the request carries `X-Requested-With: XMLHttpRequest`). The user's identity is obtained exclusively from the `sub` claim of the JWT through `CurrentUserResolver` in each service; the X-User-Id header is ignored. The web front automatically renews the access token on a 401 response through POST /auth/refresh, with refresh token rotation and locking between tabs using the Web Locks API.
 
 | **Communication element**    | **Detail**                                                                                       |
 |------------------------------|--------------------------------------------------------------------------------------------------|
-| Protocol (clients)           | HTTP/1.1 over HTTPS in production; HTTP in local development.                                    |
+| Protocol (clients)           | HTTP/1.1 over HTTPS in production (Nginx + Let's Encrypt); HTTP in local development.            |
 | Format                       | JSON (Content-Type: application/json).                                                           |
-| API prefix                   | /api/v1 (all backend routes, except the broker's internal ones).                                 |
-| Authentication               | Authorization: Bearer \<JWT RS256\> with 15-minute expiration.                                   |
+| Entry point                  | API gateway: https://energy-monitor.tech/api/v1 in production, http://localhost:8080/api/v1 in development. |
+| API prefix                   | /api/v1 (all public routes; the `/internal/**` routes never go through the gateway).             |
+| Authentication               | Authorization: Bearer \<JWT RS256\> with 15-minute expiration (mobile) or HttpOnly `em_access` cookie (web). The gateway and each service validate signature, issuer and expiry. |
 | Identity                     | `sub` claim of the JWT; X-User-Id is ignored.                                                    |
-| Allowed origin (CORS)        | Closed by default; origins are defined with SECURITY_CORS_ALLOWED_ORIGINS (e.g. http://localhost:5173), without credentials. Methods: GET, POST, PUT, DELETE and OPTIONS. |
-| Error handling               | Response with ApiError structure: timestamp, status, error, message, path and fieldErrors.       |
-| Documentation                | OpenAPI and Swagger UI available at /v3/api-docs and /swagger-ui.html.                           |
-| Service health               | GET /actuator/health returns {"status":"UP"}.                                                    |
-| Devices (MQTT)               | MQTT 3.1.1; port 8883 with TLS (devices) and internal 1883 (backend).                            |
+| Allowed origin (CORS)        | Only in the gateway, which drops the Origin header before forwarding. Closed by default; origins are defined with the gateway's SECURITY_CORS_ALLOWED_ORIGINS (e.g. http://localhost:5173), without credentials. Methods: GET, POST, PUT, DELETE and OPTIONS. |
+| Error handling               | Response with ApiError structure: timestamp, status, error, message, path and fieldErrors. The gateway's own answers (401, 404, 429, 503 and 504) use the same shape. |
+| Documentation                | OpenAPI and Swagger UI at /v3/api-docs and /swagger-ui.html of each service (in development mode, on ports 8082, 8083, 8084 and 8085). |
+| Service health               | GET /actuator/health of each service returns {"status":"UP"} (database and RabbitMQ included).   |
+| Internal communication       | REST `/internal/**` between services with the X-Internal-Token header, and RabbitMQ 4.1 events (AMQP, port 5672) with transactional outbox. |
+| Devices (MQTT)               | MQTT 3.1.1; port 8883 with TLS (devices, `mqtt.energy-monitor.tech:8883` in production) and 1883 only inside Docker (device and measurement services). |
+
+**API gateway routes.** The device and measurement routes are evaluated before the backend's general route, so `/api/v1/homes/{homeId}`, its members and its thresholds stay in the backend.
+
+| **Routes**                                                                                             | **Service**                              |
+|--------------------------------------------------------------------------------------------------------|------------------------------------------|
+| `/api/v1/auth/**`, `/api/v1/admin/users/**`, `/api/v1/admin/roles/**`, `/api/v1/support/**`             | en-monitor-security-service (8082)       |
+| `/api/v1/homes/{homeId}/devices/**`, `/api/v1/appliance-types/**`                                      | en-monitor-device-service (8084)         |
+| `/api/v1/measurements/**`, `/api/v1/consumption-levels/**`, `/api/v1/homes/{homeId}/consumption/**`    | en-monitor-measurement-service (8085)    |
+| Rest of `/api/v1/**` (households, members, thresholds, alerts, recommendations, notifications and administrator notices) | energy-monitor-backend (8083) |
+| `/internal/**`                                                                                         | Never forwarded (401 without a token, 403 with one) |
+| Any other route                                                                                        | 404                                      |
+
+**Internal REST between services.** The `/internal/**` routes are only accepted from loopback or the Docker network (`172.16.0.0/12`) **and** with the `X-Internal-Token` header (value of `INTERNAL_API_TOKEN`, the same in all the services), compared in constant time; with no token configured every call is refused. The broker authentication (`/internal/mqtt/**`) only requires the allowed network.
+
+| **Caller**             | **Endpoint**                                                                                                   | **Purpose**                                                                          |
+|------------------------|----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| backend → security     | `GET /internal/users/{id}/permissions`, `POST /internal/users/profiles`, `GET /internal/administrators`         | Permissions, profiles and administrators (cached).                                   |
+| security → backend     | `GET /internal/accounts/{id}/deletion-check`                                                                   | May the account be deleted? (204 yes; 409 no).                                       |
+| backend → device       | `GET /internal/devices/{id}`, `GET /internal/homes/{homeId}/devices`                                           | Read devices (30-second cache; previous copy up to 1 hour when it does not answer).  |
+| device → backend       | `GET /internal/homes/{homeId}/access?userId=`                                                                  | Is the user a member or the owner of the household?                                  |
+| measurement → backend  | `GET /internal/homes/{homeId}/access?userId=`, `GET /internal/homes/{homeId}/thresholds`                       | Household access and limits.                                                         |
+| measurement → device   | `GET /internal/devices/{id}`, `GET /internal/homes/{homeId}/devices`                                           | Household of a module and modules of a household (cached).                           |
+| backend → measurement  | `GET /internal/consumption-levels`, `GET /internal/measurements/hourly-energy`, `GET /internal/measurements/reporting-devices` | Classify readings (levels cached 10 minutes) and hourly energy for the limit alerts and the recommendations. |
+| Mosquitto → device     | `POST /internal/mqtt/auth/user`, `POST /internal/mqtt/auth/acl`                                                | Authenticate and authorize each MQTT client.                                         |
+
+**RabbitMQ events.** Each producer writes the message to its outbox table in the same transaction as the change; a relay publishes it every second, oldest first, and marks it as published only when the broker confirms it. Delivery is at least once and the queues are durable, with dead-letter after three attempts.
+
+| **Exchange / routing key**                                                                                         | **Outbox (producer)**              | **Consumer**                                     | **Effect**                                                                                       |
+|--------------------------------------------------------------------------------------------------------------------|------------------------------------|--------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| `energy-monitor.security` / `account.registered`, `account.administered`, `account.deleted`, `mail.email-verification`, `mail.password-reset` | `security_outbox` (security) | backend | In-app notices to the administrators, cleanup of deleted accounts and sending of emails (only the backend sends email). |
+| `energy-monitor.home` / `home.deleted`                                                                             | `home_outbox` (backend)            | device                                           | Unlinks the household's modules and sends them the `unlink` command.                             |
+| `energy-monitor.device` / `device.linked`, `device.unlinked`, `device.connectivity-lost`, `device.connectivity-restored` | `device_outbox` (device)      | backend and measurement (linked and unlinked only) | Backend: CONNECTIVITY alerts and device cache; measurement: device cache.                       |
+| `energy-monitor.measurement` / `measurement.recorded`                                                              | `measurement_outbox` (measurement; delivered rows are purged after 7 days) | backend               | Republished in memory as `MeasurementRecorded`: threshold, limit and linked-device alerts.       |
+
+Inside the backend the following remain in memory (Spring events): `AlertRaised` and `RecommendationCreated` (→ notification), `MeasurementRecorded` and `DeviceConnectivityLost` / `DeviceConnectivityRestored` (republished by the proxies → alert) and `HomeOwnershipTransferred`.
 
 **MQTT contract.**
 
 | **Parameter**             | **Value**                                                                                                                              |
 |---------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | Client ID                 | `esp32-{deviceId}`                                                                                                                     |
-| Username / password       | `device_code` / `api_key` (the backend only stores the hash of the key)                                                                 |
+| Username / password       | `device_code` / `api_key` (the device service only stores the hash of the key)                                                          |
 | Keep alive and last will  | Keep alive of 15 seconds; the broker publishes the last will about 22 seconds after a power cut                                        |
 | QoS                       | 0 for telemetry and status; 1 for the command                                                                                          |
 | Cadence                   | Telemetry every 60 seconds; status every five minutes and on connect; offline after 150 seconds of silence                             |
@@ -313,7 +385,7 @@ The client applications communicate with the API through HTTP requests in JSON f
 | Status topic              | `energy-monitor/devices/{deviceId}/status` (retained)                                                                                  |
 | Command topic             | `energy-monitor/devices/{deviceId}/command` (QoS 1, retained): `{"cmd":"unlink"}` when the device is unlinked                          |
 
-The broker authenticates each device against the backend (`/internal/mqtt/auth/user`) with a five-minute cache, and its ACL only lets it publish on the two topics of the device itself (`/internal/mqtt/auth/acl`). The backend takes the `deviceId` from the topic and drops messages whose body declares another device.
+The broker (`iegomez/mosquitto-go-auth` image) stores no users: it authenticates each client against the device service (`/internal/mqtt/auth/user`) with a five-minute cache, and its ACL lets each device use only its own topics (`/internal/mqtt/auth/acl`). There are three MQTT clients: the device service (`MQTT_DEVICE_SERVICE_USER`: reads telemetry and status and is the only one that publishes commands), the measurement service (`MQTT_MEASUREMENT_SERVICE_USER`: reads telemetry only) and each ESP32 module (`device_code` and API key). The backend no longer connects to the broker. The services take the `deviceId` from the topic and drop messages whose body declares another device.
 
 The following figure describes the full flow of a sign-in and the subsequent access to a protected resource.
 
@@ -321,15 +393,21 @@ The following figure describes the full flow of a sign-in and the subsequent acc
 
 # 10. Project structure
 
-The project is distributed across four code repositories (backend, web front-end, mobile app and devices) and the final documentation. The following table summarizes their content and how to run them.
+The project is distributed across eight code repositories (API gateway, three microservices, backend, web front-end, mobile app and infrastructure) and the documentation repositories. The following table summarizes their content and how to run them.
 
 | **Repository**             | **Type**                           | **Technology**                                          | **Entry point**                                                      | **Execution**                                  |
 |----------------------------|------------------------------------|---------------------------------------------------------|----------------------------------------------------------------------|------------------------------------------------|
-| energy-monitor-backend     | REST API (backend)                 | Java 21 + Spring Boot 4.1.1 + Maven                     | src/main/java/com/energymonitor/EnergyMonitorBackendApplication.java | .\mvnw.cmd spring-boot:run (port 8080)         |
+| en-monitor-api-gateway     | API gateway                        | Java 21 + Spring Boot 4.0.8 + Spring Cloud Gateway + Maven | src/main/java/com/energymonitor/gateway/ApiGatewayApplication.java | ./mvnw spring-boot:run (port 8080)             |
+| en-monitor-security-service | Security microservice             | Java 21 + Spring Boot 4.1.1 + Maven                     | src/main/java/com/energymonitor/security/SecurityServiceApplication.java | ./mvnw spring-boot:run (port 8082)         |
+| en-monitor-device-service  | Device microservice                | Java 21 + Spring Boot 4.1.1 + Maven                     | src/main/java/com/energymonitor/device/DeviceServiceApplication.java | ./mvnw spring-boot:run (port 8084)             |
+| en-monitor-measurement-service | Measurement microservice       | Java 21 + Spring Boot 4.1.1 + Maven                     | src/main/java/com/energymonitor/measurement/MeasurementServiceApplication.java | ./mvnw spring-boot:run (port 8085)     |
+| energy-monitor-backend     | Backend (modular monolith) and firmware | Java 21 + Spring Boot 4.1.1 + Spring Modulith + Maven; Arduino firmware | src/main/java/com/energymonitor/EnergyMonitorBackendApplication.java and firmware/esp32-pzem-monitor/esp32-pzem-monitor.ino | ./mvnw spring-boot:run (port 8083) / arduino-cli upload |
 | Energy-Monitor-application | Web application (front-end)        | React 19 + Vite 8 (JavaScript)                          | src/main.jsx over index.html                                         | npm install / npm run dev (port 5173)          |
 | Energy-Monitor-Mobile      | Mobile application (front-end)     | Expo SDK 57 + React Native 0.86                         | src/app/\_layout.tsx (expo-router/entry)                             | npm install / npm run start                    |
-| energy-monitor-devices     | Device firmware and broker         | ESP32 + PZEM-004T V3 (Arduino) and Mosquitto 2          | esp32-pzem-monitor/esp32-pzem-monitor.ino and docker/docker-compose.yml | arduino-cli upload / docker compose up -d   |
+| energy-monitor-infra       | Infrastructure and deployment      | Docker Compose, Mosquitto 2, RabbitMQ 4.1, MySQL 8.4, Nginx | docker-compose.yml, docker-compose.dev.yml and docker-compose.prod.yml | docker compose up -d --build              |
 | energy-monitor-docs-final  | Final documentation                | Markdown (ES and EN)                                    | README.md                                                            | Does not need to be run                        |
+
+The legacy energy-monitor-devices repository (old firmware and broker) is no longer used to run anything: the firmware lives in `firmware/` of energy-monitor-backend and the broker in energy-monitor-infra.
 
 ## 10.1 Backend structure
 
@@ -338,29 +416,42 @@ energy-monitor-backend/
 ├── pom.xml                       Maven definition and dependencies
 ├── mvnw / mvnw.cmd               Maven Wrapper (Maven does not need to be installed)
 ├── Dockerfile                    backend image (Temurin 21, unprivileged user)
-├── docker-compose.yml            MySQL 8.4 container (port 3306)
 ├── .env.example                  environment variable template
 ├── README.md                     backend instructions
+├── docs/Architecture.md          modules, proxies and migration status
+├── firmware/esp32-pzem-monitor/  ESP32 + PZEM-004T V3 firmware
 └── src/
     ├── main/
     │   ├── java/com/energymonitor/
     │   │   ├── EnergyMonitorBackendApplication.java   entry point
-    │   │   ├── security/         identity, JWT, Google, RBAC and audit
     │   │   ├── home/             households, members, thresholds, deletion and transfer
-    │   │   ├── device/           devices, credentials, MQTT authorization and status
-    │   │   ├── measurement/      measurements, MQTT ingestion, household consumption
     │   │   ├── alert/            consumption, limit, device and connectivity alerts
     │   │   ├── recommendation/   saving rules and recommendation inbox
-    │   │   └── notification/     email, Web Push and preferences
+    │   │   ├── notification/     email, Web Push, mobile push, preferences and administrator notices
+    │   │   ├── security/         proxy of the security service (no domain or tables)
+    │   │   ├── device/           proxy of the device service (no domain or tables)
+    │   │   └── measurement/      proxy of the measurement service (no domain or tables)
     │   └── resources/
     │       ├── application.yaml                  base configuration
     │       ├── application-local.yaml(.example)  local profile and keys
     │       └── db/changelog/                     Liquibase master + changesets
     │           ├── db.changelog-master.xml
-    │           ├── security/ home/ device/ measurement/
-    │           └── alert/ recommendation/ notification/
-    └── test/java/com/energymonitor/              131 test files
+    │           └── home/ alert/ recommendation/ notification/
+    └── test/java/com/energymonitor/              96 test files (includes ModularityTests)
 ```
+
+**Microservices and gateway.** Each microservice keeps the package it had in the backend and its changesets under the same relative path, so Liquibase recognizes them as already applied:
+
+```
+en-monitor-security-service/     com.energymonitor.security     db/changelog/security/
+en-monitor-device-service/       com.energymonitor.device       db/changelog/device/
+en-monitor-measurement-service/  com.energymonitor.measurement  db/changelog/measurement/
+en-monitor-api-gateway/          com.energymonitor.gateway      (no database)
+    each with pom.xml, mvnw, Dockerfile, .env.example, README.md
+    and .github/workflows/ci-cd.yml (docs/Architecture.md in gateway, security and device)
+```
+
+**Backend proxies (example with device):** `api/` (contract the other modules already used: DeviceApi, DeviceConnectivityLost, DeviceConnectivityRestored), `adapter/out/remote/` (HTTP client of the service's internal API, cached) and `adapter/in/messaging/` (consumer of the RabbitMQ events), plus `infrastructure/` with the configuration.
 
 **Internal organization of each module (example with home):**
 
@@ -377,7 +468,9 @@ home/
 │   └── exception/           application exceptions
 ├── adapter/
 │   ├── in/web/              REST controllers, DTOs and error handlers
-│   ├── in/event/            event listeners
+│   ├── in/internal/         internal API for other services (access, limits, account deletion)
+│   ├── in/messaging/        account.deleted consumer (RabbitMQ)
+│   ├── out/messaging/       home.deleted outbox, relay and RabbitMQ publisher
 │   └── out/persistence/     JPA entities, repositories, mappers and adapters
 └── infrastructure/          Spring configuration and the module's internal API
 ```
@@ -396,7 +489,7 @@ Energy-Monitor-application/
     ├── context/          HomeContext, ThemeContext, NotificationCenterContext
     ├── services/
     │   ├── http/         httpClient (axios), interceptors and errors
-    │   ├── auth/         authApi, googleSignIn, session (localStorage)
+    │   ├── auth/         authApi, googleSignIn, session (localStorage, no tokens)
     │   ├── home/         homeApi (households, members, thresholds, consumption)
     │   ├── devices/      deviceApi and bleProvisioning (Web Bluetooth)
     │   ├── alerts/       alertApi
@@ -440,12 +533,16 @@ Energy-Monitor-Mobile/
 
 | **Folder**                                                                 | **Function**                                                                             |
 |----------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| backend/src/main/java/com/energymonitor/\<module\>/domain/model            | Pure domain entities, with no Spring dependencies.                                       |
-| backend/src/main/java/com/energymonitor/\<module\>/application             | Use cases, inbound and outbound ports, commands, results and exceptions.                 |
-| backend/src/main/java/com/energymonitor/\<module\>/adapter/in/web          | REST controllers, DTOs and exception handlers (@RestControllerAdvice).                   |
-| backend/src/main/java/com/energymonitor/\<module\>/adapter/out/persistence | JPA entities, repositories, mappers and persistence adapters.                            |
-| backend/src/main/resources/db/changelog                                    | Liquibase changesets that build the MySQL schema, with their rollback.                   |
-| backend/src/test/java                                                      | Unit, web integration and security tests; module boundary verification.                  |
+| \<service\>/src/main/java/com/energymonitor/\<module\>/domain/model        | Pure domain entities, with no Spring dependencies.                                       |
+| \<service\>/src/main/java/com/energymonitor/\<module\>/application         | Use cases, inbound and outbound ports, commands, results and exceptions.                 |
+| \<service\>/src/main/java/com/energymonitor/\<module\>/adapter/in/web      | REST controllers, DTOs and exception handlers (@RestControllerAdvice).                   |
+| \<service\>/src/main/java/com/energymonitor/\<module\>/adapter/in/internal | Internal `/internal/**` API for the other services.                                      |
+| \<service\>/src/main/java/com/energymonitor/\<module\>/adapter/in/messaging and out/messaging | RabbitMQ consumers; event outbox, relay and publisher.                   |
+| \<service\>/src/main/java/com/energymonitor/\<module\>/adapter/out/persistence | JPA entities, repositories, mappers and persistence adapters.                        |
+| energy-monitor-backend/src/main/java/com/energymonitor/{security,device,measurement} | Microservice proxies: api contract, remote client and consumers.          |
+| \<service\>/src/main/resources/db/changelog                                | Liquibase changesets of that service's tables, with their rollback.                      |
+| \<service\>/src/test/java                                                  | Unit, web integration and security tests; in the backend, module boundary verification.  |
+| en-monitor-api-gateway/src/main/java/com/energymonitor/gateway             | Routes (routing), token validation and CORS (security), request limiting (ratelimit) and errors (error). |
 | web/src/routes                                                             | Definition of routes, guards and layouts of the SPA.                                     |
 | web/src/services                                                           | API access layer: HTTP client, interceptors, session and endpoints per domain.           |
 | web/src/features                                                           | Screens and components grouped by functionality.                                         |
@@ -453,18 +550,21 @@ Energy-Monitor-Mobile/
 | mobile/src/app                                                             | File-based Expo Router routes that mount each screen.                                    |
 | mobile/src/services                                                        | REST API client of the mobile application (same pattern as the web).                     |
 | mobile/src/features                                                        | Screens, components, hooks and validations per functionality.                            |
-| devices/esp32-pzem-monitor                                                 | Device firmware and configuration files.                                                 |
-| devices/docker                                                             | Development Mosquitto broker and production deployment (broker, backend and MySQL).      |
+| energy-monitor-backend/firmware/esp32-pzem-monitor                         | Device firmware and configuration files.                                                 |
+| infra/docker-compose\*.yml and infra/mosquitto                             | Local stack, development mode and production (MySQL, RabbitMQ, Mosquitto, services and web) and broker configuration. |
+| infra/deploy and infra/e2e                                                 | Deployment (deploy.sh, Nginx, MySQL backup, MQTT certificate renewal) and end-to-end tests. |
 
 # 11. Database
 
-**Engine:** MySQL 8.4, run in a Docker container (docker-compose.yml) with collation utf8mb4_unicode_ci.
+**Engine:** MySQL 8.4, run in a Docker container (energy-monitor-infra repository) with collation utf8mb4_unicode_ci.
 
-**Schema:** energy_monitor, with 29 tables distributed across seven contexts. The application user is energy_app.
+**Schema:** energy_monitor, a single database shared by the services (ADR-003). This chapter documents 29 business tables distributed across seven contexts. The application user is energy_app.
 
-**Schema management:** Liquibase applies the versioned changesets in src/main/resources/db/changelog; Hibernate is configured with ddl-auto = validate, that is, it only checks that the schema matches the entities and never creates tables by itself.
+**Owner of each context:** each service owns its tables and applies only its changesets: the security service, those of the Security context; the device service, those of Devices; the measurement service, those of Monitoring and measurements; and energy-monitor-backend, those of Home Management, Alerts, Recommendations and Notifications. The backend also has `push_device` (push tokens of the mobile app, notification module), which is not yet included in this dictionary.
 
-**Conventions:** snake_case names; VARCHAR(10) primary keys; audit columns created_at, updated_at and deleted_at in all tables; soft delete (no physical DELETE by default); indexes with the idx\_\[table\]\_\[columns\] pattern. References between contexts are stored as application-level identifiers and do not generate SQL foreign keys.
+**Schema management:** Liquibase applies the versioned changesets in src/main/resources/db/changelog of each service; all of them share the DATABASECHANGELOG table, and the changesets that left the backend kept their path, so they are not run again. Hibernate is configured with ddl-auto = validate, that is, it only checks that the schema matches the entities and never creates tables by itself.
+
+**Conventions:** snake_case names; VARCHAR(10) primary keys; audit columns created_at, updated_at and deleted_at in all tables; soft delete (no physical DELETE by default); indexes with the idx\_\[table\]\_\[columns\] pattern. References between contexts (and therefore between services) are stored as application-level identifiers and do not generate SQL foreign keys.
 
 ## 11.1 Entity-relationship diagram
 
@@ -476,7 +576,7 @@ The following diagram shows the system entities, grouped by context (Security, H
 
 ## 11.2 Main tables
 
-The following table lists the 29 tables of the schema, the context they belong to, their description, their primary key and the relationships declared in the data dictionary.
+The following table lists the 29 documented business tables, the context they belong to (and, with it, the owning service stated in the introduction of this section), their description, their primary key and the relationships declared in the data dictionary.
 
 | **Table**              | **Context**                 | **Description**                                                                                                                                                                                               | **Primary key**      | **Relationships**                                                                                                                                                      |
 |------------------------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -512,7 +612,7 @@ The following table lists the 29 tables of the schema, the context they belong t
 
 ## 11.3 Data dictionary
 
-The data dictionary describes each table of the schema field by field: key constraint, data type, size and description. It was rebuilt from the backend's Liquibase changesets, which are the source of truth of the schema; for the data model with its integrity rules see also [`05.2-data-model.md`](../../05-diseno-software/EN/05.2-data-model.md).
+The data dictionary describes each table of the schema field by field: key constraint, data type, size and description. It was rebuilt from the services' Liquibase changesets, which are the source of truth of the schema; for the data model with its integrity rules see also [`05.2-data-model.md`](../../05-diseno-software/EN/05.2-data-model.md).
 
 **Constraint legend:** PK = primary key; FK = foreign key; UNIQUE = unique value; NOT NULL = required field; ENUM = set of allowed values (listed in the Size column). The audit columns (created_at, updated_at and deleted_at) are repeated in all tables and are not included in each dictionary.
 
@@ -947,17 +1047,18 @@ The data dictionary describes each table of the schema field by field: key const
 
 ## 12.1 Overview of the modules
 
-The backend is divided into seven modules (bounded contexts), all of them active.
+The system's backend keeps its seven modules (bounded contexts), all of them active, but no longer in a single application: security, device and measurement run as microservices, and home, alert, recommendation and notification remain in energy-monitor-backend, which also keeps the security, device and measurement proxy packages (no domain or tables). The migration of the four modules that remain in the backend to microservices is in progress (section 16.4). The API gateway completes the table as a technical component without domain.
 
 | **Module**     | **Responsibility**                                                                     | **Controllers / use cases**                                                                                               | **Status** |
 |----------------|----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|------------|
-| security       | Registration, authentication (including Google), sessions, passwords, profile, RBAC, audit and account deletion | AuthController + 18 use cases                                                                              | Active     |
-| home           | Households, members, favorites, access code, thresholds, household deletion and ownership transfer | HomeController, HomeThresholdsController, HomeTypeController + 15 use cases                                 | Active     |
-| device         | Devices, linking, credentials, connection status and broker authorization              | HomeDeviceController, ApplianceTypeController, BrokerAuthController + 3 services                                          | Active     |
-| measurement    | MQTT ingestion of telemetry and status, history, statistics and household consumption  | MeasurementController, ConsumptionLevelController, HomeConsumptionController + MQTT consumers                             | Active     |
-| alert          | Consumption, limit, device linked and connectivity alerts, and their inbox             | AlertController + 10 use cases                                                                                            | Active     |
-| recommendation | Saving rules evaluated every hour and recommendation inbox                             | RecommendationController, RecommendationScheduler + 2 services                                                            | Active     |
-| notification   | Delivery by email and Web Push, preferences and delivery log                           | NotificationChannelsController + 5 use cases                                                                              | Active     |
+| gateway (en-monitor-api-gateway, 8080) | Routing, CORS, token validation, request limiting and its own errors     | GatewayRoutes, SecurityFilterChainConfiguration, AccessTokenCookieFilter, AuthRateLimitFilter and GatewayExceptionHandler | Active     |
+| security (en-monitor-security-service, 8082) | Registration, authentication (including Google), sessions, passwords, profile, RBAC, user administration, audit and account deletion | AuthController, AdminController, SupportController, InternalController + use cases | Active     |
+| home (energy-monitor-backend, 8083) | Households, members, favorites, access code, thresholds, household deletion and ownership transfer | HomeController, HomeThresholdsController, HomeTypeController, internal controllers + use cases | Active     |
+| device (en-monitor-device-service, 8084) | Devices, linking, credentials, connection status, commands and broker authorization | HomeDeviceController, ApplianceTypeController, BrokerAuthController, InternalDeviceController + 5 services | Active     |
+| measurement (en-monitor-measurement-service, 8085) | MQTT ingestion of telemetry, history, statistics and household consumption | MeasurementController, ConsumptionLevelController, HomeConsumptionController, InternalMeasurementController + MQTT consumer | Active     |
+| alert (energy-monitor-backend, 8083) | Consumption, limit, device linked and connectivity alerts, and their inbox    | AlertController + 10 use cases                                                                                            | Active     |
+| recommendation (energy-monitor-backend, 8083) | Saving rules evaluated every hour and recommendation inbox            | RecommendationController, RecommendationScheduler + 2 services                                                            | Active     |
+| notification (energy-monitor-backend, 8083) | Delivery by email, Web Push and mobile push, preferences, delivery log and administrator notices | NotificationChannelsController, AdminNotificationsController + RabbitMQ consumers + use cases | Active     |
 
 ## 12.2 Domain class diagram
 
@@ -969,15 +1070,21 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 ## 12.3 Backend modules by context
 
+Each subsection states the repository the module runs in; file paths are relative to `src/main/java/com/energymonitor/` of that repository.
+
 ### 12.3.1 security module
 
-**Function:** Identity, authentication, sessions, access control, audit and account deletion.
+**Function:** Identity, authentication, sessions, access control, user administration, audit and account deletion.
 
 **Status:** Active
 
+**Location:** en-monitor-security-service (port 8082). energy-monitor-backend keeps the `security` proxy (api: UserProfileQuery, AdministratorQuery; adapter/out/remote: RemotePermissionCheck, RemoteUserProfileQuery, RemoteAdministratorQuery and SecurityServiceClient), with no domain or tables; the backend only validates the tokens with the public key.
+
 **Related files:**
 
-- security/adapter/in/web/AuthController.java (single authentication, profile and account controller)
+- security/adapter/in/web/AuthController.java (authentication, profile and account), AdminController.java (`/api/v1/admin/users` and `/api/v1/admin/roles`) and SupportController.java (support contacts)
+
+- security/adapter/in/web/internal/InternalController.java (internal API: permissions, profiles and administrators)
 
 - security/adapter/in/web/dto/ (DTOs: RegisterRequest, LoginRequest, GoogleLoginRequest, DeleteAccountRequest, ProfileResponse, ApiError…)
 
@@ -989,7 +1096,9 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 - security/adapter/out/security/ (BCryptPasswordHasherAdapter, Sha256TokenHasher, PepperedHmacResetCodeHasher, InMemoryResetAttemptLimiter)
 
-**Related tables:** person, user, user_configuration, password_reset_token, user_session, refresh_token, security_configuration, password_policy, login_error_log, system_role, permission, user_system_role, system_role_permission, audit_log.
+- security/adapter/out/messaging/ (OutboxWriter, OutboxRelay, RabbitOutboxPublisher: account events and mail requests) and security/adapter/out/backend/HttpAccountDeletionGuard.java (deletion check against the backend)
+
+**Related tables:** person, user, user_configuration, password_reset_token, user_session, refresh_token, security_configuration, password_policy, login_error_log, system_role, permission, user_system_role, system_role_permission, audit_log and security_outbox.
 
 **Main operations:**
 
@@ -1003,9 +1112,13 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 - View and update the profile
 
-- Query permissions (RBAC)
+- Query permissions (RBAC) and administer users: directory, status change and granting or revoking global roles
 
-- Delete the account (transactional: validates the password, closes the sessions, logically deletes personal data, releases the email and publishes `AccountDeleted`)
+- Publish the support contacts (active administrators)
+
+- Delete the account (validates the password, asks the backend through `/internal/accounts/{id}/deletion-check`, closes the sessions, logically deletes personal data, releases the email and publishes `account.deleted` over RabbitMQ)
+
+- Ask the backend, over RabbitMQ, to send the verification and recovery emails (`mail.*`)
 
 - Record audit and failed attempts
 
@@ -1015,19 +1128,25 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 **Status:** Active
 
+**Location:** energy-monitor-backend (port 8083). Its migration to a microservice is in progress (section 16.4).
+
 **Related files:**
 
 - home/adapter/in/web/HomeController.java, HomeThresholdsController.java, HomeTypeController.java
 
 - home/adapter/in/web/CurrentUserResolver.java (resolves the user from the JWT `sub` claim)
 
-- home/application/usecase/ (CreateHomeService, JoinHomeService, LeaveHomeService, ListHomesService, ListMembersService, RemoveUserService, ToggleFavoriteService, DeleteHomeService, TransferHomeOwnershipService, HomeRemoval, RemoveDeletedAccountService, GetHomeThresholdsService, UpdateHomeThresholdsService, ListHomeTypesService, GetHomeTypeService)
+- home/adapter/in/internal/ (HomeAccessController, HomeLimitsController and AccountDeletionCheckController: internal API for the device, measurement and security services)
+
+- home/adapter/in/messaging/AccountDeletedConsumer.java (consumes `account.deleted`) and home/adapter/out/messaging/ (HomeOutboxWriter, HomeOutboxRelay, RabbitHomeOutboxPublisher: publishes `home.deleted`)
+
+- home/application/usecase/ (CreateHomeService, JoinHomeService, LeaveHomeService, ListHomesService, ListMembersService, RemoveUserService, ToggleFavoriteService, DeleteHomeService, TransferHomeOwnershipService, HomeRemoval, RemoveDeletedAccountService, CheckAccountDeletionService, DescribeHomeAccessService, DescribeHomeLimitsService, GetHomeThresholdsService, UpdateHomeThresholdsService, ListHomeTypesService, GetHomeTypeService)
 
 - home/domain/model/ (Home, HomeType, HomeThresholds, UserHome, Role OWNER/MEMBER, OwnerPermissions, MemberPermissions)
 
 - home/api/ (HomeApi, HomeDeleted, HomeOwnershipTransferred) and home/infrastructure/HomeApiImpl.java (public API consumed by other modules)
 
-**Related tables:** home, home_type, home_thresholds, user_home.
+**Related tables:** home, home_type, home_thresholds, user_home and home_outbox.
 
 **Main operations:**
 
@@ -1043,7 +1162,9 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 - View, update and reset daily and monthly thresholds
 
-- Delete the household (OWNER only; soft delete of `home`, `user_home` and `home_thresholds`; publishes `HomeDeleted`, which `device` handles in the same transaction to unlink the devices and revoke their keys; after the commit, the MQTT unlink command is sent). The same behavior applies when the sole OWNER deletes their account.
+- Delete the household (OWNER only; soft delete of `home`, `user_home` and `home_thresholds`; in the same transaction it writes `home.deleted` to `home_outbox`, and the relay publishes it to RabbitMQ; the device service consumes it, unlinks the modules, revokes their keys and sends them the MQTT unlink command). The same behavior applies when `account.deleted` arrives for an account that was the sole owner of a household with no other members.
+
+- Answer the internal API: a user's access to a household, the household's limits and whether an account may be deleted (409 if it is the sole owner of a household with other members)
 
 - Transfer ownership (OWNER only; atomic role swap with a row lock; publishes `HomeOwnershipTransferred`, which no module consumes yet)
 
@@ -1053,31 +1174,39 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 **Status:** Active
 
+**Location:** en-monitor-measurement-service (port 8085). energy-monitor-backend keeps the `measurement` proxy (api: MeasurementApi, MeasurementRecorded, RiskConsumption; adapter/out/remote: RemoteMeasurementApi and MeasurementServiceClient, with consumption levels cached 10 minutes; adapter/in/messaging/MeasurementRecordedConsumer), with no domain or tables.
+
 **Related files:**
 
 - measurement/adapter/in/web/MeasurementController.java, ConsumptionLevelController.java, HomeConsumptionController.java
 
-- measurement/adapter/in/mqtt/ (TelemetryMqttConsumer, StatusMqttConsumer, MqttTopics, MqttConfig)
+- measurement/adapter/in/internal/InternalMeasurementController.java (internal API for the backend: levels, hourly energy and reporting devices)
+
+- measurement/adapter/in/mqtt/ (TelemetryMqttConsumer, MqttTopics, MqttIngestionConfiguration; the subscription is enabled with `MEASUREMENT_MQTT_ENABLED`)
+
+- measurement/adapter/in/messaging/DeviceLinksConsumer.java (consumes `device.linked` and `device.unlinked` to clear its cache)
 
 - measurement/application/usecase/ (RegisterMeasurementService, ListMeasurementsService, GetLatestMeasurementService, GetConsumptionStatisticsService, HomeConsumptionUseCase, HourlyEnergyCalculator, ListConsumptionLevelsService, TimeRange)
 
 - measurement/domain/model/ (Measurement, ConsumptionLevel)
 
-- measurement/adapter/out/event/MeasurementEventAdapter.java (publishes MeasurementRecorded)
+- measurement/adapter/out/event/MeasurementEventAdapter.java and measurement/adapter/out/messaging/ (MeasurementOutboxWriter, MeasurementOutboxRelay, RabbitMeasurementOutboxPublisher, MeasurementOutboxPurge: publish `measurement.recorded`)
 
-**Related tables:** measurement, consumption_level (connection status is recorded in device_status_log).
+- measurement/adapter/out/client/ (BackendHomeClient, DeviceServiceClient, CachedDeviceDirectory: household access and limits, and devices)
+
+**Related tables:** measurement, consumption_level and measurement_outbox (connection status is recorded in device_status_log, of the device service).
 
 **Main operations:**
 
-- Record the readings that arrive over MQTT (voltage, current, active power, accumulated energy)
-
-- Record the devices' status messages
+- Record the readings that arrive over MQTT (voltage, current, active power, accumulated energy); it is the only subscriber that stores them
 
 - Query history by device and date range, and the latest measurement
 
 - Compute statistics, and the household consumption summary and history
 
-- Publish the MeasurementRecorded event
+- Publish each reading as `measurement.recorded` on RabbitMQ (the backend republishes it in memory as MeasurementRecorded)
+
+- Answer the backend's internal API: consumption levels, hourly energy and reporting devices
 
 ### 12.3.4 alert module
 
@@ -1085,11 +1214,13 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 **Status:** Active
 
+**Location:** energy-monitor-backend (port 8083). Its migration to a microservice is in progress (section 16.4).
+
 **Related files:**
 
 - alert/adapter/in/web/AlertController.java (query, read and delete)
 
-- alert/adapter/in/event/MeasurementRecordedListener.java and DeviceConnectivityLostListener.java (@EventListener)
+- alert/adapter/in/event/MeasurementRecordedListener.java and DeviceConnectivityLostListener.java (@EventListener on the in-memory events republished by the measurement and device proxies)
 
 - alert/application/usecase/ (ListAlertsService, GetAlertService, ResolveAlertService, DeleteAlertsService, RegisterThresholdAlertService, RegisterLimitAlertService, RegisterConnectivityAlertService, RegisterDeviceLinkedAlertService, ResolveConnectivityAlertsService, AlertAccessService)
 
@@ -1109,71 +1240,85 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 ### 12.3.5 notification module
 
-**Function:** Delivery of alerts and recommendations by email and Web Push, preferences and delivery log.
+**Function:** Delivery of alerts and recommendations by email, Web Push and mobile push, preferences, delivery log and in-app notices to administrators.
 
 **Status:** Active
 
+**Location:** energy-monitor-backend (port 8083). Its migration to a microservice is in progress (section 16.4).
+
 **Related files:**
 
-- notification/adapter/in/web/NotificationChannelsController.java
+- notification/adapter/in/web/NotificationChannelsController.java and AdminNotificationsController.java (`/api/v1/admin/notifications`)
 
 - notification/adapter/in/event/AlertRaisedListener.java and RecommendationCreatedListener.java
 
-- notification/infrastructure/mail/EmailSender.java, MailDeliveryConfiguration.java, AbandonedDeliverySweeper.java and notification/adapter/out/push/WebPushSender.java
+- notification/adapter/in/messaging/AccountEventsConsumer.java and MailRequestsConsumer.java (`account.*` events and `mail.*` requests of the security service)
 
-- notification/application/usecase/ (NotifyAlert, SendPasswordResetEmail, SendEmailVerification, ManageNotificationChannels, AlertMessages)
+- notification/infrastructure/mail/EmailSender.java, MailDeliveryConfiguration.java, AbandonedDeliverySweeper.java and notification/adapter/out/push/WebPushSender.java and ExpoPushSender.java
 
-- notification/adapter/out/persistence/adapter/NotificationPersistenceAdapter.java
+- notification/application/usecase/ (NotifyAlert, SendPasswordResetEmail, SendEmailVerification, ManageNotificationChannels, AlertMessages, AdminNotifications)
 
-**Related tables:** notification, notification_preference, push_subscription.
+- notification/adapter/out/persistence/ (persistence adapters, entities and repositories)
+
+**Related tables:** notification, notification_preference, push_subscription and push_device.
 
 **Main operations:**
 
-- Send verification and recovery emails
+- Send the verification and recovery emails requested by the security service (only the backend sends email)
 
-- Deliver each alert and recommendation to the household members by email and Web Push according to their preferences
+- Deliver each alert and recommendation to the household members by email, Web Push and mobile push (Expo) according to their preferences
+
+- Record in-app notices for the administrators when an account registers or another account is administered (`account.registered`, `account.administered`)
 
 - Record the delivery status (PENDING, SENT, FAILED) without storing the message content
 
 - Sweep abandoned deliveries when the application starts and every five minutes
 
-- Manage preferences and push subscriptions
+- Manage preferences, browser push subscriptions and mobile app devices
 
 ### 12.3.6 device module
 
-**Function:** Registration and linking of devices, credentials (API key), connection status and authorization of the MQTT broker.
+**Function:** Registration and linking of devices, credentials (API key), connection status, commands and authorization of the MQTT broker.
 
 **Status:** Active
+
+**Location:** en-monitor-device-service (port 8084). energy-monitor-backend keeps the `device` proxy (api: DeviceApi, DeviceConnectivityLost, DeviceConnectivityRestored; adapter/out/remote: RemoteDeviceApi and DeviceServiceClient, with a 30-second cache and a previous copy up to 1 hour; adapter/in/messaging/DeviceEventsConsumer), with no domain or tables.
 
 **Related files:**
 
 - device/adapter/in/web/HomeDeviceController.java, ApplianceTypeController.java and BrokerAuthController.java
 
-- device/application/usecase/ (HomeDeviceService, BrokerAccessService, DeviceConnectivityService)
+- device/adapter/in/internal/InternalDeviceController.java (internal API for the backend and the measurement service)
 
-- device/domain/model/ (Device, ApiKeyHash…)
+- device/application/usecase/ (HomeDeviceService, BrokerAccessService, DeviceConnectivityService, DeviceReportService, DeviceQueryService)
 
-- device/adapter/in/event/HomeDeletedListener.java and DeviceCommandListener.java; device/adapter/in/scheduler/DeviceInactivityScheduler.java
+- device/domain/model/ (Device, DeviceHome, DeviceStatusLog, ApplianceType, ApiKeyHash)
 
-- device/adapter/out/ (MqttDeviceCommandAdapter, persistence and credential adapters)
+- device/adapter/in/mqtt/ConnectivityMqttConsumer.java (telemetry and status subscription), device/adapter/in/messaging/HomeDeletedConsumer.java (consumes `home.deleted`), device/adapter/in/event/DeviceCommandListener.java and device/adapter/in/scheduler/DeviceInactivityScheduler.java
 
-**Related tables:** device, appliance_type, device_status_log, device_home.
+- device/adapter/out/ (mqtt/MqttDeviceCommandAdapter, messaging/ with DeviceOutboxRelay and RabbitDeviceOutboxPublisher, home/ to ask the backend about access, persistence and credential generators)
+
+**Related tables:** device, appliance_type, device_status_log, device_home and device_outbox.
 
 **Main operations:**
 
-- Link a device to a household (OWNER only), edit it, issue new credentials to change its Wi-Fi and unlink it
+- Link a device to a household (OWNER only), edit it, issue new credentials to change its Wi-Fi and unlink it (member or OWNER permission is asked to the backend)
 
 - Authenticate the device and authorize its topics for Mosquitto (only the SHA-256 hash of the key is stored)
 
-- Mark the device offline after 150 seconds of silence (`DeviceInactivityScheduler`)
+- Record connectivity from the telemetry and the retained status, and mark the device offline after 150 seconds of silence (`DeviceInactivityScheduler`)
 
-- Send the MQTT unlink command when deleting the household or unlinking the device
+- Publish `device.linked`, `device.unlinked`, `device.connectivity-lost` and `device.connectivity-restored` on RabbitMQ
+
+- Send the MQTT unlink command when unlinking the device or on receiving `home.deleted`
 
 ### 12.3.7 recommendation module
 
 **Function:** Saving recommendations generated from the measured consumption.
 
 **Status:** Active
+
+**Location:** energy-monitor-backend (port 8083). Its migration to a microservice is in progress (section 16.4).
 
 **Related files:**
 
@@ -1182,6 +1327,8 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 - recommendation/adapter/in/scheduler/RecommendationScheduler.java (every hour)
 
 - recommendation/application/usecase/ (EvaluateRecommendationsService, RecommendationInboxService)
+
+- recommendation/adapter/out/client/ (HomeDeviceReaderAdapter and MeasurementConsumptionReaderAdapter: read the household limits through the home api, and the devices and hourly energy through the device and measurement proxies)
 
 - recommendation/adapter/out/event/RecommendationEventAdapter.java (publishes RecommendationCreated)
 
@@ -1201,7 +1348,7 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 - src/routes/AppRoutes.jsx (routes), ProtectedRoute.jsx (protected routes) and HomeRoute.jsx (household detail)
 
-- src/services/http/httpClient.js (axios client, interceptors and token renewal)
+- src/services/http/httpClient.js (axios client towards the gateway, interceptors, HttpOnly cookie session with `X-Session-Transport: cookie` and token renewal)
 
 - src/services/auth, home, devices, alerts, recommendations and notifications (consumed endpoints)
 
@@ -1247,9 +1394,9 @@ The class diagram models the classes, interfaces and enumerations of the domain,
 
 # 13. API or system routes
 
-**Base URL:** http://localhost:8080/api/v1 \| **Format:** JSON \| **Interactive documentation:** /swagger-ui.html and /v3/api-docs
+**Base URL:** https://energy-monitor.tech/api/v1 in production and http://localhost:8080/api/v1 in development (API gateway) \| **Format:** JSON \| **Interactive documentation:** /swagger-ui.html and /v3/api-docs of each service
 
-The backend exposes 54 business routes under `/api/v1`, two internal routes for the broker and the infrastructure routes. All those not listed as public require a valid JWT in the Authorization header; if the token is missing, expired or invalid, the API answers 401, and if the user lacks the required permission, it answers 403.
+The public API totals 66 business routes under `/api/v1`, all through the gateway, which forwards them to the owning service according to the "API gateway routes" table of section 9.3 (auth, admin/users, admin/roles and support: security; devices and appliance catalog: device; measurements, levels and household consumption: measurement; the rest: backend). The migration did not change the routes the clients already used. In addition there are two internal routes for the broker and the infrastructure routes. All those not listed as public require a valid JWT (Authorization header or the web's `em_access` cookie); if the token is missing, expired or invalid, the gateway answers 401 without forwarding the request, and if the user lacks the required permission, the service answers 403.
 
 | **Method** | **Route**                                             | **Description**                                                       | **Parameters**                                                         | **Authentication** |
 |------------|-------------------------------------------------------|-----------------------------------------------------------------------|------------------------------------------------------------------------|--------------------|
@@ -1258,15 +1405,21 @@ The backend exposes 54 business routes under `/api/v1`, two internal routes for 
 | POST       | /api/v1/auth/email/verification/resend                | Resends the verification code (always answers 202).                   | body: email                                                            | Public             |
 | POST       | /api/v1/auth/login                                    | Authenticates and returns access token and refresh token.             | body: email, password                                                  | Public             |
 | POST       | /api/v1/auth/google                                   | Signs in or registers the account with Google (503 if not configured). | body: code                                                            | Public             |
-| POST       | /api/v1/auth/refresh                                  | Renews the access token and rotates the refresh token.                | body: refreshToken                                                     | Public             |
+| POST       | /api/v1/auth/refresh                                  | Renews the access token and rotates the refresh token.                | body: refreshToken (mobile) or em_refresh cookie (web)                 | Public             |
 | POST       | /api/v1/auth/logout                                   | Closes the registered session.                                        | body: idUserSession                                                    | JWT                |
-| POST       | /api/v1/auth/password/forgot                          | Requests the password recovery code.                                  | body: email                                                            | Public             |
+| POST       | /api/v1/auth/password/forgot                          | Requests the password recovery code (202; 404 if the email has no account). | body: email                                                      | Public             |
 | POST       | /api/v1/auth/password/reset                           | Resets the password with the received code.                           | body: email, resetToken, newPassword                                   | Public             |
 | POST       | /api/v1/auth/password/change                          | Changes the password knowing the current one.                         | body: currentPassword, newPassword                                     | JWT                |
 | PUT        | /api/v1/auth/profile                                  | Updates name, last name, image or email.                              | body: name, lastName, profileImage, newEmail                           | JWT                |
 | POST       | /api/v1/auth/account/delete                           | Deletes the account after confirming the password.                    | body: password                                                         | JWT                |
 | GET        | /api/v1/auth/account                                  | Returns the authenticated account.                                    | none (identity from the JWT)                                           | JWT                |
 | GET        | /api/v1/auth/permissions                              | Lists the user's permission codes.                                    | none                                                                   | JWT                |
+| GET        | /api/v1/admin/users                                   | User directory (requires USER.READ).                                  | query: q, page, size (1 to 50; default 20)                             | JWT                |
+| GET        | /api/v1/admin/roles                                   | Lists the assignable global roles (requires USER.READ).               | none                                                                   | JWT                |
+| PUT        | /api/v1/admin/users/{idUser}/status                   | Changes another account's status (requires USER.MANAGE; 409 on one's own). | path: idUser; body: status (ACTIVE, INACTIVE or BLOCKED)          | JWT                |
+| PUT        | /api/v1/admin/users/{idUser}/roles/{roleName}         | Grants a global role (requires ROLE.MANAGE).                          | path: idUser, roleName                                                 | JWT                |
+| DELETE     | /api/v1/admin/users/{idUser}/roles/{roleName}         | Revokes a global role (requires ROLE.MANAGE).                         | path: idUser, roleName                                                 | JWT                |
+| GET        | /api/v1/support/contacts                              | Name and email of every active administrator, for the support page.   | none                                                                   | Public             |
 | GET        | /api/v1/measurements                                  | Lists a device's measurements in a range.                             | query: deviceId (required), from, to                                   | JWT                |
 | GET        | /api/v1/measurements/latest                           | Returns the latest measurement of a device.                           | query: deviceId                                                        | JWT                |
 | GET        | /api/v1/measurements/statistics                       | Consumption statistics for the period.                                | query: deviceId, from, to                                              | JWT                |
@@ -1307,13 +1460,19 @@ The backend exposes 54 business routes under `/api/v1`, two internal routes for 
 | GET        | /api/v1/notifications/push/public-key                 | Returns the VAPID public key (empty if push is disabled).             | none                                                                   | JWT                |
 | POST       | /api/v1/notifications/push/subscriptions              | Registers a browser push subscription.                                | body: endpoint, keys (p256dh, auth)                                    | JWT                |
 | POST       | /api/v1/notifications/push/subscriptions/remove       | Removes a push subscription.                                          | body: endpoint, keys                                                   | JWT                |
-| POST       | /internal/mqtt/auth/user                              | Internal: Mosquitto authenticates an MQTT client (five-minute cache). The proxy must block it. | body: username, password, clientid          | Internal network   |
-| POST       | /internal/mqtt/auth/acl                               | Internal: Mosquitto authorizes a client's topic. The proxy must block it. | body: username, clientid, topic, acc                               | Internal network   |
-| GET        | /actuator/health                                      | Service status (UP / DOWN).                                           | none                                                                   | Public             |
-| GET        | /swagger-ui.html and /v3/api-docs                     | Interactive API documentation (OpenAPI).                              | none                                                                   | Public             |
-| OPTIONS    | /\*\*                                                 | CORS preflight.                                                       | Origin and Access-Control-Request-\* headers                           | Public             |
+| POST       | /api/v1/notifications/push/devices                    | Registers the mobile app installation for push (Expo).                | body: token, platform (ANDROID or IOS)                                 | JWT                |
+| POST       | /api/v1/notifications/push/devices/remove             | Removes the push registration of an app installation.                 | body: token                                                            | JWT                |
+| GET        | /api/v1/notifications/push/devices/available          | Tells whether app push is configured (404 when it is not).            | none                                                                   | JWT                |
+| GET        | /api/v1/admin/notifications                           | Latest 50 in-app notices of the administrator (requires USER.READ).   | none                                                                   | JWT                |
+| PUT        | /api/v1/admin/notifications/{id}/read                 | Marks an administrator notice as read.                                | path: id                                                               | JWT                |
+| DELETE     | /api/v1/admin/notifications/{id}                      | Deletes an administrator notice.                                      | path: id                                                               | JWT                |
+| POST       | /internal/mqtt/auth/user                              | Internal (device service): Mosquitto authenticates an MQTT client (five-minute cache). The gateway refuses it. | body: username, password, clientid | Internal network |
+| POST       | /internal/mqtt/auth/acl                               | Internal (device service): Mosquitto authorizes a client's topic. The gateway refuses it. | body: username, clientid, topic, acc         | Internal network   |
+| GET        | /actuator/health                                      | Status of each service (UP / DOWN).                                   | none                                                                   | Public             |
+| GET        | /swagger-ui.html and /v3/api-docs                     | Interactive API documentation of each service (OpenAPI).              | none                                                                   | Public             |
+| OPTIONS    | /\*\*                                                 | CORS preflight (answered by the gateway).                             | Origin and Access-Control-Request-\* headers                           | Public             |
 
-> *The `/internal/**` routes only accept calls from the networks in `MQTT_AUTH_ALLOWED_NETWORKS`. Behind a reverse proxy every request looks local, so the proxy must not forward them.*
+> *The `/internal/mqtt/**` routes only accept calls from the networks in `MQTT_AUTH_ALLOWED_NETWORKS`; the other `/internal/**` routes (section 9.3) also require the `X-Internal-Token` header. The gateway never forwards them (401 without a token, 403 with one) and the web's nginx only forwards `/api/`.*
 
 ## 13.1 Common response codes
 
@@ -1321,13 +1480,14 @@ The backend exposes 54 business routes under `/api/v1`, two internal routes for 
 |-----------------|-------------------------------------------------------------------------------|----------------------------------------------------------------|
 | 200 / 201 / 204 | Successful operation (query, creation or deletion with no content).           | Body with the corresponding resource or message.               |
 | 400             | Incorrect data validation (Bean Validation or zod schema in the client).      | ApiError with fieldErrors detailing each field.                |
-| 401             | Missing or expired token or invalid credentials.                              | ApiError with generic message (does not reveal whether the email exists). |
+| 401             | Missing or expired token or invalid credentials (the gateway answers it before forwarding). | ApiError with generic message (does not reveal whether the email exists). |
 | 403             | Blocked or inactive account, or insufficient permission (e.g. a MEMBER tries to delete the household). | ApiError.                          |
-| 404             | Nonexistent resource (household, alert, member…) or household the user does not belong to. | ApiError or {"error": "..."} depending on the module. |
+| 404             | Nonexistent resource (household, alert, member…), household the user does not belong to or route the gateway does not route. | ApiError or {"error": "..."} depending on the module. |
 | 409             | Conflict (email already registered, last owner who cannot leave, transfer to the current owner). | ApiError.                    |
 | 422             | The password does not meet the security policy.                               | ApiError.                                                      |
-| 429             | Attempt limit reached in verification or recovery.                            | ApiError with Retry-After header (900 seconds).                |
-| 503             | Google sign-in without configured credentials.                                | ApiError.                                                      |
+| 429             | Attempt limit reached in verification or recovery (security service) or more than 20 public account POSTs per IP and path in one minute (gateway). | ApiError with Retry-After header (900 seconds in recovery). |
+| 503             | A service refuses the connection (gateway), an internal service the operation depends on does not answer, or Google sign-in without configured credentials. | ApiError. |
+| 504             | A service takes more than 30 seconds to answer (gateway).                     | ApiError.                                                      |
 | 500             | Unhandled internal error.                                                     | ApiError without stack trace (a stack trace is never leaked).  |
 
 ## 13.2 Request and response example
@@ -1349,30 +1509,33 @@ Content-Type: application/json
 }
 ```
 
+This is the answer the mobile app receives. With the `X-Session-Transport: cookie` header (the one the web sends) the security service delivers the tokens in the HttpOnly `em_access` and `em_refresh` cookies, and `accessToken` and `refreshToken` come back `null`.
+
 # 14. Security
 
 ## 14.1 Implemented controls
 
 | **Control**                   | **Technical implementation**                                                                                                                                                                            |
 |-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Authentication                | JWT signed with the RS256 algorithm and RSA key pair in PEM files; access token lifetime: 15 minutes; no roles inside the JWT; claims sub (idUser), person_id and email.                                |
-| Identity                      | All modules obtain the user from the `sub` claim through `CurrentUserResolver`; the X-User-Id header is ignored.                                                                                        |
-| Sessions                      | STATELESS: no cookies or HTTP session; CSRF disabled because there is no ambient credential.                                                                                                            |
+| Authentication                | JWT signed with the RS256 algorithm by the security service, the only one holding the private key (PEM); the gateway and the other services validate it with the public key (signature, issuer and expiry), so a service reached without going through the gateway is not open either. Access token lifetime: 15 minutes; no roles inside the JWT; claims sub (idUser), person_id and email. |
+| Identity                      | All services and modules obtain the user from the `sub` claim through `CurrentUserResolver`; the X-User-Id header is ignored.                                                                           |
+| Sessions                      | No server-side HTTP session (STATELESS). The mobile app receives the tokens in the body; the web, in HttpOnly and SameSite=Strict cookies (Secure in production): `em_access` (Path=/api) and `em_refresh` (Path=/api/v1/auth). The gateway only uses the cookie when the request carries `X-Requested-With: XMLHttpRequest`, a header that a form or an image from another site cannot send (CSRF protection). |
 | Session renewal               | Opaque, stateful refresh token rotated on every use, stored as a SHA-256 hash with family_id and parent_id to detect reuse (replay) and revoked when the password changes.                              |
 | Password hashing              | BCrypt (BCryptPasswordHasherAdapter) isolated from the domain; passwords are never stored in clear.                                                                                                     |
 | Password policy               | password_policy table: minimum length 8 and maximum 64, requires uppercase, numbers and symbols, expires after 90 days. Non-compliance =\> 422.                                                         |
-| Global authorization (RBAC)   | Chain of five tables (system_role, permission, user_system_role, system_role_permission and user) queried live by `CheckPermission`; permissions can be queried at GET /api/v1/auth/permissions.         |
+| Global authorization (RBAC)   | Chain of five tables (system_role, permission, user_system_role, system_role_permission and user) queried live by `CheckPermission` in the security service; permissions can be queried at GET /api/v1/auth/permissions. The backend asks for the permissions through the internal API, with a 30-second cache. The gateway decides no permission. |
 | Per-household authorization   | OWNER and MEMBER roles per household resolved with the Strategy pattern (`OwnerPermissions`, `MemberPermissions`).                                                                                       |
 | Input validation              | Bean Validation in the backend DTOs (@NotBlank, @Size, @NotNull, @Positive, @Pattern) and zod schemas in the front-end forms.                                                                           |
-| CORS                          | Closed by default: explicit list of origins (SECURITY_CORS_ALLOWED_ORIGINS), no wildcards, no credentials and with OPTIONS preflight handling; methods GET, POST, PUT, DELETE and OPTIONS.              |
-| Attempt limit                 | In-memory limiter: 10 attempts per IP every 15 minutes in password recovery =\> 429 with Retry-After header.                                                                                            |
-| Enumeration protection        | Failed login with a generic message and password/forgot with an identical 202 response whether or not the account exists; the work is done asynchronously.                                              |
+| CORS                          | Only in the gateway, which drops the Origin header before forwarding. Closed by default: explicit list of origins (the gateway's SECURITY_CORS_ALLOWED_ORIGINS), no wildcards, no credentials and with OPTIONS preflight handling; methods GET, POST, PUT, DELETE and OPTIONS. |
+| Attempt limit                 | In-memory limiters: in the gateway, 20 POSTs per IP and path per minute on the public account endpoints (sign-in, registration, Google, refresh, recovery and verification) =\> 429 with Retry-After; in the security service, 10 attempts per IP every 15 minutes in password recovery =\> 429 with Retry-After header. |
+| Enumeration protection        | Failed login with a generic message; the unverified-email check runs after the password. By documented decision, password/forgot answers 404 when the email has no account (as registration answers 409 when it already exists), and the per-IP limit is charged before the lookup. |
 | Recovery codes                | 6 digits, 15-minute validity, single use, stored as HMAC-SHA256 with pepper (SECURITY_RESET_PEPPER).                                                                                                    |
-| Device credentials            | Each device uses `device_code` and `api_key`; the backend only stores the SHA-256 hash of the key (`api_key_hash`). Mosquitto authenticates the device against the backend and the ACL limits its topics. |
-| Device transport              | MQTT 3.1.1 with TLS on port 8883; port 1883 is internal and the `/internal/**` routes are only accepted from allowed networks (the proxy must block them).                                             |
-| Audit                         | audit_log table (actions, IP, user) and login_error_log (failed attempts); the IP is taken from getRemoteAddr(), ignoring X-Forwarded-For.                                                              |
-| Documentation                 | The OpenAPI endpoint declares the bearerAuth scheme; the public endpoints are only the authentication and infrastructure ones.                                                                          |
-| Transport                     | In production it must be served over HTTPS; in local development HTTP is used with Mailpit as the test email server.                                                                                    |
+| Device credentials            | Each device uses `device_code` and `api_key`; the device service only stores the SHA-256 hash of the key (`api_key_hash`). Mosquitto authenticates the device against the device service and the ACL limits its topics. |
+| Device transport              | MQTT 3.1.1 with TLS on port 8883; port 1883 only exists inside the Docker network and the `/internal/mqtt/**` routes are only accepted from allowed networks.                                          |
+| Internal communication        | The `/internal/**` routes require loopback or the Docker network (`172.16.0.0/12`) and the `X-Internal-Token` header (`INTERNAL_API_TOKEN`), compared in constant time; with no token configured every call is refused. The gateway never forwards them and in Docker only the web (80), MQTT with TLS (8883) and, on 127.0.0.1, the administration ports are published. |
+| Audit                         | audit_log table (actions, IP, user) and login_error_log (failed attempts). The gateway appends the client's IP to X-Forwarded-For and the security service only takes it from that header when the connection comes from loopback or the Docker network; any other client is recorded by its own address. |
+| Documentation                 | The OpenAPI endpoint of each service declares the bearerAuth scheme; the public endpoints are only the authentication ones, `GET /api/v1/support/contacts` and the infrastructure ones.                  |
+| Transport                     | In production it is served over HTTPS (Nginx + Certbot with Let's Encrypt) at https://energy-monitor.tech, and MQTT with TLS at mqtt.energy-monitor.tech:8883; in local development HTTP is used with Mailpit as the test email server. |
 
 ## 14.2 Known limitations and risks
 
@@ -1381,10 +1544,10 @@ Content-Type: application/json
 | **Limitation**                                                                                 | **Impact**                                                                            | **Recommendation**                                                                  |
 |------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
 | Telemetry and status with MQTT QoS 0.                                                          | A reading can be lost (no duplicates).                                                | Evaluate an MQTT client with QoS 1 (for example espMqttClient).                     |
-| Access token and refresh token stored in localStorage (web).                                   | An XSS vulnerability could read the tokens (accepted and documented risk).            | Migrate to httpOnly cookies with SameSite or strengthen the Content Security Policy. |
-| In-memory attempt limiter.                                                                     | It resets on every start and is not shared between instances.                         | Use Redis or another shared store, or a limiter at the load balancer.               |
+| Mosquitto depends on the device service to authenticate each client.                           | If the service goes down, new MQTT logins are refused and connected modules only publish while the cached ACL decisions last (5 minutes). | Monitor the device service's health; the deployment waits until every service is `healthy`. |
+| In-memory attempt limiters (gateway and password recovery) and outbox relays designed for a single instance. | They reset on every start and are not shared between instances; a second instance could reorder messages. | Use Redis or another shared store if scaling to several instances. |
 | No over-the-air (OTA) firmware update.                                                         | Updating the firmware requires a USB cable.                                           | Evaluate OTA in a future version.                                                   |
-| Persistence tests are not hermetic.                                                            | They need MySQL running and SPRING_DATASOURCE_PASSWORD.                               | Use a database container for tests.                                                 |
+| Persistence tests are not hermetic.                                                            | They need the infrastructure repository's MySQL running and SPRING_DATASOURCE_PASSWORD. | Use a database container for tests.                                               |
 | The access token remains valid for up to 15 minutes after account deletion.                    | Brief window of residual access.                                                      | Accepted; documented.                                                               |
 | Edge cases of connectivity alerts (CONNECTIVITY) without automatic resolution.                 | Some alerts need manual review.                                                       | Define the automatic resolution rule.                                               |
 | Web Bluetooth limited to Chrome, Edge and Chrome for Android, and to HTTPS or localhost.       | On other browsers the Wi-Fi configuration portal is used; on iOS there is no push without installing the web. | Keep the `EnergyMonitor-Setup` portal as an alternative.             |
@@ -1394,17 +1557,19 @@ Content-Type: application/json
 
 ## 14.3 Best practices for developers
 
-- Never commit the .env or application-local.yaml files or the RSA keys (\*.pem); both are already declared in .gitignore.
+- Never commit the .env files (of each service and of infra), application-local.yaml or the RSA keys (\*.pem); they are already declared in .gitignore. Only the security service receives the private key; the other services receive only `public.pem`.
 
 - Do not log passwords, tokens or recovery codes in the application logs.
 
-- Keep the backend and front-end dependencies up to date and review their security advisories.
+- Keep the dependencies of the backend services and the front-end up to date and review their security advisories.
 
-- Every new feature must validate input in the backend, regardless of client-side validations.
+- Every new feature must validate input in the service that serves it, regardless of client-side validations.
 
-- Respect module boundaries: do not import classes from another context without going through its api package (verified by ModularityTests).
+- Respect module boundaries: do not import classes from another context without going through its api package (verified by ModularityTests in the backend). Between services, communicate only through the internal REST and the RabbitMQ events; never import another service's entities or repositories or create foreign keys between services.
 
-- Rotate the JWT keys and the recovery pepper if a leak is suspected.
+- A new public endpoint in the security service must also be added to the gateway's list of public endpoints (`SecurityFilterChainConfiguration`).
+
+- Rotate the JWT keys, the recovery pepper and the `INTERNAL_API_TOKEN` (in all services at once) if a leak is suspected.
 
 # 15. Software version control
 
@@ -1412,17 +1577,24 @@ The project uses Git with a remote repository on GitHub. Each component of the s
 
 | **Repository**             | **Content**                                                      | **Remarks**                                                                               |
 |----------------------------|------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| energy-monitor-backend     | REST API in Java 21 / Spring Boot.                               | Includes tests, docker-compose.yml, Dockerfile, .env.example and the Liquibase migration history. |
-| Energy-Monitor-application | React 19 / Vite 8 web application.                               | Includes Vitest tests (14 files) and production build in /dist.                           |
-| Energy-Monitor-Mobile      | Expo SDK 57 mobile application.                                  | Includes LICENSE, AGENTS.md (versioned Expo 57 documentation) and Expo scripts.           |
-| energy-monitor-devices     | ESP32 firmware and Mosquitto broker.                             | Includes development and production docker-compose.yml and the MQTT contract.             |
-| energy-monitor-docs-final  | Bilingual final documentation (ES and EN).                       | Project charter, requirements specification, technical proposal, design and manuals.      |
+| en-monitor-api-gateway     | API gateway in Java 21 / Spring Boot 4.0.8 / Spring Cloud Gateway. | https://github.com/Juan-Cortes2045/en-monitor-api-gateway; `main` at `c070cec` (10/24/2026). |
+| en-monitor-security-service | Security microservice in Java 21 / Spring Boot 4.1.1.           | https://github.com/Juan-Cortes2045/en-monitor-security-service; `main` at `334691a`. Includes its security-\* changesets. |
+| en-monitor-device-service  | Device microservice in Java 21 / Spring Boot 4.1.1.              | https://github.com/Juan-Cortes2045/en-monitor-device-service; `main` at `f8b8526`. Includes its device-\* changesets. |
+| en-monitor-measurement-service | Measurement microservice in Java 21 / Spring Boot 4.1.1.     | https://github.com/Juan-Cortes2045/en-monitor-measurement-service; `main` at `ee2cb81`. Includes its measurement-\* changesets. |
+| energy-monitor-backend     | Modular backend (home, alert, recommendation and notification) in Java 21 / Spring Boot 4.1.1 and the ESP32 firmware. | https://github.com/Juan-Cortes2045/energy-monitor-backend; `main` at `aa9a713`. Includes tests, Dockerfile, .env.example, its Liquibase migrations and the firmware/ folder. |
+| Energy-Monitor-application | React 19 / Vite 8 web application.                               | https://github.com/Juan-Cortes2045/Energy-Monitor-application; `main` at `e59bece`. Includes Vitest tests (14 files) and production build in /dist. |
+| Energy-Monitor-Mobile      | Expo SDK 57 mobile application.                                  | https://github.com/angelgarcia0/Energy-Monitor-Mobile; `main` at `894b65a`. Includes LICENSE, AGENTS.md (versioned Expo 57 documentation) and Expo scripts. |
+| energy-monitor-infra       | Docker Compose (local, development and production), Mosquitto, Nginx and deployment. | https://github.com/Juan-Cortes2045/energy-monitor-infra; `main` at `eaf961b`. Includes deploy.sh and the end-to-end tests (e2e/). |
+| energy-monitor-docs-final  | Bilingual final documentation (ES and EN).                       | Project charter, requirements specification, technical proposal, design and manuals. Other documentation repositories: en-monitor-docs and Energy-Monitor-Documentation. |
+| energy-monitor-devices     | Old firmware and broker (legacy).                                | No longer used to run anything; the firmware is in energy-monitor-backend and the broker in energy-monitor-infra. |
 
-- Branches follow the `[type]/[kebab-case-name]` convention (feat/*, fix/*, chore/*) and commits follow Conventional Commits with the message in English.
+- All repositories have the `main` (production) and `dev` (integration) branches. Work branches follow the `[type]/[kebab-case-name]` convention (feat/*, fix/*, chore/*) and commits follow Conventional Commits with the message in English.
 
-- Code is integrated through a pull request to `dev` and then to `main`.
+- Code is integrated through a pull request to `dev` and then from `dev` to `main`.
 
-- Before merging changes, the backend test suite (mvnw test) and the web front tests (npm test) must be run.
+- Each code repository has a GitHub Actions workflow that runs the tests and the build on every pull request and push to `dev` and `main`; after a push to `main` and the approval of the `production` environment, it deploys over SSH with `infra/deploy/deploy.sh backend|security|device|measurement|gateway|frontend|infra` (section 16.1).
+
+- Before merging changes, the test suite of the affected repository (./mvnw test in each service) and the web front tests (npm test) must be run.
 
 - Database schema changes are made only through a new Liquibase changeset with rollback; already applied changesets are never edited.
 
@@ -1436,17 +1608,18 @@ The project uses Git with a remote repository on GitHub. Each component of the s
 
 | **Area**      | **Recommendation**                                                                                                                                                                |
 |---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Backend       | Build with .\mvnw.cmd clean test before each delivery; verify that ModularityTests confirms the module boundaries were not broken.                                                |
-| Database      | Create a new changeset for each schema change, with a sequential identifier (e.g. security-025) and its rollback; run docker compose up -d to test against a real MySQL 8.4.      |
-| Dependencies  | Update Spring Boot, Expo or React in test branches, running the full suite before merging.                                                                                        |
-| Web front     | Keep the VITE_API_BASE_URL variable and the allowed origins list (SECURITY_CORS_ALLOWED_ORIGINS) in sync; rerun npm test and npm run lint.                                        |
+| Backend       | Build with ./mvnw clean test (.\mvnw.cmd on Windows) in each service repository before each delivery; in energy-monitor-backend, verify that ModularityTests confirms the module boundaries were not broken. |
+| Database      | Create a new changeset for each schema change in the repository of the service that owns the table, with a sequential identifier of its module and its rollback; start MySQL from energy-monitor-infra (development mode) to test against a real MySQL 8.4. |
+| Dependencies  | Update Spring Boot, Spring Cloud, Expo or React in test branches, running the full suite before merging (the gateway stays on Spring Boot 4.0 because Spring Cloud 2025.1 is the release that supports it). |
+| Web front     | Keep `VITE_API_BASE_URL` pointing at the gateway and the allowed origins list (the gateway's SECURITY_CORS_ALLOWED_ORIGINS); rerun npm test and npm run lint.                     |
 | Mobile front  | Review the versioned Expo 57 documentation before adding native libraries; there are no automated tests, so verification is manual.                                               |
-| Devices       | Rebuild and upload the firmware over USB after changing config.h or the certificate; renew the broker certificate and restart the `mosquitto` container.                          |
+| Devices       | Rebuild and upload the firmware over USB after changing config.h or the certificate; renew the broker certificate and restart the `mosquitto` container (in production the Certbot hook `deploy/renew-mqtt-cert.sh` does it). |
+| Deployment    | Deploy from `main` with GitHub Actions and `infra/deploy/deploy.sh <component>`: it backs up MySQL, updates and rebuilds only that service, waits until the five Java services are `healthy` and the web answers, and rolls back only if it fails. Before that, run `infra/e2e/device-flow.sh` and `infra/e2e/measurement-flow.sh` on the local stack. |
 | Security      | Review the RBAC permissions, the password policy and the validity of the JWT keys quarterly.                                                                                      |
 
 ## 16.2 Database backups
 
-Before each relevant update, the energy_monitor schema must be backed up. Recommended procedure:
+Before each relevant update, the energy_monitor schema, shared by all the services, must be backed up. In production, `deploy.sh` backs up MySQL before each deployment and `deploy/backup-mysql.sh` makes a daily logical backup. Recommended manual procedure:
 
 1.  Stop writing information (do not run measurement loads during the backup).
 
@@ -1462,15 +1635,20 @@ Before each relevant update, the energy_monitor schema must be backed up. Recomm
 
 | **Symptom**                             | **Suggested check**                                                                                                                  |
 |-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| The backend does not start              | Check port 8080 (netstat), the MySQL container (docker compose ps) and the SPRING_DATASOURCE_PASSWORD variable.                      |
-| The API answers 403/401 massively       | Verify the RSA key pair (SECURITY_JWT_PRIVATE_KEY_PATH / PUBLIC) and the server date and time.                                       |
-| The web front does not connect to the API | Confirm that the backend answers on the indicated port and that SECURITY_CORS_ALLOWED_ORIGINS includes the origin http://localhost:5173. |
-| Emails do not arrive                    | Check MAIL_HOST, MAIL_PORT, MAIL_USERNAME and MAIL_PASSWORD; locally use Mailpit (http://localhost:8025).                            |
-| A device does not send readings         | Check the broker (docker compose logs mosquitto), DEVICE_MQTT_PUBLIC_HOST (never localhost), the TLS certificate and the ESP32 serial output. |
-| Migrations fail on startup              | Check the Liquibase log and the order of the changesets in db.changelog-master.xml.                                                  |
+| A service does not start                | Check its port (8080, 8082, 8083, 8084 or 8085), the MySQL and RabbitMQ containers (docker compose ps in infra) and the SPRING_DATASOURCE_PASSWORD variable. Without RabbitMQ, /actuator/health answers DOWN. |
+| The API answers 403/401 massively       | Verify that each service's SECURITY_JWT_PUBLIC_KEY_PATH is the public key of the security service's pair, and the server date and time. |
+| The gateway answers 503 or 504          | The service that owns the route is not running or takes more than 30 seconds; check its health with docker compose ps.               |
+| Internal calls fail (503, missing names) | Verify that INTERNAL_API_TOKEN has the same value in all the services and that the called service is running.                       |
+| The web front does not connect to the API | Confirm that the gateway answers on port 8080 and that the gateway's SECURITY_CORS_ALLOWED_ORIGINS includes the origin http://localhost:5173. |
+| Emails do not arrive                    | Check the backend's MAIL_HOST, MAIL_PORT, MAIL_USERNAME and MAIL_PASSWORD and that RabbitMQ is running; locally use Mailpit (http://localhost:8025). |
+| A device does not send readings         | Check the broker (docker compose logs mosquitto), that the device service is running (the broker asks it about every client), DEVICE_MQTT_PUBLIC_HOST (never localhost), the TLS certificate and the ESP32 serial output. |
+| Readings arrive but no alerts are raised | Check that the measurement service answers, the INTERNAL_API_TOKEN and the `energy-monitor-backend.measurement.recorded` queue (or its `.dlq`) in RabbitMQ. |
+| Migrations fail on startup              | Check the Liquibase log and the order of the changesets in the db.changelog-master.xml of the failing service.                       |
 | Error messages are not readable         | Check the browser console and the ApiError body returned by the API.                                                                 |
 
 ## 16.4 Declared pending work
+
+- **Pending work: migration of home, alert, recommendation and notification (in progress by the teammate).** The migration to microservices of the four modules that remain in energy-monitor-backend is being carried out by the project teammate, Miguel Ángel García Artunduaga. It is in progress; its services, ports and dates are not yet defined, so this manual documents those modules as they work today inside the backend.
 
 - Limit a device's history to the linking period (RF-HOM-11).
 
@@ -1482,11 +1660,11 @@ Before each relevant update, the energy_monitor schema must be backed up. Recomm
 
 - Automatically resolve the edge cases of connectivity alerts.
 
-- Expose over HTTP the administrative operations on roles and user statuses that already exist as application ports.
+- Administrator notices by email or push, and refusing the household endpoints to administrator accounts on the server (today only the web hides those screens from them).
 
 - Evaluate over-the-air (OTA) firmware updates.
 
-- Decide what to do with the legacy repository `en-monitor-security-service` (archive or delete it): it is not used.
+- Decide what to do with the legacy repository `energy-monitor-devices` (archive or delete it): it is no longer used to run anything.
 
 # 17. Glossary
 
@@ -1494,19 +1672,25 @@ Before each relevant update, the energy_monitor schema must be backed up. Recomm
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------|
 | ADSO                  | Software Analysis and Development: SENA technology program that is part of the project (group/ficha 3145556).                         |
 | REST API              | HTTP-based programming interface that exposes resources in JSON format under versioned routes (/api/v1).                              |
+| API gateway           | Service that is the single entry point of the API (en-monitor-api-gateway): routes each request to the owning service, validates the token and answers CORS. |
 | Access token          | Short-lived JWT (15 minutes) that proves the user's identity on every request.                                                        |
-| Bounded context       | Domain bounded context (security, home, measurement…) with its own schema and internal API.                                           |
+| Bounded context       | Domain bounded context (security, home, measurement…) with its own tables and internal API; it can live in a microservice or in a backend module. |
+| Proxy                 | Backend package (security, device or measurement) that serves the api contract of an already extracted context by calling the microservice and translating its events; it has no domain or tables. |
+| Microservice          | Independent application, with its own repository, deployment and tables, that implements a context (security, devices or measurements). |
+| RabbitMQ              | Message broker (AMQP) that carries the events between services.                                                                      |
+| Transactional outbox  | Pattern in which the message is stored in an outbox table in the same transaction as the change and a relay later publishes it to RabbitMQ. |
+| X-Internal-Token      | Header with the shared secret (INTERNAL_API_TOKEN) required by the internal `/internal/**` routes between services.                   |
 | BCrypt                | Salted hashing algorithm used to store passwords irreversibly.                                                                        |
 | MQTT broker           | Server (Eclipse Mosquitto) that receives the messages published by the devices and delivers them to subscribers.                      |
 | CORS                  | HTTP policy that controls from which origins (e.g. http://localhost:5173) the browser may call the API.                               |
 | Changeset             | Liquibase migration unit: versioned instruction to create or modify tables.                                                           |
-| CurrentUserResolver   | Component of each module that obtains the user's identity from the `sub` claim of the JWT.                                            |
-| Docker Compose        | Tool that defines and starts containers (for example mysql:8.4) with a single command.                                                |
+| CurrentUserResolver   | Component of each module or service that obtains the user's identity from the `sub` claim of the JWT.                                 |
+| Docker Compose        | Tool that defines and starts containers (for example mysql:8.4) with a single command; the project's is in energy-monitor-infra.      |
 | DTO                   | Data transfer object: JSON input or output structure of an endpoint.                                                                  |
 | ER / ERD              | Entity-relationship diagram: logical model of the tables and their relationships.                                                     |
 | JWT                   | JSON Web Token: signed token (RS256 algorithm) that carries the user's identity.                                                      |
 | Liquibase             | Schema manager: applies database changesets in a controlled and versioned way.                                                        |
-| Module (Modulith)     | Code unit with boundaries verified by Spring Modulith; it only relates through its api package.                                       |
+| Module (Modulith)     | Backend code unit with boundaries verified by Spring Modulith; it only relates through its api package.                              |
 | MQTT / QoS            | Messaging protocol for devices and delivery quality level (0: at most once; 1: at least once).                                        |
 | PK / Primary key      | Field that uniquely identifies a row (in this project, VARCHAR(10)).                                                                  |
 | FK / Foreign key      | Field that references another table within the same context. Between contexts only IDs are stored (no SQL FK).                        |
@@ -1518,50 +1702,66 @@ Before each relevant update, the energy_monitor schema must be backed up. Recomm
 | Thresholds            | Daily and monthly consumption limits configurable per household that trigger alerts.                                                  |
 | Soft delete           | No physical DELETE is executed: deleted_at with a value indicates that the record was deleted.                                        |
 | Web Push              | Browser notifications delivered even when the tab is closed, using VAPID keys.                                                        |
-| X-User-Id             | Header the backend ignores: identity is always taken from the `sub` claim of the JWT.                                                 |
+| X-User-Id             | Header the services ignore: identity is always taken from the `sub` claim of the JWT.                                                 |
 
 # 18. Appendices
 
 ## Appendix A. Configuration and commands
 
-**Environment variables.** The backend reads its secrets from a .env file (imported through spring.config.import) whose structure is documented in .env.example and which is read as `.properties` (values without quotes and without `$`); the web front uses .env.local with VITE_API_BASE_URL and VITE_GOOGLE_CLIENT_ID, and the mobile app uses .env with EXPO_PUBLIC_API_BASE_URL. For security reasons no real values are published:
+**Environment variables.** Each service reads its secrets from its own .env file (imported through spring.config.import) whose structure is documented in its .env.example and which is read as `.properties` (values without quotes and without `$`); in Docker, the values come from `infra/.env` (or `.env.prod` on the server) of the energy-monitor-infra repository. The web front uses .env.local with VITE_API_BASE_URL and VITE_GOOGLE_CLIENT_ID, and the mobile app uses .env with EXPO_PUBLIC_API_BASE_URL. For security reasons no real values are published:
 
 | **Variable**                                                 | **Description**                                                                                      |
 |--------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
-| MYSQL_PASSWORD / MYSQL_ROOT_PASSWORD                         | Passwords of the application user and the MySQL root user (defined in docker-compose.yml).           |
-| SPRING_DATASOURCE_PASSWORD                                   | Password used by the tests with the test profile.                                                    |
-| MAIL_HOST / MAIL_PORT                                        | SMTP server and port (default smtp.gmail.com:587).                                                   |
-| MAIL_USERNAME / MAIL_PASSWORD / MAIL_FROM                    | Sender account and application password to send emails.                                              |
-| SECURITY_RESET_PEPPER                                        | HMAC-SHA256 pepper of the password recovery codes.                                                   |
-| SECURITY_CORS_ALLOWED_ORIGINS                                | Origins allowed by CORS (http://localhost:5173 in the example).                                      |
-| SECURITY_JWT_PRIVATE_KEY_PATH / SECURITY_JWT_PUBLIC_KEY_PATH | Absolute paths to the RSA key pair (private.pem and public.pem) used by RS256.                       |
-| GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET                      | OAuth credentials to sign in with Google; when empty, the button answers 503.                        |
-| MQTT_BROKER_URL / MQTT_BACKEND_USER / MQTT_BACKEND_PASS / MQTT_CLIENT_ID | Connection of the backend to the MQTT broker (internal listener 1883).                   |
-| MQTT_AUTH_ALLOWED_NETWORKS                                   | Networks allowed to call the broker's internal authentication routes.                                |
-| DEVICE_MQTT_PUBLIC_HOST / DEVICE_MQTT_PUBLIC_PORT            | Broker address given to the device when linking it (port 8883).                                      |
-| DEVICE_OFFLINE_AFTER                                         | Silence after which a device is marked offline (PT150S).                                             |
-| NOTIFICATION_WEB_URL / NOTIFICATION_VAPID_PUBLIC_KEY / NOTIFICATION_VAPID_PRIVATE_KEY / NOTIFICATION_VAPID_SUBJECT | Email links and VAPID keys of browser push.                 |
-| ALERT_LIMIT_ZONE / RECOMMENDATION_EVALUATE_INTERVAL / RECOMMENDATION_ZONE | Time zone of the limit alerts and frequency and time zone of the recommendations.       |
-| VITE_API_BASE_URL / VITE_GOOGLE_CLIENT_ID (web front)        | Backend base URL (default http://localhost:8080) and Google client ID.                               |
-| EXPO_PUBLIC_API_BASE_URL (mobile app)                        | Backend base URL: 10.0.2.2 on the Android emulator or the PC's IP on a phone.                        |
+| MYSQL_PASSWORD / MYSQL_ROOT_PASSWORD                         | Passwords of the application user and the MySQL root user (defined in infra/.env).                   |
+| SPRING_DATASOURCE_PASSWORD                                   | Password of energy_app in each service with a database (security, device, measurement and backend) and in their tests. |
+| MAIL_HOST / MAIL_PORT                                        | Backend: SMTP server and port (default smtp.gmail.com:587).                                          |
+| MAIL_USERNAME / MAIL_PASSWORD / MAIL_FROM                    | Backend: sender account and application password to send emails.                                     |
+| SECURITY_RESET_PEPPER                                        | Security service: HMAC-SHA256 pepper of the password recovery codes.                                 |
+| SECURITY_SESSION_COOKIE_SECURE                               | Security service: Secure flag of the session cookies (only turned off on sites served over HTTP).   |
+| SECURITY_CORS_ALLOWED_ORIGINS                                | Gateway: origins allowed by CORS (http://localhost:5173 in the example).                             |
+| SECURITY_JWT_PRIVATE_KEY_PATH / SECURITY_JWT_PUBLIC_KEY_PATH | Absolute paths to the RSA key pair used by RS256: the private key only in the security service; the public key in the gateway and all the services. |
+| GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET                      | Security service: OAuth credentials to sign in with Google; when empty, the button answers 503.      |
+| INTERNAL_API_TOKEN                                           | Secret of the X-Internal-Token header; same value in security, device, measurement and backend.      |
+| INTERNAL_API_ALLOWED_NETWORKS                                | Networks allowed to call each service's `/internal/**` routes.                                       |
+| SECURITY_SERVICE_URL / DEVICE_SERVICE_URL / MEASUREMENT_SERVICE_URL / BACKEND_URL | Gateway: address of each service (8082, 8084, 8085 and 8083). The backend uses the first three and the measurement service, DEVICE_SERVICE_URL. |
+| BACKEND_INTERNAL_URL                                         | Security, device and measurement services: address of the backend's internal API.                    |
+| RABBITMQ_HOST / RABBITMQ_PORT / RABBITMQ_USERNAME / RABBITMQ_PASSWORD | RabbitMQ connection of security, device, measurement and backend.                         |
+| MQTT_BROKER_URL / MQTT_CLIENT_ID                             | Device and measurement services: connection to the MQTT broker (internal listener 1883).            |
+| MQTT_DEVICE_SERVICE_USER / MQTT_DEVICE_SERVICE_PASS          | MQTT user of the device service (reads telemetry and status, publishes commands).                   |
+| MQTT_MEASUREMENT_SERVICE_USER / MQTT_MEASUREMENT_SERVICE_PASS | MQTT user of the measurement service (reads telemetry only).                                        |
+| MEASUREMENT_MQTT_ENABLED                                     | Measurement service: enables the telemetry subscription (off by default; the infra stack turns it on). |
+| MQTT_AUTH_ALLOWED_NETWORKS                                   | Device service: networks allowed to call the broker's internal authentication routes.                |
+| DEVICE_MQTT_PUBLIC_HOST / DEVICE_MQTT_PUBLIC_PORT            | Device service: broker address given to the device when linking it (port 8883).                      |
+| DEVICE_OFFLINE_AFTER                                         | Device service: silence after which a device is marked offline (PT150S).                             |
+| NOTIFICATION_WEB_URL / NOTIFICATION_VAPID_PUBLIC_KEY / NOTIFICATION_VAPID_PRIVATE_KEY / NOTIFICATION_VAPID_SUBJECT | Backend: email links and VAPID keys of browser push. |
+| EXPO_ACCESS_TOKEN                                            | Backend: Expo token for mobile app push; when empty, there is no push in the app.                    |
+| ALERT_LIMIT_ZONE / RECOMMENDATION_EVALUATE_INTERVAL / RECOMMENDATION_ZONE | Backend: time zone of the limit alerts and frequency and time zone of the recommendations. |
+| GATEWAY_READ_TIMEOUT / GATEWAY_RATE_LIMIT_REQUESTS / GATEWAY_RATE_LIMIT_WINDOW | Gateway: maximum wait for a service (30 s) and limit of public POSTs (20 per minute). |
+| BACKEND_CONTEXT / SECURITY_CONTEXT / DEVICE_CONTEXT / MEASUREMENT_CONTEXT / GATEWAY_CONTEXT / FRONTEND_CONTEXT | infra/.env: paths of the repositories when they are not cloned side by side. |
+| VITE_API_BASE_URL / VITE_GOOGLE_CLIENT_ID (web front)        | Gateway base URL (default http://localhost:8080) and Google client ID.                               |
+| EXPO_PUBLIC_API_BASE_URL (mobile app)                        | Gateway base URL: 10.0.2.2 on the Android emulator or the PC's IP on a phone.                        |
+
+> *Variables removed from the backend: MQTT_BACKEND_USER / MQTT_BACKEND_PASS, MQTT_CLIENT_ID and DEVICE_OFFLINE_AFTER (the backend no longer connects to the MQTT broker).*
 
 **Operation commands:**
 
 | **Command**                             | **Description**                                                                    |
 |-----------------------------------------|------------------------------------------------------------------------------------|
-| docker compose up -d                    | Starts MySQL 8.4 with the energy_monitor schema.                                   |
-| docker compose down -v                  | Stops the database and removes the volume (regenerates the schema with Liquibase). |
+| docker compose up -d --build (in infra) | Starts the full local stack: MySQL, RabbitMQ, Mosquitto, the five Java services and the web (http://localhost). |
+| docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d mysql rabbitmq mosquitto (in infra) | Development mode: starts only MySQL, RabbitMQ and the broker. |
+| docker compose down -v (in infra)       | Stops the containers and removes their volumes (regenerates the schema with Liquibase). |
 | docker run -p 8025:8025 axllent/mailpit | Starts the test email server (interface at http://localhost:8025).                 |
-| .\mvnw.cmd spring-boot:run              | Starts the REST API at http://localhost:8080.                                      |
-| .\mvnw.cmd test                         | Runs the backend test suite.                                                       |
-| .\mvnw.cmd package                      | Generates the executable JAR in the /target folder.                                |
+| ./mvnw spring-boot:run (in each service; .\mvnw.cmd on Windows) | Starts the gateway (8080), security (8082), backend (8083), devices (8084) or measurements (8085). |
+| ./mvnw test                             | Runs the service's test suite.                                                     |
+| ./mvnw package                          | Generates the executable JAR in the /target folder.                                |
 | npm install / npm run dev               | Installs dependencies and starts the web application (http://localhost:5173).     |
 | npm test / npm run lint                 | Runs the tests and the static analysis of the web front.                           |
 | npm run start / npm run android         | Starts the mobile application in Expo (Android device or emulator).                |
-| docker compose up -d (devices/docker)   | Starts the development Mosquitto broker.                                           |
-| arduino-cli compile / upload            | Builds and uploads the device firmware over USB.                                   |
+| e2e/device-flow.sh / e2e/measurement-flow.sh (in infra) | End-to-end tests on the local stack.                               |
+| deploy/deploy.sh \<component\> (on the server) | Deploys a component; GitHub Actions invokes it.                             |
+| arduino-cli compile / upload (in firmware/esp32-pzem-monitor) | Builds and uploads the device firmware over USB.             |
 
-**Post-installation verification:** GET /actuator/health answers {"status":"UP"}, the sign-in screen loads in the browser, registering an account sends the verification code, the households created appear in the application panel and the first reading of a linked device appears in the household.
+**Post-installation verification:** GET /actuator/health of each service answers {"status":"UP"} (docker compose ps shows gateway, security, device, measurement and backend as healthy), the sign-in screen loads in the browser, registering an account sends the verification code, the households created appear in the application panel and the first reading of a linked device appears in the household.
 
 # Appendix B. ERD by context
 
