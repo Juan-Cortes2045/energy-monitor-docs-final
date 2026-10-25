@@ -1,5 +1,22 @@
 # Test Evidence
 
+## Version 1.2 (current status)
+
+Date: October 24, 2026. From this version on the system is no longer a single backend: the API gateway and the security, device and measurement services have their own repository and their own suite, and `energy-monitor-backend` keeps home, alert, recommendation and notification. `main` commits in production and the totals of each suite, all green:
+
+| Repository | Branch | Commit | Note |
+|---|---|---|---|
+| en-monitor-api-gateway | main | `c070cec` | API gateway; 57 tests |
+| en-monitor-security-service | main | `334691a` | Security service; 660 tests (run of October 22, 2026) |
+| en-monitor-device-service | main | `f8b8526` | Device service; 130 tests |
+| en-monitor-measurement-service | main | `ee2cb81` | Measurement service; 151 tests |
+| energy-monitor-backend | main | `aa9a713` | Core service (home, alert, recommendation and notification) and firmware; 481 tests, `ModularityTests` green |
+| energy-monitor-web | main | `e59bece` | Web application |
+| energy-monitor-mobile | main | `894b65a` | No automated tests |
+| energy-monitor-infra | main | `eaf961b` | End-to-end tests on the local stack: `e2e/device-flow.sh` (21/21) and `e2e/measurement-flow.sh` (25/25) |
+
+No Surefire reports or logs are attached for this version: the totals are the ones each suite reported. The files under `backend/` and `web/` are historical evidence of versions 1.0 and 1.1, when `energy-monitor-backend` contained all seven modules.
+
 ## Version 1.1
 
 Run date: October 20, 2026.
