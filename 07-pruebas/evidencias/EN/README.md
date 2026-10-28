@@ -1,6 +1,26 @@
 # Test Evidence
 
-## Version 1.2 (current status)
+## Version 1.3 (current status)
+
+Date: October 28, 2026. With the complete migration the core service was retired and every service has its own repository and suite. `main` commits (the ones deployed to production that day) and the totals of each suite, all green:
+
+| Repository | Branch | Commit | Note |
+|---|---|---|---|
+| en-monitor-api-gateway | main | `0b2c164` | API gateway; 69 tests |
+| en-monitor-security-service | main | `f57c76b` | Security service; 773 tests |
+| en-monitor-device-service | main | `06c1bdc` | Device service; 129 tests |
+| en-monitor-measurement-service | main | `8a9b544` | Measurement service; 151 tests |
+| en-monitor-home-service | main | `f424083` | Home service; 260 tests |
+| en-monitor-notification-service | main | `7b10398` | Notification service; 234 tests |
+| en-monitor-alert-service | main | `f050b56` | Alert service; 119 tests |
+| en-monitor-recommendation-service | main | `aeeeec5` | Recommendation service; 71 tests |
+| energy-monitor-web | main | `698d4c9` | Web application; 38 files and 228 tests |
+| energy-monitor-mobile | dev | `1e4109b` | 78 unit tests in 8 suites, `tsc` and `expo lint` without errors ([mobile/static-verification.md](mobile/static-verification.md)) |
+| energy-monitor-infra | main | `ceb1543` | End-to-end tests on the local stack: `device-flow` (24), `measurement-flow` (28), `alert-flow` (36), `activity-flow` (60) and `account-deletion-flow` (12) |
+
+As in version 1.2, no Surefire reports or logs are attached: the totals are the ones each suite reported. The manual test protocol of the mobile application (MOV-01 to MOV-12) is in the test plan and is still to be run on a device.
+
+## Version 1.2
 
 Date: October 24, 2026. From this version on the system is no longer a single backend: the API gateway and the security, device and measurement services have their own repository and their own suite, and `energy-monitor-backend` keeps home, alert, recommendation and notification. `main` commits in production and the totals of each suite, all green:
 

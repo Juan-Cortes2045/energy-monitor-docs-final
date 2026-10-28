@@ -1,6 +1,26 @@
 # Evidencias de pruebas
 
-## Versión 1.2 (estado actual)
+## Versión 1.3 (estado actual)
+
+Fecha: 28 de octubre de 2026. Con la migración completa el servicio central se retiró y cada servicio tiene su repositorio y su suite. Commits de `main` (los desplegados en producción ese día) y totales de cada suite, todas en verde:
+
+| Repositorio | Rama | Commit | Nota |
+|---|---|---|---|
+| en-monitor-api-gateway | main | `0b2c164` | API gateway; 69 pruebas |
+| en-monitor-security-service | main | `f57c76b` | Servicio de seguridad; 773 pruebas |
+| en-monitor-device-service | main | `06c1bdc` | Servicio de dispositivos; 129 pruebas |
+| en-monitor-measurement-service | main | `8a9b544` | Servicio de mediciones; 151 pruebas |
+| en-monitor-home-service | main | `f424083` | Servicio de hogares; 260 pruebas |
+| en-monitor-notification-service | main | `7b10398` | Servicio de notificaciones; 234 pruebas |
+| en-monitor-alert-service | main | `f050b56` | Servicio de alertas; 119 pruebas |
+| en-monitor-recommendation-service | main | `aeeeec5` | Servicio de recomendaciones; 71 pruebas |
+| energy-monitor-web | main | `698d4c9` | Aplicación web; 38 archivos y 228 pruebas |
+| energy-monitor-mobile | dev | `1e4109b` | 78 pruebas unitarias en 8 suites, `tsc` y `expo lint` sin errores ([mobile/verificacion-estatica.md](mobile/verificacion-estatica.md)) |
+| energy-monitor-infra | main | `ceb1543` | Pruebas de punta a punta sobre la pila local: `device-flow` (24), `measurement-flow` (28), `alert-flow` (36), `activity-flow` (60) y `account-deletion-flow` (12) |
+
+Como en la versión 1.2, no se adjuntan reportes de Surefire ni logs: los totales son los que reportó cada suite. El protocolo de pruebas manuales de la aplicación móvil (MOV-01 a MOV-12) está en el plan de pruebas y sigue por ejecutar en un dispositivo.
+
+## Versión 1.2
 
 Fecha: 24 de octubre de 2026. Desde esta versión el sistema ya no es un único backend: el API gateway y los servicios de seguridad, dispositivos y mediciones tienen su propio repositorio y su propia suite, y `energy-monitor-backend` conserva home, alert, recommendation y notification. Commits de `main` en producción y totales de cada suite, todas en verde:
 
