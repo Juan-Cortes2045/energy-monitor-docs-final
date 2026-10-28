@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-12 de octubre de 2026 (actualizado el 24 de octubre de 2026)
+12 de octubre de 2026 (actualizado el 28 de octubre de 2026)
 
 ## Control de versiones
 
@@ -15,12 +15,13 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 | 1.0     | 12/10/2026 | Primera versión: pila tecnológica, arquitectura, infraestructura, costos, cronograma, riesgos y discrepancias.   | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.1     | 20/10/2026 | Alineación con el sistema desplegado: infraestructura real en producción (VPS Hostinger KVM 2 por un mes, dominio gratuito, Nginx, Let's Encrypt), integración y despliegue continuos con GitHub Actions, costos recalculados, administración global y nuevos eventos, estado por componente, riesgos y discrepancias actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 24/10/2026 | Arquitectura en producción: API gateway y microservicios de seguridad, dispositivos y mediciones; el servicio central queda como monolito modular con home, alert, recommendation y notification, cuya migración está en curso; comunicación por REST interno y eventos en RabbitMQ con *transactional outbox*; pila, infraestructura, estado por componente y riesgos actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.3     | 28/10/2026 | Migración completa: hogares, notificaciones, alertas y recomendaciones como servicios independientes y retiro del servicio central (`energy-monitor-backend`); rutas del gateway, eventos entre servicios (alertas, recomendaciones, actividad de hogares y código de borrado de cuenta), reglas de seguridad de la cuenta (verificación previa del correo, términos y cuentas de Google), integración continua de los ocho repositorios desplegables, pruebas y estado por componente al 28 de octubre. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
-Este documento presenta la propuesta técnica de EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, identificar los periodos de mayor demanda, recibir alertas y obtener recomendaciones de ahorro. Describe la pila tecnológica elegida y su justificación, la arquitectura de software adoptada (microservicios de seguridad, dispositivos y mediciones detrás de un API gateway, junto a un servicio central que sigue siendo un monolito modular y cuya migración está en curso), la infraestructura de alojamiento y los costos del proyecto. La solución integra un dispositivo ESP32 con sensor PZEM-004T V3, servicios en Java 21 con Spring Boot 4.1.1, una base de datos MySQL 8.4, una cola de mensajes RabbitMQ 4.1, un intermediario de mensajes Mosquitto con TLS, una aplicación web en React 19 y una aplicación móvil Android con Expo SDK 57. El sistema está desplegado en `https://energy-monitor.tech`, en un VPS Hostinger KVM 2 con Docker Compose, y se actualiza mediante integración y despliegue continuos con GitHub Actions. El costo total estimado es de COP 57.021.997, de los cuales COP 8.073.997 corresponden a hardware, COP 48.000 a infraestructura (un mes de servidor; el dominio se obtuvo sin costo) y COP 48.900.000 a recurso humano. El documento incluye además el cronograma, el estado por componente, los riesgos técnicos pendientes y las diferencias con el documento general del proyecto.
+Este documento presenta la propuesta técnica de EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, identificar los periodos de mayor demanda, recibir alertas y obtener recomendaciones de ahorro. Describe la pila tecnológica elegida y su justificación, la arquitectura de software adoptada (un API gateway y siete microservicios independientes: seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones), la infraestructura de alojamiento y los costos del proyecto. La solución integra un dispositivo ESP32 con sensor PZEM-004T V3, servicios en Java 21 con Spring Boot 4.1.1, una base de datos MySQL 8.4, una cola de mensajes RabbitMQ 4.1, un intermediario de mensajes Mosquitto con TLS, una aplicación web en React 19 y una aplicación móvil Android con Expo SDK 57. El sistema está desplegado en `https://energy-monitor.tech`, en un VPS Hostinger KVM 2 con Docker Compose, y se actualiza mediante integración y despliegue continuos con GitHub Actions. El costo total estimado es de COP 57.021.997, de los cuales COP 8.073.997 corresponden a hardware, COP 48.000 a infraestructura (un mes de servidor; el dominio se obtuvo sin costo) y COP 48.900.000 a recurso humano. El documento incluye además el cronograma, el estado por componente, los riesgos técnicos pendientes y las diferencias con el documento general del proyecto.
 
-*Palabras clave:* propuesta técnica, arquitectura, microservicios, monolito modular, costos, infraestructura, integración continua, Internet de las cosas
+*Palabras clave:* propuesta técnica, arquitectura, microservicios, API gateway, costos, infraestructura, integración continua, Internet de las cosas
 
 ## Introducción
 
@@ -34,7 +35,7 @@ Los datos que el equipo aún no ha definido se marcan con `[POR CONFIRMAR]` y no
 
 ### Visión general de la solución
 
-El flujo de datos recorre cinco piezas. El dispositivo ESP32 lee el sensor PZEM-004T V3 por Modbus RTU a 9600 baudios (GPIO16 como recepción y GPIO17 como transmisión, firmware 1.3.8) y publica por MQTT 3.1.1 con TLS en el puerto 8883 hacia el intermediario Mosquitto. Los servicios en Java reciben las lecturas: el servicio de mediciones las almacena en MySQL y anuncia cada una, y el servicio central evalúa alertas y recomendaciones y envía notificaciones. La aplicación web y la aplicación móvil Android consultan los servicios mediante una API REST, siempre a través del API gateway. El dispositivo transmite telemetría cada 60 segundos y su estado cada cinco minutos. La vinculación se realiza por Bluetooth Low Energy desde la web, con un portal de configuración como alternativa. En producción, la web y la API se publican en `https://energy-monitor.tech` y los dispositivos se conectan a `mqtt.energy-monitor.tech:8883`.
+El flujo de datos recorre cinco piezas. El dispositivo ESP32 lee el sensor PZEM-004T V3 por Modbus RTU a 9600 baudios (GPIO16 como recepción y GPIO17 como transmisión, firmware 1.3.8) y publica por MQTT 3.1.1 con TLS en el puerto 8883 hacia el intermediario Mosquitto. Los servicios en Java reciben las lecturas: el servicio de mediciones las almacena en MySQL y anuncia cada una, los servicios de alertas y de recomendaciones las evalúan y el de notificaciones las entrega. La aplicación web y la aplicación móvil Android consultan los servicios mediante una API REST, siempre a través del API gateway. El dispositivo transmite telemetría cada 60 segundos y su estado cada cinco minutos. La vinculación se realiza por Bluetooth Low Energy desde la web, con un portal de configuración como alternativa. En producción, la web y la API se publican en `https://energy-monitor.tech` y los dispositivos se conectan a `mqtt.energy-monitor.tech:8883`.
 
 ### Decisiones por capa
 
@@ -46,7 +47,7 @@ La Tabla 1 resume la tecnología elegida en cada capa y la razón que la respald
 
 | Capa | Tecnología elegida | Justificación | Alternativas de mercado |
 |---|---|---|---|
-| Servicios | Java 21, Spring Boot 4.1.1, Spring Modulith (servicio central), Spring Security, Spring Data JPA; Spring Cloud Gateway Server Web MVC (Spring Boot 4.0.8, Spring Cloud 2025.1.3) en el API gateway | Herramientas de software libre con eficiencia, escalabilidad y facilidad de integración. Spring Modulith separa el servicio central en módulos con dependencias controladas y facilitó extraer contextos a servicios propios; Spring Cloud Gateway da una única entrada a la API con la misma pila. | Node.js con NestJS o Express: ecosistema amplio y desarrollo rápido, pero sin la modularidad verificable de Spring Modulith. Django (Python) y ASP.NET Core (C#): válidos, con menos experiencia en el equipo. Gateways como Kong o NGINX: otra tecnología que mantener. |
+| Servicios | Java 21, Spring Boot 4.1.1, Spring Security, Spring Data JPA; Spring Cloud Gateway Server Web MVC (Spring Boot 4.0.8, Spring Cloud 2025.1.3) en el API gateway | Herramientas de software libre con eficiencia, escalabilidad y facilidad de integración. Spring Modulith separó el servicio central original en módulos con dependencias controladas y permitió extraer cada contexto a un servicio propio; Spring Cloud Gateway da una única entrada a la API con la misma pila. | Node.js con NestJS o Express: ecosistema amplio y desarrollo rápido, pero sin la modularidad verificable de Spring Modulith. Django (Python) y ASP.NET Core (C#): válidos, con menos experiencia en el equipo. Gateways como Kong o NGINX: otra tecnología que mantener. |
 | Mensajería entre servicios | RabbitMQ 4.1 con *transactional outbox* | Software libre. La fila del mensaje se escribe en la misma transacción que el cambio y un relay la publica con confirmación del broker, de modo que ningún evento se pierde al separar servicios. | Kafka: más capacidad y complejidad de la necesaria para un solo servidor. Llamadas HTTP síncronas para todo: acoplan la disponibilidad de los servicios. |
 | Base de datos | MySQL 8.4 con migraciones Liquibase | Software libre. Liquibase versiona los cambios de la base de datos con reversión (rollback), lo que da trazabilidad. | PostgreSQL: igual de libre y más rico en funciones avanzadas, innecesarias para este volumen. MongoDB: flexible, pero los datos del proyecto son relacionales (hogares, miembros, dispositivos). Firebase: costo variable por uso y dependencia del proveedor. |
 | Mensajería con el dispositivo | MQTT 3.1.1 con TLS sobre Eclipse Mosquitto | Protocolo estándar de Internet de las cosas (OASIS, 2014), apto para dispositivos pequeños. Mosquitto es libre y los certificados se obtienen con Let's Encrypt. El cifrado protege las lecturas en tránsito. | HTTP periódico desde el dispositivo: más simple, pero consume más recursos del microcontrolador y no tiene mecanismos de última voluntad. CoAP: menos soporte en brokers y herramientas. Brokers como EMQX o HiveMQ: más capacidad de la necesaria para un solo servidor. |
@@ -71,7 +72,7 @@ Dos decisiones tienen límites conocidos. Web Bluetooth solo funciona en navegad
 
 ### Patrón arquitectónico elegido
 
-EnergyMonitor nació como un monolito modular construido con Spring Modulith: una sola aplicación desplegable, dividida en siete módulos con límites claros. Desde el 24 de octubre de 2026 la arquitectura en producción combina microservicios y ese monolito modular. Tres contextos (seguridad, dispositivos y mediciones) se extrajeron a servicios independientes, cada uno con su repositorio, su contenedor y su pipeline, y delante de todos hay un API gateway, única entrada de la API. Los cuatro módulos restantes (home, alert, recommendation y notification) siguen en el servicio central (`energy-monitor-backend`), que conserva la estructura de monolito modular; su migración a microservicios está en curso, a cargo de Miguel Ángel García Artunduaga. La extracción no cambió las rutas públicas de la API para los clientes. No se usa Kafka. La Tabla 2 describe cada componente.
+EnergyMonitor nació como un monolito modular construido con Spring Modulith: una sola aplicación desplegable, dividida en siete módulos con límites claros. Entre el 24 y el 28 de octubre de 2026 esa aplicación se repartió en servicios independientes: seguridad, dispositivos y mediciones el 24 de octubre, y hogares, notificaciones, alertas y recomendaciones el 28 de octubre, con la migración de los cuatro últimos a cargo de Miguel Ángel García Artunduaga. Cada servicio tiene su repositorio, su contenedor y su pipeline, y delante de todos hay un API gateway, única entrada de la API. El servicio central (`energy-monitor-backend`) se retiró. La extracción no cambió las rutas públicas de la API para los clientes. No se usa Kafka. La Tabla 2 describe cada componente.
 
 **Tabla 2**
 
@@ -80,25 +81,24 @@ EnergyMonitor nació como un monolito modular construido con Spring Modulith: un
 | Componente | Responsabilidad |
 |---|---|
 | API gateway (`en-monitor-api-gateway`, puerto 8080) | Única entrada de la API. Responde CORS, valida el token (RS256, emisor y expiración) salvo en los endpoints públicos, lee el token de la cookie HttpOnly de la web, limita los POST públicos de cuenta (20 por IP y ruta por minuto), rechaza `/internal/**` y responde 503 si un servicio no responde o 504 si tarda más de 30 s |
-| Servicio de seguridad (`en-monitor-security-service`, puerto 8082) | Registro con verificación de correo, autenticación, Google Sign-In, JWT y refresh token rotativo, sesiones en cookies HttpOnly para la web, recuperación de contraseña, perfil, borrado de cuenta, RBAC y administración global de cuentas y roles (rol `ADMIN`), contactos de soporte |
+| Servicio de seguridad (`en-monitor-security-service`, puerto 8082) | Registro con verificación previa del correo y aceptación de términos, autenticación, Google Sign-In, JWT y refresh token rotativo, sesiones en cookies HttpOnly para la web, recuperación de contraseña, perfil, borrado de cuenta (con código por correo para las cuentas de Google), RBAC y administración global de cuentas y roles (rol `ADMIN`), contactos de soporte |
 | Servicio de dispositivos (`en-monitor-device-service`, puerto 8084) | Vinculación, edición, reemisión de credenciales y desvinculación de dispositivos, catálogo de electrodomésticos, autenticación y autorización MQTT, comandos a los módulos y conectividad (sin conexión tras 150 s sin datos) |
 | Servicio de mediciones (`en-monitor-measurement-service`, puerto 8085) | Único que guarda la telemetría; historial, última lectura, estadísticas, consumo de un hogar y niveles de consumo; anuncia cada lectura |
-| Servicio central (`energy-monitor-backend`, puerto 8083): módulo home | Hogares, miembros, roles OWNER y MEMBER, favoritos, umbrales, eliminación del hogar y transferencia de propiedad |
-| Servicio central: módulo alert | Alertas de consumo y de conectividad |
-| Servicio central: módulo recommendation | Reglas de ahorro |
-| Servicio central: módulo notification | Entregas, preferencias, correo electrónico (el único que envía correo), Web Push, push móvil y avisos in-app para administradores |
-| Servicio central: paquetes security, device y measurement | Intermediarios sin dominio ni tablas: consultan a los servicios por su API interna (con caché) y convierten sus eventos en los eventos internos que ya usaban los módulos |
+| Servicio de hogares (`en-monitor-home-service`, puerto 8086) | Hogares, tipos de hogar, miembros, roles OWNER y MEMBER, favoritos, umbrales, eliminación del hogar y transferencia de propiedad; responde las verificaciones de borrado de cuenta y de pertenencia a un hogar que hacen los demás servicios |
+| Servicio de notificaciones (`en-monitor-notification-service`, puerto 8087) | Entregas, preferencias, correo electrónico (el único que envía correo), Web Push, push móvil, avisos in-app y actividad de hogares y dispositivos |
+| Servicio de alertas (`en-monitor-alert-service`, puerto 8088) | Alertas de consumo y de conectividad a partir de las lecturas y de los eventos de los dispositivos |
+| Servicio de recomendaciones (`en-monitor-recommendation-service`, puerto 8089) | Reglas de ahorro, evaluadas cada hora con la energía por hora del servicio de mediciones |
 
 ### Reglas de organización
 
-- Dentro del servicio central, los módulos dependen entre sí solo mediante sus paquetes `api`; `ModularityTests` (Spring Modulith) verifica esos límites.
+- Cada servicio es dueño de su dominio y de sus tablas, y consulta a los demás solo por su API interna o por eventos; ninguno lee las tablas de otro. `ModularityTests` (Spring Modulith) verificó esos límites mientras los módulos vivían en el servicio central.
 - Cada servicio y cada módulo aplican arquitectura hexagonal (`domain`, `application`, `adapter`, `infrastructure`, `api`). El gateway no tiene dominio.
 - Todos los servicios usan una sola base MySQL 8.4 (`energy_monitor`); cada uno es dueño de sus tablas y aplica solo sus changesets de Liquibase, que incluyen rollback. No hay claves foráneas entre servicios.
 - Los identificadores son VARCHAR(10) y el borrado es lógico mediante `deleted_at`.
 
 ### Comunicación entre módulos y servicios
 
-Los servicios se consultan por REST interno bajo `/internal/**`, que solo se acepta desde la red de Docker y con el encabezado `X-Internal-Token`, y que el gateway nunca reenvía. Los cambios se anuncian con eventos en RabbitMQ 4.1 mediante *transactional outbox*: la fila del mensaje se escribe en la misma transacción que el cambio, un relay la publica cada segundo con confirmación del broker, la entrega es al menos una vez y las colas son durables, con *dead-letter* tras tres intentos. Dentro del servicio central los módulos siguen usando eventos internos de Spring, en memoria. La Tabla 3 los enumera.
+Los servicios se consultan por REST interno bajo `/internal/**`, que solo se acepta desde la red de Docker y con el encabezado `X-Internal-Token`, y que el gateway nunca reenvía. Los cambios se anuncian con eventos en RabbitMQ 4.1 mediante *transactional outbox*: la fila del mensaje se escribe en la misma transacción que el cambio, un relay la publica cada segundo con confirmación del broker, la entrega es al menos una vez y las colas son durables, con *dead-letter* tras tres intentos. Todos los eventos entre servicios viajan por RabbitMQ. La Tabla 3 los enumera.
 
 **Tabla 3**
 
@@ -106,32 +106,33 @@ Los servicios se consultan por REST interno bajo `/internal/**`, que solo se ace
 
 | Evento | Origen | Destino | Canal |
 |---|---|---|---|
-| `measurement.recorded` (MeasurementRecorded) | servicio de mediciones | servicio central: alert | RabbitMQ; el intermediario lo republica en memoria |
-| `device.connectivity-lost` / `device.connectivity-restored` (DeviceConnectivityLost / DeviceConnectivityRestored) | servicio de dispositivos | servicio central: alert | RabbitMQ; el intermediario lo republica en memoria |
-| `device.linked` / `device.unlinked` | servicio de dispositivos | servicio central (caché) y servicio de mediciones (caché) | RabbitMQ |
-| AlertRaised | alert | notification | En memoria |
-| RecommendationCreated | recommendation | notification | En memoria |
-| `account.registered` / `account.administered` | servicio de seguridad | servicio central: notification | RabbitMQ |
-| `account.deleted` | servicio de seguridad | servicio central: home | RabbitMQ |
-| `mail.email-verification` / `mail.password-reset` | servicio de seguridad | servicio central: notification | RabbitMQ |
-| `home.deleted` | servicio central: home | servicio de dispositivos | RabbitMQ |
-| HomeOwnershipTransferred | home | sin consumidor | En memoria |
+| `measurement.recorded` | servicio de mediciones | servicio de alertas | RabbitMQ |
+| `device.connectivity-lost` / `device.connectivity-restored` | servicio de dispositivos | servicio de alertas | RabbitMQ |
+| `device.linked` / `device.unlinked` | servicio de dispositivos | servicio de mediciones (caché), servicio de alertas y servicio de notificaciones (actividad) | RabbitMQ |
+| `alert.raised` | servicio de alertas | servicio de notificaciones | RabbitMQ |
+| `recommendation.created` | servicio de recomendaciones | servicio de notificaciones | RabbitMQ |
+| `account.registered` / `account.administered` | servicio de seguridad | servicio de notificaciones | RabbitMQ |
+| `account.deleted` | servicio de seguridad | servicio de hogares y servicio de notificaciones (limpieza) | RabbitMQ |
+| `mail.email-verification` / `mail.password-reset` / `mail.account-deletion` | servicio de seguridad | servicio de notificaciones | RabbitMQ |
+| `home.deleted` | servicio de hogares | servicio de dispositivos y servicio de notificaciones | RabbitMQ |
+| `home.created`, `home.member-joined`, `home.member-left`, `home.member-removed`, `home.thresholds-updated`, `home.ownership-transferred` | servicio de hogares | servicio de notificaciones (actividad) | RabbitMQ |
 
-El módulo recommendation no escucha eventos de medición: evalúa las recomendaciones cada hora mediante un programador (`RecommendationScheduler`) y pide al servicio de mediciones la energía por hora. La pérdida de conectividad de un dispositivo se identifica mediante los registros de estado y los mecanismos de última voluntad y silencio del protocolo MQTT; el servicio de dispositivos la anuncia con `device.connectivity-lost` y su recuperación con `device.connectivity-restored`. Al recibir `home.deleted`, el servicio de dispositivos desvincula los módulos del hogar y les envía el comando `unlink`. El registro de una cuenta y los cambios de estado o de rol que hace un administrador generan avisos in-app para los demás administradores. Solo el servicio central envía correo: el servicio de seguridad le pide los de verificación y recuperación por RabbitMQ.
+El servicio de recomendaciones no escucha eventos de medición: evalúa las recomendaciones cada hora mediante un programador (`RecommendationScheduler`) y pide al servicio de mediciones la energía por hora. La pérdida de conectividad de un dispositivo se identifica mediante los registros de estado y los mecanismos de última voluntad y silencio del protocolo MQTT; el servicio de dispositivos la anuncia con `device.connectivity-lost` y su recuperación con `device.connectivity-restored`. Al recibir `home.deleted`, el servicio de dispositivos desvincula los módulos del hogar y les envía el comando `unlink`. El registro de una cuenta y los cambios de estado o de rol que hace un administrador generan avisos in-app para los demás administradores, y la actividad de los hogares y los dispositivos llega a los usuarios por una sola cola de notificaciones. Solo el servicio de notificaciones envía correo: el servicio de seguridad le pide por RabbitMQ los de verificación, recuperación y código de borrado de cuenta.
 
 ### Interfaces
 
-La API es REST bajo `/api/v1` y cubre autenticación, cuentas, hogares, miembros, umbrales, dispositivos, mediciones, estadísticas, alertas, recomendaciones, preferencias de notificación y administración (`/api/v1/admin`: usuarios, roles y avisos, con los permisos `USER.READ`, `USER.MANAGE` y `ROLE.MANAGE`). El API gateway reparte las rutas: `/api/v1/auth/**`, `/api/v1/admin/users/**`, `/api/v1/admin/roles/**` y `/api/v1/support/**` al servicio de seguridad; `/api/v1/homes/{homeId}/devices/**` y `/api/v1/appliance-types/**` al de dispositivos; `/api/v1/measurements/**`, `/api/v1/consumption-levels/**` y `/api/v1/homes/{homeId}/consumption/**` al de mediciones; y el resto de `/api/v1/**` al servicio central. Cada servicio incluye Actuator y Swagger (el gateway, solo Actuator); en producción Swagger no pasa por el proxy. Existen además endpoints internos de autenticación y autorización MQTT para Mosquitto en el servicio de dispositivos, con caché de cinco minutos, que no se exponen a Internet.
+La API es REST bajo `/api/v1` y cubre autenticación, cuentas, hogares, miembros, umbrales, dispositivos, mediciones, estadísticas, alertas, recomendaciones, preferencias de notificación y administración (`/api/v1/admin`: usuarios, roles y avisos, con los permisos `USER.READ`, `USER.MANAGE` y `ROLE.MANAGE`). El API gateway reparte las rutas: `/api/v1/auth/**`, `/api/v1/admin/users/**`, `/api/v1/admin/roles/**` y `/api/v1/support/**` al servicio de seguridad; `/api/v1/homes/{homeId}/devices/**` y `/api/v1/appliance-types/**` al de dispositivos; `/api/v1/measurements/**`, `/api/v1/consumption-levels/**` y `/api/v1/homes/{homeId}/consumption/**` al de mediciones; el resto de `/api/v1/homes/**` y `/api/v1/home-types/**` al de hogares; `/api/v1/notifications/**` y `/api/v1/admin/notifications/**` al de notificaciones; `/api/v1/alerts/**` al de alertas; y `/api/v1/recommendations/**` al de recomendaciones. Cualquier otra ruta responde 404. Cada servicio incluye Actuator y Swagger (el gateway, solo Actuator); en producción Swagger no pasa por el proxy. Existen además endpoints internos de autenticación y autorización MQTT para Mosquitto en el servicio de dispositivos, con caché de cinco minutos, que no se exponen a Internet.
 
 ### Seguridad
 
 - Tokens JWT firmados con RS256. El access token dura 15 minutos.
 - Refresh tokens opacos con estado, rotación y detección de reutilización, almacenados en la base de datos.
-- Permisos globales consultados dinámicamente, sin roles dentro del JWT; el servicio central los pide al servicio de seguridad por su API interna, con una caché breve.
+- Permisos globales consultados dinámicamente, sin roles dentro del JWT; los demás servicios los piden al servicio de seguridad por su API interna, con una caché breve.
 - La web guarda la sesión en cookies HttpOnly que pone el servicio de seguridad; el gateway lee el token de esa cookie.
 - La identidad se toma de la claim `sub` mediante CurrentUserResolver. El encabezado X-User-Id se ignora.
 - CORS cerrado por defecto, con orígenes definidos por variables de entorno; lo responde el API gateway. En producción la web y la API comparten origen.
-- Google Sign-In requiere credenciales OAuth configuradas.
+- Google Sign-In requiere credenciales OAuth configuradas. La cuenta creada con Google no tiene contraseña: no puede cambiarla y confirma su borrado con un código que llega a su correo.
+- Ninguna cuenta entra sin aceptar los términos y condiciones (428 si falta); el registro con contraseña crea una solicitud pendiente de 24 horas y la cuenta solo existe al verificar el correo, cuyo dominio se comprueba (proveedores con error de escritura y dominios inexistentes se rechazan).
 - Los dispositivos se autentican ante el intermediario con `device_code` y `api_key`; el servicio de dispositivos solo guarda el hash SHA-256 de la clave.
 - Las llamadas internas entre servicios exigen la red de Docker y el encabezado `X-Internal-Token`, comparado en tiempo constante.
 - En producción: HTTPS y MQTT con certificados Let's Encrypt, rutas `/internal/**` sin exposición pública y `X-Forwarded-For` reemplazado por la IP real en el proxy.
@@ -164,7 +165,7 @@ La Tabla 4 describe la infraestructura en producción.
 | Proveedor | Hostinger |
 | Plan | VPS KVM 2: 2 vCPU, 8 GB de RAM y 100 GB NVMe, con Ubuntu 26.04 LTS |
 | Contratación | Un mes, por COP 48.000. Con contrato anual el plan cuesta COP 27.900 mensuales |
-| Despliegue | Docker Compose desde el repositorio `energy-monitor-infra`, con el API gateway, los servicios de seguridad, dispositivos y mediciones, el servicio central, MySQL 8.4, RabbitMQ 4.1, Mosquitto y la aplicación web |
+| Despliegue | Docker Compose desde el repositorio `energy-monitor-infra`, con el API gateway, los siete servicios (seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones), MySQL 8.4, RabbitMQ 4.1, Mosquitto y la aplicación web |
 | Acceso | Nginx en el servidor como único punto de entrada HTTPS; solo se publican los puertos 80, 443 y 8883 |
 | Certificados | Let's Encrypt, sin costo y con renovación automática |
 | Dominio | `energy-monitor.tech` (web y API) y `mqtt.energy-monitor.tech` (intermediario), obtenido sin costo |
@@ -172,7 +173,7 @@ La Tabla 4 describe la infraestructura en producción.
 
 ### Integración y despliegue continuos
 
-Los repositorios del API gateway, de los servicios de seguridad, dispositivos y mediciones, del servicio central, de la aplicación web y de la infraestructura tienen pipelines de GitHub Actions. En cada pull request se ejecutan las pruebas (al 24 de octubre de 2026: 481 del servicio central, 151 del servicio de mediciones, 130 del de dispositivos y 57 del gateway, y 660 del servicio de seguridad al 22 de octubre, contra MySQL 8.4 los que lo necesitan; pruebas y build de la web; y validación de la configuración de infraestructura), que son requisito para fusionar. Cada cambio que llega a `main` se despliega en el servidor tras una aprobación manual. El despliegue toma un respaldo de la base de datos, reconstruye solo el componente modificado, comprueba su salud y, si falla, vuelve a la versión anterior. El detalle está en el manual de implementación y despliegue (Cortés Parra y García Artunduaga, 2026).
+Los repositorios del API gateway, de los siete servicios, de la aplicación web y de la infraestructura tienen pipelines de GitHub Actions (el servicio de notificaciones incorporó el suyo el 28 de octubre de 2026); la aplicación móvil no tiene pipeline. En cada pull request se ejecutan las pruebas (al 28 de octubre de 2026: 773 del servicio de seguridad, 260 del de hogares, 234 del de notificaciones, 151 del de mediciones, 129 del de dispositivos, 119 del de alertas, 71 del de recomendaciones y 69 del gateway, contra MySQL 8.4 los que lo necesitan; las 228 de la web con su build; y la validación de la configuración de infraestructura), que son requisito para fusionar. Cada cambio que llega a `main` se despliega en el servidor tras una aprobación manual del entorno `production`. El despliegue toma un respaldo de la base de datos, reconstruye solo el componente modificado, comprueba la salud de todos los servicios y, si falla, vuelve a la versión anterior. El detalle está en el manual de implementación y despliegue (Cortés Parra y García Artunduaga, 2026).
 
 ### Costo de hardware
 
@@ -302,7 +303,7 @@ El software y el hardware se licencian bajo una modalidad de uso libre con recon
 
 ### Cronograma
 
-El proyecto inició el 1 de mayo de 2026 y se entrega el 28 de octubre de 2026, fecha fijada para la evaluación; la puesta en producción se hizo entre el 16 y el 20 de octubre, antes de la entrega, y la arquitectura de servicios llegó a producción el 24 de octubre. La Tabla 11 muestra las fases.
+El proyecto inició el 1 de mayo de 2026 y se entrega el 28 de octubre de 2026, fecha fijada para la evaluación; la puesta en producción se hizo entre el 16 y el 20 de octubre, antes de la entrega, y la arquitectura de servicios llegó a producción el 24 de octubre (seguridad, dispositivos y mediciones) y el 28 de octubre (hogares, notificaciones, alertas y recomendaciones). La Tabla 11 muestra las fases.
 
 **Tabla 11**
 
@@ -314,29 +315,32 @@ El proyecto inició el 1 de mayo de 2026 y se entrega el 28 de octubre de 2026, 
 | 2. Visibilidad del consumo y alertas | 1 de julio a 31 de agosto | El consumo es visible y el sistema avisa cuando algo es anormal |
 | 3. Recomendaciones e internacionalización | 1 a 30 de septiembre | Recomendaciones según el consumo propio e interfaz en más de un idioma |
 | 4. Consolidación | 1 a 16 de octubre | Sistema listo para demostración y sustentación |
-| 5. Puesta en producción y entrega | 16 a 28 de octubre | Sistema publicado en `https://energy-monitor.tech` con integración y despliegue continuos (16 a 20 de octubre), microservicios de seguridad, dispositivos y mediciones con API gateway en producción (24 de octubre) y entrega con sustentación el 28 de octubre |
+| 5. Puesta en producción y entrega | 16 a 28 de octubre | Sistema publicado en `https://energy-monitor.tech` con integración y despliegue continuos (16 a 20 de octubre), API gateway y microservicios de seguridad, dispositivos y mediciones en producción (24 de octubre), migración completa de los demás módulos y retiro del servicio central (28 de octubre) y entrega con sustentación el 28 de octubre |
 
 ### Estado por componente
 
-La Tabla 12 presenta el avance al 24 de octubre de 2026.
+La Tabla 12 presenta el avance al 28 de octubre de 2026.
 
 **Tabla 12**
 
-*Estado por Componente al 24 de Octubre de 2026*
+*Estado por Componente al 28 de Octubre de 2026*
 
 | Componente | Estado |
 |---|---|
 | Dispositivo de medición (firmware 1.3.8) | Operativo. La vinculación de un medidor en producción está pendiente de evidencia |
-| API gateway | Desplegado en producción; 57 pruebas automáticas en cada pull request |
-| Servicio de seguridad | Desplegado en producción; 660 pruebas automáticas (22 de octubre) |
-| Servicio de dispositivos | Desplegado en producción; 130 pruebas automáticas |
+| API gateway | Desplegado en producción; 69 pruebas automáticas en cada pull request |
+| Servicio de seguridad | Desplegado en producción; 773 pruebas automáticas |
+| Servicio de dispositivos | Desplegado en producción; 129 pruebas automáticas |
 | Servicio de mediciones | Desplegado en producción; 151 pruebas automáticas |
-| Servicio central (home, alert, recommendation y notification) | Desplegado en producción; 481 pruebas automáticas y `ModularityTests` en verde. Migración de sus cuatro módulos a microservicios en curso |
-| Aplicación web | Desplegada en producción en `https://energy-monitor.tech` |
-| Aplicación móvil Android | En desarrollo, integrada con la API; fuera del despliegue en producción |
-| Infraestructura | VPS Hostinger KVM 2 con Docker Compose, Nginx, Let's Encrypt, RabbitMQ y GitHub Actions; pruebas de punta a punta de los servicios sobre la pila local (21/21 y 25/25) |
+| Servicio de hogares | Desplegado en producción el 28 de octubre de 2026; 260 pruebas automáticas |
+| Servicio de notificaciones | Desplegado en producción el 28 de octubre de 2026; 234 pruebas automáticas |
+| Servicio de alertas | Desplegado en producción el 28 de octubre de 2026; 119 pruebas automáticas |
+| Servicio de recomendaciones | Desplegado en producción el 28 de octubre de 2026; 71 pruebas automáticas |
+| Aplicación web | Desplegada en producción en `https://energy-monitor.tech`; 228 pruebas automáticas |
+| Aplicación móvil Android | En desarrollo, integrada con la API; 78 pruebas unitarias en 8 suites; fuera del despliegue en producción |
+| Infraestructura | VPS Hostinger KVM 2 con Docker Compose, Nginx, Let's Encrypt, RabbitMQ y GitHub Actions; pruebas de punta a punta de los servicios sobre la pila local (`device-flow` 24, `measurement-flow` 28, `alert-flow` 36, `activity-flow` 60 y `account-deletion-flow` 12, todas en verde) |
 
-Queda pendiente la gestión del historial del dispositivo según el periodo de vinculación, y la migración a microservicios de los cuatro módulos que siguen en el servicio central, que está en curso. En producción faltan las evidencias funcionales que señala el manual de implementación y despliegue: medidor vinculado, correo, administración, respaldo programado y renovación de certificados.
+Queda pendiente la gestión del historial del dispositivo según el periodo de vinculación. La migración a microservicios terminó el 28 de octubre de 2026. En producción faltan las evidencias funcionales que señala el manual de implementación y despliegue: medidor vinculado, correo, administración, respaldo programado y renovación de certificados.
 
 ## Riesgos Técnicos Pendientes
 
@@ -368,7 +372,7 @@ La Tabla 14 señala las diferencias entre lo que dicen otros documentos del proy
 
 | Código | Fuente de la diferencia | Lo que dice | Estado verificado | Acción |
 |---|---|---|---|---|
-| DD-01 | README de la aplicación web | Las recomendaciones son simuladas porque el módulo `recommendation` del servicio central no existe | El módulo `recommendation` existe en el servicio central y evalúa cinco reglas de ahorro | Corregir el README de la aplicación web. Sigue abierta al 20 de octubre de 2026 |
+| DD-01 | README de la aplicación web | Las recomendaciones son simuladas porque el módulo `recommendation` del servicio central no existe | El servicio de recomendaciones (antes, módulo `recommendation` del servicio central) existe y evalúa cinco reglas de ahorro | Corregir el README de la aplicación web. Sigue abierta al 20 de octubre de 2026 |
 | DD-02 | Documento general del proyecto | Decía: inversión de unos COP 180.000 y costo total `[POR CONFIRMAR]` | Presupuesto total estimado de COP 57.021.997. Los COP 180.000 equivalen al gasto directo en componentes del prototipo (COP 173.997) | Resuelta: la versión 1.1 del documento general incluye el costo total |
 | DD-03 | Documento general del proyecto | Decía: alojamiento y servicios de pago no contemplados | VPS Hostinger KVM 2 de pago (COP 48.000 por un mes) y dominio gratuito | Resuelta: la versión 1.1 del documento general refleja la infraestructura de pago |
 
