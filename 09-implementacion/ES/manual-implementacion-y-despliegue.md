@@ -21,7 +21,7 @@ Ficha: 3145556
 | Programa             | Tecnología en Análisis y Desarrollo de Software (ADSO)                          |
 | Ficha                | 3145556                                                                         |
 | Tipo de documento    | Manual de implementación y despliegue                                           |
-| Versión             | 1.3                                                                             |
+| Versión             | 1.4                                                                             |
 | Fecha de elaboración | 16 de octubre de 2026 (actualizado el 28 de octubre de 2026)                    |
 
 Neiva, Huila · Colombia · 2026
@@ -39,6 +39,7 @@ Neiva, Huila · Colombia · 2026
 | 1.1         | 20/10/2026 | Estrategia de integración y despliegue continuo con GitHub Actions (sección 9); selección y costo del plan Hostinger KVM 2 (3.2); dominio real; evidencias de la ejecución en el VPS; incidentes del despliegue real; actualización y reversión automatizadas. | Equipo desarrollador |
 | 1.2         | 24/10/2026 | Arquitectura de servicios en producción: API gateway y servicios de seguridad, dispositivos y mediciones junto al backend (home, alert, recommendation y notification), RabbitMQ con *transactional outbox* y broker autenticado por el servicio de dispositivos; variables nuevas y retiradas (`MEASUREMENT_CONTEXT`, `MQTT_MEASUREMENT_SERVICE_USER/PASS` en lugar de `MQTT_BACKEND_USER/PASS`); `deploy.sh` con siete componentes; pipelines y secretos en cada repositorio; primer despliegue de los servicios en un servidor existente (4.12). | Equipo desarrollador |
 | 1.3         | 28/10/2026 | Migración completa: hogares, notificaciones, alertas y recomendaciones como servicios independientes y retiro del backend; `deploy.sh` con diez componentes; pipelines y secretos en los diez repositorios desplegables; migración ejecutada en el servidor (4.13) con sus incidentes (sección 7); registro con verificación previa del correo, términos y código de borrado de cuenta (`SECURITY_ACCOUNT_DELETION_CODE_MAIL_ENABLED`). | Equipo desarrollador |
+| 1.4         | 28/10/2026 | Cambios posteriores a la migración (sección 4.14): perfil con foto en seguridad y hogares, alerta de consumo inusual en alertas y notificaciones, y Novedades de la web armadas con el historial de git en cada build (el `Dockerfile` instala git). | Equipo desarrollador |
 
 # Tabla de contenido
 
@@ -104,7 +105,7 @@ La aplicación móvil queda **fuera del alcance** de este despliegue.
 | Rama desplegada              | `main` en los diez repositorios desplegados                                  |
 | Fecha de consolidación       | 16 de octubre de 2026; despliegue continuo activo desde el 19 de octubre; servicios de seguridad, dispositivos y mediciones desde el 24 de octubre; hogares, notificaciones, alertas y recomendaciones y retiro del backend el 28 de octubre |
 | Etiqueta de release          | `[POR CONFIRMAR]` — se recomienda etiquetar `v1.0.0` en los repositorios     |
-| Versión de este informe      | 1.3                                                                          |
+| Versión de este informe      | 1.4                                                                          |
 
 ## 1.2 Historial documental
 
@@ -688,7 +689,25 @@ no envía. En el servidor se desplegó `frontend` con la versión anterior porqu
 `main` no se había fusionado (incidente 3). Después se fusionó (commit `698d4c9` de `main`) y el
 equipo confirmó el 28 de octubre que la web nueva ya está desplegada.
 
-# 5. Integración IoT: broker MQTT y medidores
+## 4.14 Cambios posteriores a la migración (28 de octubre de 2026)
+
+Cinco repositorios recibieron funciones nuevas después de la migración. No hay cambios de base de datos ni variables nuevas de `.env.prod`.
+
+| Repositorio | Cambio | Componente de `deploy.sh` |
+|---|---|---|
+| `en-monitor-notification-service` | Texto del correo y del push de la alerta `alert.anomaly.device` | `notification` |
+| `en-monitor-alert-service` | Regla de consumo inusual: una lectura de al menos 200 W y 2,5 veces la potencia habitual del dispositivo (promedio horario de los 7 días anteriores, sin la última hora), con 24 horas de historial y un promedio de 5 W o más | `alert` |
+| `en-monitor-security-service` | El perfil interno (`/internal/users/profiles`) incluye `profileImage` | `security` |
+| `en-monitor-home-service` | `GET /api/v1/homes/{homeId}/members` devuelve `profileImage` de cada miembro | `home` |
+| `Energy-Monitor-application` | Modales de ayuda en Ajustes (documentación por rol, soporte para usuarios y novedades), visor de fotos, fotos de los miembros, lista de hogares que se cierra al hacer clic fuera y aviso del push en Brave | `frontend` |
+
+**Orden de despliegue.** Notificaciones antes que alertas (la primera alerta sale redactada), seguridad antes que hogares (las fotos aparecen desde el inicio) y la web al final. Cada paso es un `deploy.sh <componente>` o la aprobación del *environment* `production` del repositorio.
+
+**Novedades de la web.** El `Dockerfile` instala git y `.dockerignore` ya no excluye `.git`: `vite.config.js` arma la lista con los commits `feat`, `fix` y `perf` del historial en cada build, así que cada despliegue de la web publica sus propias novedades. Si el build no tiene git, la lista queda vacía y el modal lo dice. Tras el primer despliegue hay que abrir Ajustes → Novedades y comprobar que muestra cambios.
+
+**Parámetros opcionales del servicio de alertas** (propiedades de Spring, no están en la compose): `alert.anomaly.window` (por defecto `P7D`) y `alert.anomaly.baseline-ttl` (por defecto `PT10M`).
+
+# 5. Integración IoT
 
 ## 5.1 Objetivo y servicio expuesto
 
@@ -739,7 +758,7 @@ usa con la pila local.
 | **Verificación**                    | **Evidencia esperada**                                                        | **Estado**                 |
 |-------------------------------------|-------------------------------------------------------------------------------|----------------------------|
 | Compose de producción               | `docker compose ... config -q` sin errores (también en cada PR de infra)      | Confirmado                 |
-| Suites de pruebas de los servicios  | En verde (28/10/2026): seguridad 773, hogares 260, notificaciones 234, mediciones 151, dispositivos 129, alertas 119, recomendaciones 71 y gateway 69; web 228. En la versión 1.1 el backend único tenía 1131 | Confirmado |
+| Suites de pruebas de los servicios  | En verde (28/10/2026): seguridad 774, hogares 260, notificaciones 235, mediciones 151, dispositivos 129, alertas 128, recomendaciones 71 y gateway 69; web 253; móvil 78. En la versión 1.1 el backend único tenía 1131 | Confirmado |
 | Pruebas de punta a punta            | `infra/e2e/`: `device-flow` (24), `measurement-flow` (28), `alert-flow` (36), `activity-flow` (60) y `account-deletion-flow` (12) sobre la pila local | Confirmado (pila local) |
 | Pruebas y build de la web           | Pruebas Vitest y `npm run build` correctos (local y en GitHub Actions)        | Confirmado                 |
 | Plantilla de Nginx                  | `nginx -t` correcto (en cada PR de infra)                                     | Confirmado                 |
@@ -761,7 +780,8 @@ usa con la pila local.
 | Rendimiento con varios usuarios     | No se han realizado pruebas de carga                                          | Pendiente                  |
 | Recursos con la pila de servicios   | Uso de CPU y RAM del VPS con los ocho servicios Java (`docker stats`)         | Pendiente de evidencia     |
 | Migración del 28/10/2026            | `deploy.sh infra` `OK`, `/api/v1/homes` → 401, `mail.account-deletion` enlazada y colas del backend borradas (4.13) | Confirmado                 |
-| Web con términos y reglas de Google | La web desplegada es la de `main` (`698d4c9`) y el registro responde 202 | Confirmado por el equipo (28/10/2026) |
+| Web con términos y reglas de Google | La web desplegada es la de `main` y el registro responde 202 | Confirmado por el equipo (28/10/2026) |
+| Novedades de la web                 | El build en Docker incluye el historial de git y el modal de Novedades muestra cambios | Pendiente de evidencia     |
 | Código de borrado de cuenta de Google | Correo recibido y cuenta borrada con una cuenta de prueba en producción     | Pendiente de evidencia     |
 
 ## 6.2 Comandos de comprobación
@@ -984,12 +1004,12 @@ Cada repositorio tiene un archivo `.github/workflows/ci-cd.yml` con dos jobs:
 | **Repositorio**              | **Job de CI (check obligatorio)** | **Qué valida**                                                                                         | **Se ejecuta en**            |
 |------------------------------|-----------------------------------|--------------------------------------------------------------------------------------------------------|------------------------------|
 | `en-monitor-api-gateway`     | `Tests`                           | Java 21 + `./mvnw test` (69 pruebas); no necesita base de datos. Si falla, guarda los reportes de Surefire. | PR y push a `dev`/`main` |
-| `en-monitor-security-service` | `Tests`                          | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (773 pruebas), con un par RSA desechable. | PR y push a `dev`/`main` |
+| `en-monitor-security-service` | `Tests`                          | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (774 pruebas), con un par RSA desechable. | PR y push a `dev`/`main` |
 | `en-monitor-device-service`  | `Tests` y `Docker image`          | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (129 pruebas), con una clave pública desechable; además construye la imagen Docker. | PR y push a `dev`/`main` |
 | `en-monitor-measurement-service` | `Tests` y `Docker image`      | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (151 pruebas), con una clave pública desechable; además construye la imagen Docker. | PR y push a `dev`/`main` |
 | `en-monitor-home-service`    | `Tests` y `Docker image`          | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (260 pruebas), con una clave pública desechable; además construye la imagen Docker. | PR y push a `dev`/`main` |
-| `en-monitor-notification-service` | `Tests` y `Docker image`     | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (234 pruebas), con una clave pública desechable; además construye la imagen Docker. Se incorporó el 28 de octubre de 2026. | PR y push a `dev`/`main` |
-| `en-monitor-alert-service`   | `Tests` y `Docker image`          | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (119 pruebas), con una clave pública desechable; además construye la imagen Docker. | PR y push a `dev`/`main` |
+| `en-monitor-notification-service` | `Tests` y `Docker image`     | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (235 pruebas), con una clave pública desechable; además construye la imagen Docker. Se incorporó el 28 de octubre de 2026. | PR y push a `dev`/`main` |
+| `en-monitor-alert-service`   | `Tests` y `Docker image`          | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (128 pruebas), con una clave pública desechable; además construye la imagen Docker. | PR y push a `dev`/`main` |
 | `en-monitor-recommendation-service` | `Tests` y `Docker image`   | Java 21 + `./mvnw test` contra un MySQL 8.4 de servicio (71 pruebas), con una clave pública desechable; además construye la imagen Docker. | PR y push a `dev`/`main` |
 | `Energy-Monitor-application` | `Tests and build`                 | Node 22, `npm ci`, pruebas Vitest y `npm run build` de producción.                                     | PR y push a `dev`/`main`     |
 | `energy-monitor-infra`       | `Validate compose and scripts`    | `docker compose config` de los tres modos, `bash -n` y `shellcheck` de los scripts, `nginx -t` de la plantilla del sitio. | PR y push a `main` |

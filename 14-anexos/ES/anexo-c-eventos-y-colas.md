@@ -9,7 +9,7 @@ Versión 1.0 · 28 de octubre de 2026. Los servicios se avisan por eventos en Ra
 | `measurement.recorded` | mediciones | `alert-service.measurement.recorded` | alertas |
 | `device.connectivity-lost`, `device.connectivity-restored` | dispositivos | `alert-service.device.events` | alertas |
 | `device.linked`, `device.unlinked` | dispositivos | `alert-service.device.events` y `notification-service.notification.activity` | alertas y notificaciones; mediciones los usa para su caché |
-| `alert.raised` | alertas | `notification-service.notification.alert-raised` | notificaciones |
+| `alert.raised` | alertas | `notification-service.notification.alert-raised` | notificaciones (también la alerta de consumo inusual, clave `alert.anomaly.device`) |
 | `recommendation.created` | recomendaciones | `notification-service.notification.recommendation-created` | notificaciones |
 | `account.registered`, `account.administered` | seguridad | `notification-service.notification.account-events` | notificaciones |
 | `account.deleted` | seguridad | `home-service.home.account-deleted` y `notification-service.notification.account-events` | hogares y notificaciones (limpieza) |

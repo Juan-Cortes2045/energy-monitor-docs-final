@@ -20,6 +20,7 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 | 1.1     | 20/10/2026 | Ejecución de la suite completa contra MySQL (1131 pruebas, 0 fallos) en local y en GitHub Actions; cierre de DEF-01 y DEF-02; 3 clases de prueba nuevas de notificaciones push; trazabilidad, riesgos y evidencias actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 24/10/2026 | Arquitectura de servicios: elementos bajo prueba por repositorio (gateway, servicios de seguridad, dispositivos y mediciones, backend) con los commits de `main` en producción, totales de cada suite, pruebas de punta a punta de `energy-monitor-infra` y pipelines por repositorio. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.3     | 28/10/2026 | Migración completa: ocho suites Java por repositorio (backend retirado), web con 228 pruebas, cinco pruebas de punta a punta de `energy-monitor-infra`, verificación estática y protocolo de pruebas manuales de la aplicación móvil, trazabilidad de la aceptación de términos (RF-SEC-13) y de las reglas de las cuentas de Google, y riesgos actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.4     | 28/10/2026 | Nuevas pruebas de la alerta de consumo inusual, del visor de fotos, de las fotos de los miembros, de los modales de ayuda de Ajustes y del push en Brave; commits de `main` actualizados; trazabilidad con RF-ALE-07, RF-HOM-12, RF-CLI-07 y RF-CLI-08 (112 requisitos, 75 con prueba automatizada). | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
@@ -30,6 +31,8 @@ La versión 1.1 (20 de octubre de 2026) registra la ejecución de la suite compl
 La versión 1.2 (24 de octubre de 2026) corresponde a la arquitectura de servicios en producción: los módulos security, device y measurement salieron del servicio central a sus propios repositorios (`en-monitor-security-service`, `en-monitor-device-service` y `en-monitor-measurement-service`), detrás de un API gateway (`en-monitor-api-gateway`), y el servicio central conserva home, alert, recommendation y notification. Cada repositorio ejecuta su suite en su pipeline: backend 481 pruebas, servicio de mediciones 151, servicio de dispositivos 130 y gateway 57 (24 de octubre), y servicio de seguridad 660 (22 de octubre), todas en verde, con `ModularityTests` en verde. Dos pruebas de punta a punta sobre la pila local (`infra/e2e/device-flow.sh`, 21/21, y `infra/e2e/measurement-flow.sh`, 25/25) verifican lo que cruza los servicios. El inventario por clase y la trazabilidad de este documento siguen siendo los de la versión 1.1.
 
 La versión 1.3 (28 de octubre de 2026) corresponde a la migración completa: home, notification, alert y recommendation también son servicios independientes (`en-monitor-home-service`, `en-monitor-notification-service`, `en-monitor-alert-service` y `en-monitor-recommendation-service`) y el servicio central se retiró. Ocho suites Java en verde (seguridad 773, hogares 260, notificaciones 234, mediciones 151, dispositivos 129, alertas 119, recomendaciones 71 y gateway 69), la web con 38 archivos y 228 pruebas, y cinco pruebas de punta a punta de `energy-monitor-infra` (`device-flow` 24, `measurement-flow` 28, `alert-flow` 36, `activity-flow` 60 y `account-deletion-flow` 12). La trazabilidad pasa a 108 requisitos con la aceptación de términos (RF-SEC-13): 71 con prueba automatizada (con los dos de idiomas de la aplicación móvil) y 37 sin cobertura. De la aplicación móvil se agregó una suite unitaria de 78 pruebas en 8 suites, todas aprobadas, y se ejecutaron la verificación de tipos y `expo lint` sin errores; además se definió un protocolo de 12 pruebas manuales, que sigue por ejecutar en un dispositivo.
+
+La versión 1.4 (28 de octubre de 2026) agrega pruebas de lo último que se construyó: la regla de consumo inusual de un dispositivo (`RegisterAnomalyAlertServiceTest`, 8 casos, y su lugar en el consumidor de lecturas), el aviso de esa alerta en correo y push, el perfil con foto (`UserProfileQueryServiceTest`, el adaptador de hogares y el endpoint de miembros), el visor de fotos y las fotos de los miembros, los modales de ayuda de Ajustes (documentación por rol, soporte solo para usuarios y novedades) y la explicación del push en Brave. Totales: 1.817 pruebas en los ocho servicios Java (seguridad 774, hogares 260, notificaciones 235, mediciones 151, dispositivos 129, alertas 128, recomendaciones 71 y gateway 69), 253 en la web (44 archivos) y 78 en la móvil. La trazabilidad pasa a 112 requisitos: 75 con prueba automatizada y 37 sin cobertura.
 
 *Palabras clave:* pruebas de software, trazabilidad, JUnit, Vitest, Spring Modulith, EnergyMonitor
 
@@ -49,7 +52,7 @@ La trazabilidad usa los códigos de la especificación de requisitos (RF-SEC, RF
 
 ## Elementos bajo prueba
 
-La Tabla 2 lista los elementos bajo prueba en la versión 1.3, con la rama y el commit de `main` el 28 de octubre de 2026 (los que se desplegaron en producción ese día). La versión 1.2 usó `main` del 24 de octubre de 2026 (gateway `c070cec`, seguridad `334691a`, dispositivos `f8b8526`, mediciones `ee2cb81`, backend `aa9a713`, web `e59bece`, infra `eaf961b`). La versión 1.1 usó `main` (backend `90ae5ef`, web `2b41cb3`, infra `7324110`, móvil `dev` `4ebccfb`) y la 1.0, `dev` (backend `d03bbd3`, web `e6edc12`).
+La Tabla 2 lista los elementos bajo prueba en la versión 1.4, con la rama y el commit de `main` al cierre del 28 de octubre de 2026; la versión 1.3 usó los de ese día antes de los últimos cambios (seguridad `f57c76b`, hogares `f424083`, notificaciones `7b10398`, alertas `f050b56` y web `698d4c9`). La versión 1.2 usó `main` del 24 de octubre de 2026 (gateway `c070cec`, seguridad `334691a`, dispositivos `f8b8526`, mediciones `ee2cb81`, backend `aa9a713`, web `e59bece`, infra `eaf961b`). La versión 1.1 usó `main` (backend `90ae5ef`, web `2b41cb3`, infra `7324110`, móvil `dev` `4ebccfb`) y la 1.0, `dev` (backend `d03bbd3`, web `e6edc12`).
 
 **Tabla 2**
 
@@ -58,16 +61,16 @@ La Tabla 2 lista los elementos bajo prueba en la versión 1.3, con la rama y el 
 | Elemento                  | Versión                         | Rama | Commit  | Observación                                                              |
 |---------------------------|---------------------------------|------|---------|--------------------------------------------------------------------------|
 | en-monitor-api-gateway    | Java 21 · Spring Boot 4.0.8 · Spring Cloud Gateway | main | 0b2c164 | API gateway; 69 pruebas                                  |
-| en-monitor-security-service | Java 21 · Spring Boot 4.1.1   | main | f57c76b | Servicio de seguridad; 773 pruebas                                       |
+| en-monitor-security-service | Java 21 · Spring Boot 4.1.1   | main | de52c95 | Servicio de seguridad; 774 pruebas                                       |
 | en-monitor-device-service | Java 21 · Spring Boot 4.1.1     | main | 06c1bdc | Servicio de dispositivos; 129 pruebas                                    |
 | en-monitor-measurement-service | Java 21 · Spring Boot 4.1.1 | main | 8a9b544 | Servicio de mediciones; 151 pruebas                                     |
-| en-monitor-home-service   | Java 21 · Spring Boot 4.1.1     | main | f424083 | Servicio de hogares; 260 pruebas                                         |
-| en-monitor-notification-service | Java 21 · Spring Boot 4.1.1 | main | 7b10398 | Servicio de notificaciones; 234 pruebas                                  |
-| en-monitor-alert-service  | Java 21 · Spring Boot 4.1.1     | main | f050b56 | Servicio de alertas; 119 pruebas                                         |
+| en-monitor-home-service   | Java 21 · Spring Boot 4.1.1     | main | 6a4e396 | Servicio de hogares; 260 pruebas                                         |
+| en-monitor-notification-service | Java 21 · Spring Boot 4.1.1 | main | ecdbc0a | Servicio de notificaciones; 235 pruebas                                  |
+| en-monitor-alert-service  | Java 21 · Spring Boot 4.1.1     | main | 0e65430 | Servicio de alertas; 128 pruebas                                         |
 | en-monitor-recommendation-service | Java 21 · Spring Boot 4.1.1 | main | aeeeec5 | Servicio de recomendaciones; 71 pruebas                              |
 | energy-monitor-backend    | Java 21 · Spring Boot 4.1.1 · Spring Modulith | main | c3c6df8 | Retirado el 28/10/2026: sus módulos son los cuatro servicios anteriores; conserva el firmware (`firmware/`, versión 1.3.8) |
-| energy-monitor-web        | React 19 · Vite 8               | main | 698d4c9 | Aplicación web; 38 archivos y 228 pruebas                                |
-| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev  | 1e4109b | 78 pruebas unitarias en 8 suites; `tsc` y `expo lint` sin errores. `main` sigue en `894b65a`, 193 commits por detrás de `dev` |
+| energy-monitor-web        | React 19 · Vite 8               | main | 27ad9f0 | Aplicación web; 44 archivos y 253 pruebas                                |
+| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev  | 8b5edc0 | 78 pruebas unitarias en 8 suites; `tsc` y `expo lint` sin errores. `main` sigue en `894b65a`, 193 commits por detrás de `dev` |
 | energy-monitor-infra      | Docker Compose · Mosquitto 2 · RabbitMQ 4.1 | main | ceb1543 | Compose, broker y scripts validados en CI; pruebas de punta a punta `e2e/`; reemplaza a `devices`, retirado |
 | energy-monitor-docs-final | Markdown ES/EN                  | dev  | —       | Documentación final (este documento)                                     |
 
@@ -403,6 +406,7 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 | RF-HOM-09 | El propietario debe poder eliminar el hogar mediante eliminación lógica                                    | DeleteHomeServiceTest, HomeDeletionIntegrationTest, HomeControllerTest, DeleteHome.test.jsx                                          | Automatizada  |
 | RF-HOM-10 | El propietario debe poder transferir la propiedad del hogar a otro miembro                                 | TransferHomeOwnershipServiceTest, HomeOwnershipTransferIntegrationTest, HomeControllerTest, Users.test.jsx                           | Automatizada  |
 | RF-HOM-11 | Pendiente: limitar el historial de un dispositivo al periodo de vinculación                                | —                                                                                                                                    | Sin cobertura |
+| RF-HOM-12 | El sistema debe mostrar a los miembros de un hogar la foto de perfil de cada uno y permitir ampliarla | UserProfileQueryServiceTest, HttpUserDirectoryAdapterTest, HomeControllerTest, Users.test.jsx | Automatizada |
 
 **Tabla 18**
 
@@ -448,6 +452,7 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 | RF-ALE-04 | El sistema debe generar una alerta de límite diario o mensual cuando la energía del hogar desde el inicio… | RegisterLimitAlertServiceTest, AlertTest                                                                       | Automatizada |
 | RF-ALE-05 | El sistema debe permitir consultar las alertas, ver el detalle de una, marcarla como leída y eliminarla    | ListAlertsServiceTest, GetAlertServiceTest, ResolveAlertServiceTest, AlertControllerTest, AlertPersistenceTest | Automatizada |
 | RF-ALE-06 | El sistema debe generar las alertas de consumo a partir de cada nueva lectura y las de desconexión a…      | MeasurementRecordedListenerTest                                                                                | Automatizada |
+| RF-ALE-07 | El sistema debe generar una alerta de consumo inusual cuando una lectura es de al menos 200 W y 2,5 veces la potencia habitual del dispositivo… | RegisterAnomalyAlertServiceTest, MeasurementRecordedConsumerTest, AlertMessagesAnomalyTest | Automatizada |
 
 **Tabla 21**
 
@@ -491,6 +496,8 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 | RF-CLI-04 | La aplicación móvil debe estar disponible solo para Android y permitir el acceso a la cuenta, los hogares,… | —                                                                                                                   | Sin cobertura |
 | RF-CLI-05 | Ambas aplicaciones deben permitir elegir el idioma entre español, inglés, francés y portugués | locales.test.ts (móvil) | Automatizada |
 | RF-CLI-06 | Las aplicaciones deben permitir elegir una paleta de colores con modo oscuro                                | —                                                                                                                   | Sin cobertura |
+| RF-CLI-07 | La aplicación web debe ofrecer en Ajustes la ayuda en modales: documentación por rol, soporte solo para usuarios y novedades | HelpCenter.test.jsx, DocsModal.test.jsx, NewsModal.test.jsx, Support.test.jsx | Automatizada |
+| RF-CLI-08 | La aplicación web debe permitir ver la foto de perfil ampliada dentro de la propia página | PhotoViewer.test.jsx, Account.test.jsx | Automatizada |
 
 **Tabla 24**
 
@@ -737,13 +744,32 @@ La Tabla 38 es el protocolo de pruebas manuales para un dispositivo Android. Su 
 | MOV-11 | Eliminar la cuenta (con contraseña; con Google, con el código del correo) | La cuenta se elimina y el correo puede volver a registrarse | RF-SEC-11 | Por ejecutar |
 | MOV-12 | Cambiar el idioma entre los cuatro disponibles y activar el modo oscuro | Los textos y los colores cambian sin reiniciar | RF-CLI-05, RF-CLI-06 | Por ejecutar |
 
+### Versión 1.4 (28/10/2026)
+
+Con los últimos cambios cambian los totales de cinco repositorios. La Tabla 39 muestra qué pruebas se agregaron y el commit de `main`.
+
+**Tabla 39**
+
+*Cambios en las suites, versión 1.4*
+
+| Repositorio | Commit | Pruebas | Qué se agregó |
+|---|---|---|---|
+| en-monitor-security-service | de52c95 | 774 | El perfil interno incluye el avatar (`UserProfileQueryServiceTest`) |
+| en-monitor-home-service | 6a4e396 | 260 | Los miembros devuelven `profileImage` (adaptador y endpoint, sin pruebas nuevas: se ampliaron las existentes) |
+| en-monitor-notification-service | ecdbc0a | 235 | Texto de la alerta de consumo inusual (`AlertMessagesAnomalyTest`) |
+| en-monitor-alert-service | 0e65430 | 128 | Regla de consumo inusual (`RegisterAnomalyAlertServiceTest`, 8) y su lugar en el consumidor (1) |
+| energy-monitor-web | 27ad9f0 | 253 (44 archivos) | Visor de fotos, fotos de los miembros, modales de ayuda de Ajustes, lista de hogares que se cierra al hacer clic fuera y push en Brave |
+| energy-monitor-mobile | 8b5edc0 | 78 | Sin cambios en las pruebas |
+
+Las pruebas que necesitan MySQL de los servicios de alertas y de seguridad no se ejecutaron en el equipo de trabajo; las ejecuta el *check* `Tests` de cada pipeline.
+
 ### Evidencias
 
 Las evidencias están en [evidencias](../../evidencias/ES/README.md): resumen de Surefire, log recortado de la ejecución y resumen de Vitest de la versión 1.0, resumen de la suite completa y nueva ejecución de Vitest de la versión 1.1, y el estado de la versión 1.2 (totales por repositorio y pruebas de punta a punta). No contienen secretos.
 
 ## Riesgos, limitaciones y vacíos conocidos
 
-**Tabla 39**
+**Tabla 40**
 
 *Riesgos y limitaciones de las pruebas*
 

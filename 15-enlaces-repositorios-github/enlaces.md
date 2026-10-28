@@ -47,21 +47,21 @@ El gateway, los siete servicios, la web y la infraestructura tienen el workflow 
 
 ## Versión desplegada
 
-Commit en `main` de cada repositorio el 28 de octubre de 2026, día de la migración completa. El equipo confirmó ese día que todos los servicios y la web están en producción y que todos los repositorios, salvo el móvil, tienen CI/CD.
+Commit en `main` de cada repositorio al cierre del 28 de octubre de 2026. El equipo confirmó ese día que todos los servicios y la web estaban en producción y que todos los repositorios, salvo el móvil, tienen CI/CD. Los cambios de la última jornada (consumo inusual, fotos de perfil, ayuda en Ajustes y novedades) ya están en `main` de seguridad, hogares, alertas, notificaciones y la web; su despliegue depende de la aprobación del *environment* `production` de cada repositorio.
 
 | Repositorio | Commit | Estado en producción |
 |---|---|---|
 | en-monitor-api-gateway | `0b2c164` | Desplegado |
-| en-monitor-security-service | `f57c76b` | Desplegado |
+| en-monitor-security-service | `de52c95` | En `main` (perfil interno con foto); despliegue por confirmar |
 | en-monitor-device-service | `06c1bdc` | Desplegado |
 | en-monitor-measurement-service | `8a9b544` | Desplegado |
-| en-monitor-home-service | `f424083` | Desplegado |
-| en-monitor-notification-service | `7b10398` | Desplegado |
-| en-monitor-alert-service | `f050b56` | Desplegado |
+| en-monitor-home-service | `6a4e396` | En `main` (miembros con foto); despliegue por confirmar |
+| en-monitor-notification-service | `ecdbc0a` | En `main` (texto de la alerta de consumo inusual); despliegue por confirmar |
+| en-monitor-alert-service | `0e65430` | En `main` (alerta de consumo inusual); despliegue por confirmar |
 | en-monitor-recommendation-service | `aeeeec5` | Desplegado |
-| Energy-Monitor-application | `698d4c9` | Desplegado  |
+| Energy-Monitor-application | `27ad9f0` | En `main` (modales de ayuda, visor de fotos y novedades); despliegue por confirmar |
 | energy-monitor-infra | `ceb1543` | Desplegado |
-| Energy-Monitor-Mobile (no se despliega en el servidor) | `894b65a` en `main`; `1e4109b` en `dev` (193 commits por fusionar) | No aplica |
+| Energy-Monitor-Mobile (no se despliega en el servidor) | `894b65a` en `main`; `8b5edc0` en `dev` (188 commits por fusionar) | No aplica |
 
 ## Repositorios retirados
 

@@ -54,6 +54,15 @@ Version 1.0 · October 28, 2026. Variables that `docker-compose.prod.yml` takes 
 
 Each service is built from a clone next to `infra`. The variables `ALERT_CONTEXT`, `DEVICE_CONTEXT`, `FRONTEND_CONTEXT`, `GATEWAY_CONTEXT`, `HOME_CONTEXT`, `MEASUREMENT_CONTEXT`, `NOTIFICATION_CONTEXT`, `RECOMMENDATION_CONTEXT`, `SECURITY_CONTEXT` change that path; by default they point to `../backend/<repository>` and `../frontend/energy-monitor-web`, so they are only set if the clones are elsewhere.
 
+## Alert service properties (not `.env.prod` variables)
+
+| Property | Default | What it controls |
+|---|---|---|
+| `alert.anomaly.window` | `P7D` | The days of history from which the usual power of a device is computed for the unusual consumption alert |
+| `alert.anomaly.baseline-ttl` | `PT10M` | How long that usual power is reused before asking the measurement service again |
+
+The thresholds of the alert (2.5 times, 200 W, 24 hours of history and a 5 W minimum average) are constants of the service, not properties.
+
 ## Notes
 
 - `.env.prod.example` keeps, by inheritance, the `BACKEND_CONTEXT` line of the retired backend and does not list `ALERT_CONTEXT` or `RECOMMENDATION_CONTEXT`: it has no effect, because the compose file defines their default, but the template should be aligned.

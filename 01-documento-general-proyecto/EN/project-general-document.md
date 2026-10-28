@@ -16,6 +16,7 @@ October 16, 2026 (updated October 28, 2026)
 | 1.1     | 10/20/2026 | Alignment with the deployed system: account administration in scope, budget with the production server and the estimated total cost, go-live at `https://energy-monitor.tech` with continuous integration and deployment, and status of objectives and milestones as of October 20. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 10/24/2026 | Scope components according to the architecture in production: users, devices and measurements as independent services behind an API gateway, and migration of the remaining modules in progress. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.3     | 10/28/2026 | Migration completed: the API gateway and the seven services in production, and the monolithic backend retired. Registration with prior email verification and acceptance of the terms, rules for accounts created with Google (no password change and deletion with a code sent by email) and independent editing of the first and last name. Milestone status and final-phase plan as of October 28. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.4     | 10/28/2026 | In-app help (documentation by role, support for users and news that update themselves), profile photos visible in the page and in homes, unusual consumption alert for a device and an explanation of push in Brave. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Abstract
 
@@ -84,10 +85,10 @@ Table 2 lists what the project builds and the system module responsible for each
 | Homes | Homes, members, owner and member roles, favorites, consumption limits, home deletion and ownership transfer | Home Management Module |
 | Devices | Registration, linking, editing and unlinking of measuring devices | Device Management Module |
 | Measurements | Reception of readings, device status, consumption history and statistics | Measurements and Consumption Module |
-| Alerts | Consumption alerts and device connection alerts | Alerts Module |
+| Alerts | Consumption, connection and unusual consumption alerts of the devices | Alerts Module |
 | Recommendations | Saving suggestions based on measured consumption | Savings Recommendations Module |
 | Notifications | Notices by email and in the browser, in-app notices for administrators, preferences and delivery log | Notifications Module |
-| Web application | Full client for management, history and statistics | Web application |
+| Web application | Full client for management, history and statistics, with help in Settings (documentation, support and news) | Web application |
 | Mobile application | Android client for consultation and alerts | Mobile application |
 | Measuring device | Physical device that measures the consumption of each appliance and sends the readings | Measuring device |
 | Deployment | Publication of the system on a server with HTTPS, and updates with automated tests, approval and rollback | Infrastructure |

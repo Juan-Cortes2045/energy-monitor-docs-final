@@ -27,6 +27,14 @@ Miguel Ángel García Artunduaga extracts home, notification, alert and recommen
 
 Later finding: the web deployment rebuilt the previous version (`e59bece`) because its PR to `main` was not merged; with the new security service, registration answered 428 until the new web app was published. The merge left `main` at `698d4c9`.
 
+## October 28, 2026, after the migration
+
+With the system already in production five changes were added, each in its own branch with its PR to `dev` and then to `main`:
+
+- Security and homes: the profile photo travels in the internal profile and the members of a home show it.
+- Alerts and notifications: unusual consumption alert of a device and its text in mail and push.
+- Web: help modals in Settings (documentation by role, support for users and news assembled from the git history), photo viewer inside the page, homes list that closes on an outside click and an explanation of push in Brave.
+
 ## Continuous integration and secrets
 
 The same day the CI of every repository was reviewed: nine already had `ci-cd.yml` with deployment, and the notification service, the only deployable without a pipeline, got its own written. The `production` environment and its four secrets were then created in the repositories that lacked them; two failures of the deploy job (`remote username contains invalid characters` and `hostname contains invalid characters`) were caused by a trailing newline or space in `DEPLOY_USER` and `DEPLOY_HOST`.

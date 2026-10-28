@@ -54,6 +54,15 @@ Versión 1.0 · 28 de octubre de 2026. Variables que `docker-compose.prod.yml` t
 
 Cada servicio se construye desde un clon vecino de `infra`. Las variables `ALERT_CONTEXT`, `DEVICE_CONTEXT`, `FRONTEND_CONTEXT`, `GATEWAY_CONTEXT`, `HOME_CONTEXT`, `MEASUREMENT_CONTEXT`, `NOTIFICATION_CONTEXT`, `RECOMMENDATION_CONTEXT`, `SECURITY_CONTEXT` cambian esa ruta; por defecto apuntan a `../backend/<repositorio>` y `../frontend/energy-monitor-web`, así que solo se definen si los clones están en otro lugar.
 
+## Propiedades del servicio de alertas (no son variables de `.env.prod`)
+
+| Propiedad | Por defecto | Qué controla |
+|---|---|---|
+| `alert.anomaly.window` | `P7D` | Los días de historial con los que se calcula la potencia habitual de un dispositivo para la alerta de consumo inusual |
+| `alert.anomaly.baseline-ttl` | `PT10M` | Cuánto se reutiliza esa potencia habitual antes de pedirla de nuevo al servicio de mediciones |
+
+Los umbrales de la alerta (2,5 veces, 200 W, 24 horas de historial y 5 W de promedio mínimo) son constantes del servicio, no propiedades.
+
 ## Notas
 
 - `.env.prod.example` conserva por herencia la línea `BACKEND_CONTEXT` del backend retirado, y no lista `ALERT_CONTEXT` ni `RECOMMENDATION_CONTEXT`: no afecta, porque la compose define su valor por defecto, pero conviene alinear la plantilla.

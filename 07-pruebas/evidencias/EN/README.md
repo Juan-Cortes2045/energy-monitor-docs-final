@@ -1,6 +1,19 @@
 # Test Evidence
 
-## Version 1.3 (current status)
+## Version 1.4 (current status)
+
+Date: October 28, 2026. The repositories that received the latest features change; the rest stays as in version 1.3. `main` commits and totals:
+
+| Repository | Branch | Commit | Note |
+|---|---|---|---|
+| en-monitor-security-service | main | `de52c95` | 774 tests |
+| en-monitor-home-service | main | `6a4e396` | 260 tests |
+| en-monitor-notification-service | main | `ecdbc0a` | 235 tests |
+| en-monitor-alert-service | main | `0e65430` | 128 tests |
+| energy-monitor-web | main | `27ad9f0` | 44 files and 253 tests |
+| energy-monitor-mobile | dev | `8b5edc0` | 78 unit tests |
+
+## Version 1.3
 
 Date: October 28, 2026. With the complete migration the core service was retired and every service has its own repository and suite. `main` commits (the ones deployed to production that day) and the totals of each suite, all green:
 

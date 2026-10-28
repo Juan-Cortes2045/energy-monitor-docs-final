@@ -16,6 +16,7 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 | 1.1     | 20/10/2026 | Alineación con el sistema desplegado: administración de cuentas dentro del alcance, presupuesto con el servidor en producción y el costo total estimado, puesta en producción en `https://energy-monitor.tech` con integración y despliegue continuos, y estado de objetivos e hitos al 20 de octubre. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 24/10/2026 | Componentes del alcance según la arquitectura en producción: usuarios, dispositivos y mediciones como servicios independientes detrás de un API gateway, y migración en curso de los módulos restantes. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.3     | 28/10/2026 | Migración completada: el API gateway y los siete servicios en producción, y el backend monolítico retirado. Registro con verificación previa del correo y aceptación de términos, reglas de las cuentas creadas con Google (sin cambio de contraseña y borrado con código por correo) y edición independiente del nombre y el apellido. Estado de hitos y plan de la fase final al 28 de octubre. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.4     | 28/10/2026 | Ayuda dentro de la aplicación (documentación según el rol, soporte para usuarios y novedades que se actualizan solas), fotos de perfil visibles en la página y en los hogares, alerta de consumo inusual de un dispositivo y explicación del push en Brave. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
@@ -84,10 +85,10 @@ La Tabla 2 enumera lo que el proyecto construye y el módulo del sistema que res
 | Hogares | Hogares, miembros, roles de propietario y miembro, favoritos, límites de consumo, eliminación del hogar y transferencia de propiedad | Módulo de Gestión de Hogares |
 | Dispositivos | Registro, vinculación, edición y desvinculación de los dispositivos de medición | Módulo de Gestión de Dispositivos |
 | Mediciones | Recepción de lecturas, estado de los dispositivos, historial y estadísticas de consumo | Módulo de Mediciones y Consumo |
-| Alertas | Alertas de consumo y de conexión de los dispositivos | Módulo de Alertas |
+| Alertas | Alertas de consumo, de conexión y de consumo inusual de los dispositivos | Módulo de Alertas |
 | Recomendaciones | Sugerencias de ahorro basadas en el consumo medido | Módulo de Recomendaciones de Ahorro |
 | Notificaciones | Avisos por correo y por el navegador, avisos dentro de la aplicación para administradores, preferencias y registro de entregas | Módulo de Notificaciones |
-| Aplicación web | Cliente completo de gestión, historial y estadísticas | Aplicación web |
+| Aplicación web | Cliente completo de gestión, historial y estadísticas, con ayuda en Ajustes (documentación, soporte y novedades) | Aplicación web |
 | Aplicación móvil | Cliente Android de consulta y alertas | Aplicación móvil |
 | Dispositivo de medición | Aparato físico que mide el consumo de cada electrodoméstico y envía las lecturas | Dispositivo de medición |
 | Despliegue | Publicación del sistema en un servidor con HTTPS, y actualización con pruebas automáticas, aprobación y reversión | Infraestructura |
