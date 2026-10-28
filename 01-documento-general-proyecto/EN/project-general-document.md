@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Technologist in Software Analysis and Development (ADSO), group (ficha) 3145556
 
-October 16, 2026 (updated October 24, 2026)
+October 16, 2026 (updated October 28, 2026)
 
 ## Version Control
 
@@ -15,10 +15,11 @@ October 16, 2026 (updated October 24, 2026)
 | 1.0     | 10/16/2026 | First version of the project charter: justification, objectives, scope, budget, schedule and team.         | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.1     | 10/20/2026 | Alignment with the deployed system: account administration in scope, budget with the production server and the estimated total cost, go-live at `https://energy-monitor.tech` with continuous integration and deployment, and status of objectives and milestones as of October 20. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 10/24/2026 | Scope components according to the architecture in production: users, devices and measurements as independent services behind an API gateway, and migration of the remaining modules in progress. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.3     | 10/28/2026 | Migration completed: the API gateway and the seven services in production, and the monolithic backend retired. Registration with prior email verification and acceptance of the terms, rules for accounts created with Google (no password change and deletion with a code sent by email) and independent editing of the first and last name. Milestone status and final-phase plan as of October 28. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Abstract
 
-This document is the project charter of EnergyMonitor, a solution that lets households see the electrical consumption of each appliance, identify the periods of highest demand, receive alerts and get saving recommendations. It defines why the project is being done and the value it provides, its objectives with measurable indicators, the scope included and excluded, the budget, the phases, the milestones and the schedule until the delivery date, October 28, 2026, and the work team with its roles. The solution integrates a measuring device that attaches to each appliance, a web application and an Android mobile application. As of October 20, 2026 the system is deployed in production at `https://energy-monitor.tech` and is updated through continuous integration and deployment. The detail of the functions is developed in the requirements specification.
+This document is the project charter of EnergyMonitor, a solution that lets households see the electrical consumption of each appliance, identify the periods of highest demand, receive alerts and get saving recommendations. It defines why the project is being done and the value it provides, its objectives with measurable indicators, the scope included and excluded, the budget, the phases, the milestones and the schedule until the delivery date, October 28, 2026, and the work team with its roles. The solution integrates a measuring device that attaches to each appliance, a web application and an Android mobile application. As of October 28, 2026 the system is deployed in production at `https://energy-monitor.tech`, split into an API gateway and seven independent services, and is updated through continuous integration and deployment. The detail of the functions is developed in the requirements specification.
 
 *Keywords:* project charter, electrical consumption, energy saving, households, alerts
 
@@ -78,7 +79,7 @@ Table 2 lists what the project builds and the system module responsible for each
 
 | Item | Description | Module or component |
 |---|---|---|
-| Users and profiles | Registration, sign-in, email verification, password recovery, Google sign-in, profile and account deletion | User and Profile Management Module |
+| Users and profiles | Registration with prior email verification and acceptance of the terms, sign-in, password recovery, Google sign-in, profile (first name, last name and photo) and account deletion | User and Profile Management Module |
 | Administration | Account lookup, status changes, granting and revoking the administrator role, and notices for administrators | User and Profile Management Module |
 | Homes | Homes, members, owner and member roles, favorites, consumption limits, home deletion and ownership transfer | Home Management Module |
 | Devices | Registration, linking, editing and unlinking of measuring devices | Device Management Module |
@@ -91,7 +92,7 @@ Table 2 lists what the project builds and the system module responsible for each
 | Measuring device | Physical device that measures the consumption of each appliance and sends the readings | Measuring device |
 | Deployment | Publication of the system on a server with HTTPS, and updates with automated tests, approval and rollback | Infrastructure |
 
-Since October 24, 2026, the User and Profile Management (including administration), Device Management and Measurements and Consumption modules run in production as independent services, behind a single entry point for the API. The Home, Alerts, Recommendations and Notifications modules remain in the core service, and their separation into services is in progress. The technical detail is in the technical proposal.
+Since October 28, 2026, all the modules run in production as independent services (security, devices, measurements, homes, notifications, alerts and recommendations), behind a single entry point for the API. The core service that used to hold them all was retired. The technical detail is in the technical proposal.
 
 ### Out of Scope
 
@@ -159,7 +160,7 @@ The project started on May 1, 2026 and was planned in four phases with one-week 
 | 3. Recommendations and internationalization | September 1 to 30 | Close the product loop with proactive guidance and finish the cross-cutting interface work. | A home with one week of history receives at least one recommendation based on its own consumption, and the interface is verified in more than one language. |
 | 4. Consolidation and delivery | October 1 to 28 | Leave the system ready for demonstration and defense. | The system is demonstrated live, from a physical device measurement to an alert or recommendation on a phone. |
 
-**Status as of October 20, 2026:** the functions of phases 1 to 3 are built and, during phase 4, the system went live at `https://energy-monitor.tech`, with continuous integration and deployment. On October 24, 2026 the separation of the users, devices and measurements modules into independent services went into production, with no changes for users.
+**Status as of October 20, 2026:** the functions of phases 1 to 3 are built and, during phase 4, the system went live at `https://energy-monitor.tech`, with continuous integration and deployment. On October 24, 2026 the separation of the users, devices and measurements modules into independent services went into production, and on October 28, 2026 the separation was completed with the homes, notifications, alerts and recommendations modules and the retirement of the core service, with no changes for users.
 
 ### Milestones
 
@@ -196,9 +197,10 @@ Table 8 details the activities of the period between October 10 and 28, 2026, wh
 | October 15 | Technical and cost report. Rehearsal of the live demonstration | Technical and cost report |
 | October 16 to 20 | Deployment on the production server, GitHub Actions pipelines and implementation and deployment manual | System in production and implementation and deployment manual |
 | Until October 24 | Separation of the users, devices and measurements modules into independent services, with a single entry point for the API | Services in production and updated documentation |
+| October 25 to 28 | Separation of homes, notifications, alerts and recommendations and retirement of the core service. Registration with email verification and terms, rules for Google accounts, end-to-end tests and production deployment of the gateway and the seven services | The API gateway and the seven services in production, and updated final documentation |
 | October 28 | Final delivery and live demonstration | Working system and complete documentation |
 
-The security improvement to the devices' credentials has already been applied: the system stores only the hash of each device's key. The reliability improvement in the sending of readings has no date within this plan and is carried out only if time allows. The only pending item of home and device management, which is device history management by linking period, also has no assigned date. The separation into services of the Home, Alerts, Recommendations and Notifications modules is in progress, carried out by Miguel Ángel García Artunduaga.
+The security improvement to the devices' credentials has already been applied: the system stores only the hash of each device's key. The reliability improvement in the sending of readings has no date within this plan and is carried out only if time allows. The only pending item of home and device management, which is device history management by linking period, also has no assigned date. The separation into services of the Home, Alerts, Recommendations and Notifications modules, carried out by Miguel Ángel García Artunduaga, was completed and deployed on October 28, 2026.
 
 ## Work Team and Roles
 
