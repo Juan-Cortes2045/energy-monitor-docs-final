@@ -21,7 +21,7 @@ Group: 3145556
 | Program            | Technology in Software Analysis and Development (ADSO)                            |
 | Group              | 3145556                                                                           |
 | Document type      | Implementation and deployment manual                                              |
-| Version            | 1.3                                                                               |
+| Version            | 1.4                                                                               |
 | Date               | October 16, 2026 (updated October 28, 2026)                                       |
 
 Neiva, Huila · Colombia · 2026
@@ -39,6 +39,7 @@ Neiva, Huila · Colombia · 2026
 | 1.1         | 10/20/2026 | Continuous integration and deployment strategy with GitHub Actions (section 9); selection and cost of the Hostinger KVM 2 plan (3.2); real domain; evidence from the VPS run; incidents of the real deployment; automated update and rollback. | Development team |
 | 1.2         | 10/24/2026 | Service architecture in production: API gateway and security, device and measurement services alongside the backend (home, alert, recommendation and notification), RabbitMQ with a *transactional outbox* and the broker authenticated by the device service; new and retired variables (`MEASUREMENT_CONTEXT`, `MQTT_MEASUREMENT_SERVICE_USER/PASS` replacing `MQTT_BACKEND_USER/PASS`); `deploy.sh` with seven components; pipelines and secrets in each repository; first deployment of the services on an existing server (4.12). | Development team |
 | 1.3         | 10/28/2026 | Complete migration: homes, notifications, alerts and recommendations as independent services and retirement of the backend; `deploy.sh` with ten components; pipelines and secrets in the ten deployable repositories; migration run on the server (4.13) with its incidents (section 7); registration with prior email verification, terms and account-deletion code (`SECURITY_ACCOUNT_DELETION_CODE_MAIL_ENABLED`). | Development team |
+| 1.4         | 10/28/2026 | Changes after the migration (section 4.14): profile with a photo in security and homes, unusual consumption alert in alerts and notifications, and web News assembled from the git history on every build (the `Dockerfile` installs git). | Development team |
 
 # Table of contents
 
@@ -104,7 +105,7 @@ The mobile app is **out of scope** for this deployment.
 | Deployed branch              | `main` in the ten deployed repositories                                      |
 | Consolidation date           | October 16, 2026; continuous deployment active since October 19; security, device and measurement services since October 24; home, notification, alert and recommendation services and backend retirement on October 28 |
 | Release tag                  | `[TO BE CONFIRMED]` — tagging `v1.0.0` in the repositories is recommended    |
-| Version of this report       | 1.3                                                                          |
+| Version of this report       | 1.4                                                                          |
 
 ## 1.2 Document history
 
@@ -683,7 +684,25 @@ previous web app does not send. On the server `frontend` was deployed with the p
 because the web PR to `main` had not been merged (incident 3). It was merged afterwards (`main`
 commit `698d4c9`) and the team confirmed on October 28 that the new web app is already deployed.
 
-# 5. IoT integration: MQTT broker and meters
+## 4.14 Changes after the migration (October 28, 2026)
+
+Five repositories received new features after the migration. There are no database changes and no new `.env.prod` variables.
+
+| Repository | Change | `deploy.sh` component |
+|---|---|---|
+| `en-monitor-notification-service` | Mail and push wording of the `alert.anomaly.device` alert | `notification` |
+| `en-monitor-alert-service` | Unusual consumption rule: a reading of at least 200 W and 2.5 times the usual power of the device (hourly average of the previous 7 days, leaving out the last hour), with 24 hours of history and an average of 5 W or more | `alert` |
+| `en-monitor-security-service` | The internal profile (`/internal/users/profiles`) includes `profileImage` | `security` |
+| `en-monitor-home-service` | `GET /api/v1/homes/{homeId}/members` returns the `profileImage` of each member | `home` |
+| `Energy-Monitor-application` | Help modals in Settings (documentation by role, support for users and news), photo viewer, photos of the members, homes list that closes on an outside click and the push notice for Brave | `frontend` |
+
+**Deployment order.** Notifications before alerts (the first alert comes out worded), security before homes (the photos show from the start) and the web app last. Each step is a `deploy.sh <component>` or the approval of the repository's `production` environment.
+
+**Web news.** The `Dockerfile` installs git and `.dockerignore` no longer excludes `.git`: `vite.config.js` assembles the list from the `feat`, `fix` and `perf` commits of the history on every build, so every web deployment publishes its own news. If the build has no git, the list is empty and the modal says so. After the first deployment, open Settings → News and check that it shows changes.
+
+**Optional parameters of the alert service** (Spring properties, not in the compose file): `alert.anomaly.window` (default `P7D`) and `alert.anomaly.baseline-ttl` (default `PT10M`).
+
+# 5. IoT integration
 
 ## 5.1 Goal and exposed service
 
@@ -735,7 +754,7 @@ X1 and X2 roots, so it **does not need to be rebuilt** for production. The devel
 | **Check**                           | **Expected evidence**                                                         | **Status**                 |
 |-------------------------------------|-------------------------------------------------------------------------------|----------------------------|
 | Production compose                  | `docker compose ... config -q` without errors (also on every infra PR)        | Confirmed                  |
-| Service test suites                 | Green (10/28/2026): security 773, homes 260, notifications 234, measurements 151, devices 129, alerts 119, recommendations 71 and gateway 69; web 228. In version 1.1 the single backend had 1131 | Confirmed |
+| Service test suites                 | Green (10/28/2026): security 774, homes 260, notifications 235, measurements 151, devices 129, alerts 128, recommendations 71 and gateway 69; web 253; mobile 78. In version 1.1 the single backend had 1131 | Confirmed |
 | End-to-end tests                    | `infra/e2e/`: `device-flow` (24), `measurement-flow` (28), `alert-flow` (36), `activity-flow` (60) and `account-deletion-flow` (12) on the local stack | Confirmed (local stack) |
 | Web tests and build                 | Vitest tests and `npm run build` pass (locally and in GitHub Actions)         | Confirmed                  |
 | Nginx template                      | `nginx -t` passes (on every infra PR)                                         | Confirmed                  |
@@ -757,7 +776,8 @@ X1 and X2 roots, so it **does not need to be rebuilt** for production. The devel
 | Performance with several users      | No load tests have been run                                                   | Pending                    |
 | Resources with the service stack    | VPS CPU and RAM usage with the eight Java services (`docker stats`)           | Evidence pending          |
 | Migration of 10/28/2026             | `deploy.sh infra` `OK`, `/api/v1/homes` → 401, `mail.account-deletion` bound and backend queues deleted (4.13) | Confirmed                 |
-| Web app with terms and Google rules | The deployed web app is the one on `main` (`698d4c9`) and registration answers 202 | Confirmed by the team (10/28/2026) |
+| Web app with terms and Google rules | The deployed web app is the one on `main` and registration answers 202 | Confirmed by the team (10/28/2026) |
+| Web news                            | The Docker build includes the git history and the News modal shows changes | Evidence pending          |
 | Google account deletion code        | Email received and account deleted with a test account in production          | Evidence pending          |
 
 ## 6.2 Check commands
@@ -982,12 +1002,12 @@ Each repository has a `.github/workflows/ci-cd.yml` file with two jobs:
 | **Repository**               | **CI job (required check)**       | **What it validates**                                                                                  | **Runs on**                  |
 |------------------------------|-----------------------------------|--------------------------------------------------------------------------------------------------------|------------------------------|
 | `en-monitor-api-gateway`     | `Tests`                           | Java 21 + `./mvnw test` (69 tests); needs no database. On failure it keeps the Surefire reports. | PR and push to `dev`/`main` |
-| `en-monitor-security-service` | `Tests`                          | Java 21 + `./mvnw test` against a MySQL 8.4 service container (773 tests), with a throwaway RSA pair. | PR and push to `dev`/`main` |
+| `en-monitor-security-service` | `Tests`                          | Java 21 + `./mvnw test` against a MySQL 8.4 service container (774 tests), with a throwaway RSA pair. | PR and push to `dev`/`main` |
 | `en-monitor-device-service`  | `Tests` and `Docker image`        | Java 21 + `./mvnw test` against a MySQL 8.4 service container (129 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
 | `en-monitor-measurement-service` | `Tests` and `Docker image`    | Java 21 + `./mvnw test` against a MySQL 8.4 service container (151 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
 | `en-monitor-home-service`    | `Tests` and `Docker image`        | Java 21 + `./mvnw test` against a MySQL 8.4 service container (260 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
-| `en-monitor-notification-service` | `Tests` and `Docker image`   | Java 21 + `./mvnw test` against a MySQL 8.4 service container (234 tests), with a throwaway public key; it also builds the Docker image. Added on October 28, 2026. | PR and push to `dev`/`main` |
-| `en-monitor-alert-service`   | `Tests` and `Docker image`        | Java 21 + `./mvnw test` against a MySQL 8.4 service container (119 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
+| `en-monitor-notification-service` | `Tests` and `Docker image`   | Java 21 + `./mvnw test` against a MySQL 8.4 service container (235 tests), with a throwaway public key; it also builds the Docker image. Added on October 28, 2026. | PR and push to `dev`/`main` |
+| `en-monitor-alert-service`   | `Tests` and `Docker image`        | Java 21 + `./mvnw test` against a MySQL 8.4 service container (128 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
 | `en-monitor-recommendation-service` | `Tests` and `Docker image` | Java 21 + `./mvnw test` against a MySQL 8.4 service container (71 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
 | `Energy-Monitor-application` | `Tests and build`                 | Node 22, `npm ci`, Vitest tests and the production `npm run build`.                                    | PR and push to `dev`/`main`  |
 | `energy-monitor-infra`       | `Validate compose and scripts`    | `docker compose config` for the three modes, `bash -n` and `shellcheck` on the scripts, `nginx -t` on the site template. | PR and push to `main` |
