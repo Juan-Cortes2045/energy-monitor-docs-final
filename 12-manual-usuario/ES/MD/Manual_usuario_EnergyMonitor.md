@@ -13,8 +13,8 @@ _Sistema de monitoreo de consumo eléctrico para el hogar — aplicación web y 
 | **Instructor**            | Karol Dayana Correa                                                                                          |
 | **Ficha**                 | 3145556                                                                                                      |
 | **Centro de formación**   | SENA Industria – Neiva                                                                                       |
-| **Fecha**                 | 27 de octubre de 2026                                                                                        |
-| **Versión del documento** | 3.0                                                                                                          |
+| **Fecha**                 | 28 de octubre de 2026                                                                                        |
+| **Versión del documento** | 3.1                                                                                                          |
 
 # **Control de versiones**
 
@@ -23,6 +23,7 @@ _Sistema de monitoreo de consumo eléctrico para el hogar — aplicación web y 
 | 1.0         | 09/07/2026 | Creación inicial del manual de usuario de EnergyMonitor.                                                                                                                                                                                                                                                | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga         |
 | 2.0         | 23/07/2026 | Manuales separados de la aplicación web y de la aplicación móvil, con hogares, roles, consumo, historial, dispositivos, umbrales, favoritos y notificaciones.                                                                                                                                           | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga         |
 | 3.0         | 27/10/2026 | Manual único para web y móvil, con las diferencias de cada plataforma marcadas. Se agregan el rol de administrador y sus pantallas web, la aceptación de los términos y la política de privacidad, las notificaciones de actividad, la transferencia de propiedad, el cambio de red Wi-Fi de un dispositivo, el borrado de cuenta con código para cuentas de Google y los cambios de la app móvil (sesión segura, accesibilidad, títulos de página). Se retira la invitación de miembros por correo, que no existe: la unión a un hogar es por código de acceso. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga         |
+| 3.1         | 28/10/2026 | Se documentan el centro de ayuda de Ajustes (documentación por rol, soporte y novedades), las fotos de los miembros y el visor de fotos, la alerta de consumo inusual y el aviso de notificaciones en Brave. Se marcan las capturas pendientes. |
 
 # **Tabla de contenido**
 
@@ -114,11 +115,11 @@ Una misma persona puede ser responsable de un hogar y miembro de otro. El rol de
 
 Las dos aplicaciones están en **español, inglés, francés y portugués**, tienen **cuatro temas** (dos claros y dos oscuros) y son compatibles con lectores de pantalla.
 
-![Menú lateral de la web](../../assets/Web/menu-lateral-web.png)
+<!-- CAPTURA PENDIENTE: menu-lateral-web.png — Menú lateral de la web -->
 
 _Menú lateral (web)_
 
-![Menú lateral de la app](../../assets/Mobile/menu-lateral-movil.png)
+<!-- CAPTURA PENDIENTE: menu-lateral-movil.png — Menú lateral de la app -->
 
 _Menú lateral (móvil)_
 
@@ -211,7 +212,7 @@ _Soporte (web)_
 
 _Registro (web)_
 
-![Ventana de términos y política de privacidad](../../assets/Web/registro-terminos-modal.png)
+<!-- CAPTURA PENDIENTE: registro-terminos-modal.png — Ventana de términos y política de privacidad -->
 
 _Ventana de Términos de uso y Política de privacidad (web)_
 
@@ -219,7 +220,7 @@ _Ventana de Términos de uso y Política de privacidad (web)_
 
 _Registro (móvil)_
 
-![Ventana de términos en la app](../../assets/Mobile/registro-terminos-modal.png)
+<!-- CAPTURA PENDIENTE: registro-terminos-modal.png — Ventana de términos en la app -->
 
 _Ventana de Términos de uso y Política de privacidad (móvil)_
 
@@ -516,7 +517,7 @@ _Historial (móvil)_
 
 **Resultado esperado:** El responsable mantiene la lista de miembros al día; tras una transferencia, el nuevo responsable gestiona el hogar y quien transfirió queda como miembro («Ahora "nombre" es el responsable del hogar.»).
 
-**Observaciones:** Si el hogar solo tiene al responsable, la pantalla invita a compartir el código de acceso. Los dispositivos, los umbrales y el historial no cambian con la transferencia. Quien es quitado y los demás miembros reciben una notificación de actividad.
+**Observaciones:** Si el hogar solo tiene al responsable, la pantalla invita a compartir el código de acceso. Los dispositivos, los umbrales y el historial no cambian con la transferencia. Quien es quitado y los demás miembros reciben una notificación de actividad. **Web:** cada miembro se muestra con su foto de perfil (si la tiene) y al tocarla se abre en un visor dentro de la página, con las iniciales como respaldo. **Móvil:** por ahora se muestran solo las iniciales.
 
 ![alt text](../../assets/Web/image-16.png)
 
@@ -526,7 +527,7 @@ _Usuarios, vista del responsable (web)_
 
 _Usuarios, vista del miembro (web)_
 
-![Confirmación de transferencia de propiedad](../../assets/Web/usuarios-transferir-propiedad.png)
+<!-- CAPTURA PENDIENTE: usuarios-transferir-propiedad.png — Confirmación de transferencia de propiedad -->
 
 _Confirmación de la transferencia de propiedad (web)_
 
@@ -581,7 +582,7 @@ _Dispositivos, vista del responsable (web)_
 
 _Dispositivos, vista del miembro (web)_
 
-![Asistente de vinculación en la web](../../assets/Web/vincular-dispositivo-bluetooth.png)
+<!-- CAPTURA PENDIENTE: vincular-dispositivo-bluetooth.png — Asistente de vinculación en la web -->
 
 _Asistente «Vincular dispositivo», paso Encuentra tu módulo (web)_
 
@@ -593,7 +594,7 @@ _Dispositivos, vista del responsable (móvil)_
 
 _Dispositivos, vista del miembro (móvil)_
 
-![Búsqueda de módulos por Bluetooth en la app](../../assets/Mobile/vincular-dispositivo-bluetooth.png)
+<!-- CAPTURA PENDIENTE: vincular-dispositivo-bluetooth.png — Búsqueda de módulos por Bluetooth en la app -->
 
 _Búsqueda del módulo por Bluetooth y lista de módulos encontrados (móvil)_
 
@@ -669,7 +670,7 @@ _Hogar, vista del responsable (web)_
 
 _Hogar, vista del miembro (web)_
 
-![Confirmación para eliminar el hogar](../../assets/Web/hogar-eliminar-confirmacion.png)
+<!-- CAPTURA PENDIENTE: hogar-eliminar-confirmacion.png — Confirmación para eliminar el hogar -->
 
 _Confirmación «Eliminar hogar» con el nombre escrito (web)_
 
@@ -739,13 +740,13 @@ _Favoritos (móvil)_
 
 **Resultado esperado:** El usuario se entera a tiempo de lo que pasa en sus hogares y lo atiende.
 
-**Observaciones:** Las alertas y recomendaciones también pueden llegar por correo y como notificación push, según la configuración (sección 12). La actividad siempre aparece en la bandeja.
+**Observaciones:** Las alertas y recomendaciones también pueden llegar por correo y como notificación push, según la configuración (sección 12). La actividad siempre aparece en la bandeja. **Consumo inusual:** si un aparato consume mucho más de lo habitual (al menos 200 W y 2,5 veces su promedio por hora de los últimos 7 días, con al menos 24 horas de historial), el hogar recibe una alerta de tipo umbral que se resuelve sola cuando el consumo se normaliza. **Móvil:** la alerta llega, pero con el texto genérico de umbral; el texto específico está pendiente.
 
 ![alt text](../../assets/Web/image-28.png)
 
 _Notificaciones (web)_
 
-![Pestaña Actividad con filtro por hogar](../../assets/Web/notificaciones-actividad.png)
+<!-- CAPTURA PENDIENTE: notificaciones-actividad.png — Pestaña Actividad con filtro por hogar -->
 
 _Pestaña Actividad con filtro por hogar (web)_
 
@@ -753,7 +754,7 @@ _Pestaña Actividad con filtro por hogar (web)_
 
 _Notificaciones (móvil)_
 
-![Pestaña Actividad en la app](../../assets/Mobile/notificaciones-actividad.png)
+<!-- CAPTURA PENDIENTE: notificaciones-actividad.png — Pestaña Actividad en la app -->
 
 _Pestaña Actividad con filtro por hogar (móvil)_
 
@@ -784,6 +785,7 @@ _Pestaña Actividad con filtro por hogar (móvil)_
 - **Web:** el tema se guarda en ese navegador; el push llega a ese navegador aunque la pestaña esté cerrada. Si el navegador bloqueó las notificaciones, se activan desde el candado de la barra de direcciones. En iPhone hay que instalar la web en la pantalla de inicio.
 - **Móvil:** el push llega al teléfono y a los navegadores suscritos de la misma cuenta; si Android no tiene el permiso, la app lo indica.
 - Si el servidor no tiene configurado el push, la opción aparece como no disponible.
+- **Brave (web):** este navegador trae apagado el servicio de Google que entrega el push. Si al activarlo no funciona, la pantalla indica que hay que ir a brave://settings/privacy, activar «Usar servicios de Google para la mensajería push», reiniciar Brave y volver a activar el push.
 
 ![alt text](../../assets/Web/image-25.png)
 
@@ -792,6 +794,20 @@ _Configuración (web)_
 ![alt text](../../assets/Mobile/image-21.png)
 
 _Configuración (móvil)_
+
+### **12.1 Centro de ayuda**
+
+**[Solo web]** En la móvil las tarjetas se muestran, pero todavía no abren ninguna ventana.
+
+Debajo de las preferencias, Ajustes tiene tres tarjetas. Cada una abre una ventana que se cierra con **Cerrar**:
+
+| **Tarjeta** | **Qué muestra** | **Quién la ve** |
+| --- | --- | --- |
+| **Documentación** | Guías de uso y referencia de funciones según el rol de la cuenta: usuario o administrador. | Usuario y administrador |
+| **Soporte técnico** | Los administradores disponibles. Se elige a quién escribir y **Crear ticket** abre el correo con el asunto ya escrito; el equipo responde por correo. | Solo el usuario: el administrador atiende el soporte y no ve la tarjeta |
+| **Novedades** | Las mejoras, nuevas funciones y correcciones agrupadas por fecha, con la versión y el commit que está en línea. Se generan solas en cada despliegue. | Usuario y administrador |
+
+**Observación:** los títulos de las novedades salen en el idioma de los commits (inglés) aunque la interfaz esté en otro idioma.
 
 ## **13. Mi cuenta**
 
@@ -823,12 +839,13 @@ _Configuración (móvil)_
 - Si se cambia el correo, hay que verificar la nueva dirección con el código que llega a ella antes de volver a iniciar sesión.
 - No se puede eliminar la cuenta si se es el único responsable de un hogar que tiene otros miembros: primero hay que transferir la propiedad o quitar a los miembros. Los hogares sin otros miembros se eliminan con la cuenta.
 - **Móvil:** para elegir una foto, la app pide permiso a la galería.
+- Con **Ver foto** la imagen se abre en un visor dentro de la aplicación (en la web, dentro de la página y sin salir de ella).
 
 ![alt text](../../assets/Web/image-24.png)
 
 _Mi cuenta (web)_
 
-![Eliminar cuenta de Google con código](../../assets/Web/cuenta-eliminar-google-codigo.png)
+<!-- CAPTURA PENDIENTE: cuenta-eliminar-google-codigo.png — Eliminar cuenta de Google con código -->
 
 _Eliminar una cuenta de Google con código (web)_
 
@@ -872,7 +889,7 @@ _Cerrar sesión (móvil)_
 
 Una cuenta con el rol de administrador que inicia sesión en la web entra directamente a **Administración**. Su menú lateral muestra solo **Administración**, **Notificaciones** y **Ajustes**, más Mi cuenta y Cerrar sesión. Las pantallas de hogares (panel, detalle del hogar y favoritos) no están disponibles para esta cuenta: si intenta abrirlas, la aplicación la devuelve a la administración. Una cuenta sin permiso que intenta abrir la administración vuelve a su panel de hogares.
 
-![Menú lateral del administrador](../../assets/Web/admin-menu.png)
+<!-- CAPTURA PENDIENTE: admin-menu.png — Menú lateral del administrador -->
 
 _Menú lateral de una cuenta administradora (web)_
 
@@ -896,7 +913,7 @@ _Menú lateral de una cuenta administradora (web)_
 
 **Resultado esperado:** El administrador encuentra cualquier cuenta y ve su estado y roles.
 
-![Directorio de usuarios](../../assets/Web/admin-usuarios.png)
+<!-- CAPTURA PENDIENTE: admin-usuarios.png — Directorio de usuarios -->
 
 _Usuarios de la plataforma (web)_
 
@@ -920,7 +937,7 @@ _Usuarios de la plataforma (web)_
 
 **Observaciones:** La sesión que la cuenta ya tenía abierta puede seguir hasta 15 minutos, pero no se renueva.
 
-![Confirmación de cambio de estado](../../assets/Web/admin-confirmar-estado.png)
+<!-- CAPTURA PENDIENTE: admin-confirmar-estado.png — Confirmación de cambio de estado -->
 
 _Confirmación «Cambiar el estado de la cuenta» (web)_
 
@@ -942,7 +959,7 @@ _Confirmación «Cambiar el estado de la cuenta» (web)_
 
 **Resultado esperado:** El rol aparece o desaparece en la columna Roles globales. La cuenta debe cerrar sesión y volver a entrar para ver el cambio en su menú.
 
-![Confirmación de rol de administrador](../../assets/Web/admin-confirmar-rol.png)
+<!-- CAPTURA PENDIENTE: admin-confirmar-rol.png — Confirmación de rol de administrador -->
 
 _Confirmación «Dar el rol de administrador» (web)_
 
@@ -968,7 +985,7 @@ _Confirmación «Dar el rol de administrador» (web)_
 
 **Observaciones:** Se muestran los 50 avisos más recientes. Quien hace un cambio no recibe aviso de su propio cambio. Estos avisos solo se ven en la web; no llegan por correo ni por push.
 
-![Notificaciones de administración](../../assets/Web/admin-notificaciones.png)
+<!-- CAPTURA PENDIENTE: admin-notificaciones.png — Notificaciones de administración -->
 
 _Notificaciones de administración (web)_
 
@@ -980,7 +997,7 @@ En **Ajustes**, el administrador ve el idioma, el tema y el centro de ayuda, per
 - Una acción sin el permiso correspondiente no se muestra.
 - El rol de administrador no da acceso a los hogares.
 
-![Ajustes del administrador](../../assets/Web/admin-ajustes.png)
+<!-- CAPTURA PENDIENTE: admin-ajustes.png — Ajustes del administrador -->
 
 _Ajustes de una cuenta administradora, sin la sección de notificaciones (web)_
 
