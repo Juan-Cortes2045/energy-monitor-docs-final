@@ -21,8 +21,8 @@ Ficha: 3145556
 | Programa             | Tecnología en Análisis y Desarrollo de Software (ADSO)                          |
 | Ficha                | 3145556                                                                         |
 | Tipo de documento    | Manual de administrador                                                         |
-| Versión              | 1.2                                                                             |
-| Fecha de elaboración | 07 de octubre de 2026 (actualizado el 24 de octubre de 2026)                    |
+| Versión              | 1.3                                                                             |
+| Fecha de elaboración | 07 de octubre de 2026 (actualizado el 27 de octubre de 2026)                    |
 
 Año 2026
 
@@ -35,6 +35,7 @@ El historial de cambios del presente manual se registra en la siguiente tabla. C
 | 1.0         | 07/10/2026 | Creación inicial del manual de administrador: entorno, roles y permisos, política de contraseñas, registro de auditoría, respaldos, actualización e incidentes. Citas y referencias en formato APA. | Equipo desarrollador |
 | 1.1         | 20/10/2026 | Administración desde la aplicación web (directorio de usuarios, estados, rol de administrador y avisos de administración), designación del primer administrador con `make-admin.sh --prod`, entorno de producción en `https://energy-monitor.tech`, respaldos y actualización en el servidor, incidentes de administración y corrección de consultas SQL. | Equipo desarrollador |
 | 1.2         | 24/10/2026 | Operación con la arquitectura de servicios: contenedores del API gateway, de los servicios de seguridad, dispositivos y mediciones, del backend y de RabbitMQ; comprobación de salud dentro de los contenedores, logs por servicio, componentes de `deploy.sh`, secretos nuevos (`RABBITMQ_PASSWORD`, `INTERNAL_API_TOKEN`, `MQTT_DEVICE_SERVICE_PASS`, `MQTT_MEASUREMENT_SERVICE_PASS`) e incidentes nuevos. | Equipo desarrollador |
+| 1.3         | 27/10/2026 | Backend retirado: operación de los siete microservicios (seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones) y del gateway; avisos de administración servidos por el servicio de notificaciones; colas y outbox que debe vigilar el administrador; orden de despliegue; `EMAIL_NOT_VERIFIED`; tablas por servicio; comandos y checklist actualizados. | Equipo desarrollador |
 
 # 3. Tabla de contenido
 
@@ -81,7 +82,7 @@ Dotar al equipo que administra el sistema de una guía clara, operativa y verifi
 
 Este manual cubre la administración en dos entornos:
 
-- **Producción:** VPS con Ubuntu 26.04 LTS, publicado en `https://energy-monitor.tech`. Toda la plataforma (MySQL 8.4, RabbitMQ 4.1, API gateway, servicios de seguridad, dispositivos y mediciones, backend, broker MQTT y frontend) corre con Docker Compose desde `/opt/energy-monitor/infra` (`docker-compose.prod.yml`), detrás de Nginx con certificados Let's Encrypt.
+- **Producción:** VPS con Ubuntu 26.04 LTS, publicado en `https://energy-monitor.tech`. Toda la plataforma (MySQL 8.4, RabbitMQ 4.1, API gateway, los siete microservicios, broker MQTT y frontend) corre con Docker Compose desde `/opt/energy-monitor/infra` (`docker-compose.prod.yml`), detrás de Nginx con certificados Let's Encrypt.
 - **Desarrollo local:** la pila completa del repositorio `energy-monitor-infra` (`docker-compose.yml`), o MySQL, RabbitMQ y el broker en Docker con los servicios ejecutados desde el IDE o con `./mvnw spring-boot:run`.
 
 Componentes administrados:
@@ -89,10 +90,11 @@ Componentes administrados:
 - API gateway (`en-monitor-api-gateway`, Spring Cloud Gateway, puerto 8080): única entrada de la API.
 - Servicio de seguridad (`en-monitor-security-service`, puerto 8082): cuentas, sesiones, JWT RS256, RBAC y administración de usuarios.
 - Servicio de dispositivos (`en-monitor-device-service`, puerto 8084) y servicio de mediciones (`en-monitor-measurement-service`, puerto 8085).
-- Backend Spring Boot 4.1.1 (`energy-monitor-backend`, puerto 8083; Java 21, Spring Modulith, Liquibase): hogares, alertas, recomendaciones y notificaciones, incluidos los avisos de administración. La migración de estos cuatro módulos a microservicios está en curso.
+- Servicio de hogares (`en-monitor-home-service`, 8086), de notificaciones (`en-monitor-notification-service`, 8087; correo, push, actividad y avisos de administración), de alertas (`en-monitor-alert-service`, 8088) y de recomendaciones (`en-monitor-recommendation-service`, 8089).
+- El antiguo backend (`energy-monitor-backend`) está retirado: ya no corre y `deploy.sh` no lo acepta. Solo conserva el firmware del dispositivo.
 - La base de datos `energy_monitor`, compartida por todos los servicios (cada uno con sus tablas), y la cola RabbitMQ con la que se avisan entre ellos.
 - Aplicación web, incluida su pantalla de administración.
-- Correo de verificación, recuperación y alertas vía SMTP (Gmail en producción, Mailpit en local).
+- Correo de verificación, recuperación, borrado de cuenta, alertas, recomendaciones y actividad vía SMTP (Gmail en producción, Mailpit en local), enviado solo por el servicio de notificaciones.
 
 No describe la instalación del servidor desde cero ni la configuración del despliegue continuo: ambos están en el *Manual de implementación y despliegue* (Cortés Parra y García Artunduaga, 2026b). La puesta a punto del proyecto desde el código está en el *Manual técnico*.
 
@@ -110,7 +112,10 @@ En el servidor de producción se usa el alias `emc` (definido en el manual de im
 | Servicio de seguridad | Servicio `security` (8082, red Docker)                        | `emc ps` → `Up (healthy)`                                               |
 | Servicio de dispositivos | Servicio `device` (8084, red Docker)                       | `emc ps` → `Up (healthy)`                                               |
 | Servicio de mediciones | Servicio `measurement` (8085, red Docker)                    | `emc ps` → `Up (healthy)`                                               |
-| Backend               | Servicio `backend` (8083, red Docker)                         | `emc exec backend curl -fsS http://localhost:8083/actuator/health` → `{"status":"UP"...}` |
+| Servicio de hogares   | Servicio `home` (8086, red Docker)                            | `emc ps` → `Up (healthy)`                                               |
+| Servicio de notificaciones | Servicio `notification` (8087, red Docker)               | `emc ps` → `Up (healthy)`; colas `notification-service.*` sin acumular |
+| Servicio de alertas   | Servicio `alert` (8088, red Docker)                           | `emc ps` → `Up (healthy)`; colas `alert-service.*` sin acumular         |
+| Servicio de recomendaciones | Servicio `recommendation` (8089, red Docker)            | `emc ps` → `Up (healthy)`                                               |
 | Broker MQTT           | Servicio `mosquitto`, puerto público 8883 (TLS)               | `emc logs --tail 50 mosquitto` sin reinicios; conectados `em-device-service` y `em-measurement-service` |
 | Web                   | Servicio `frontend` detrás de Nginx                           | `https://energy-monitor.tech` abre la página de inicio                  |
 | Correo                | Cuenta SMTP configurada en `.env.prod`                        | Tabla `notification` sin envíos `FAILED` (sección 15)                   |
@@ -122,10 +127,10 @@ Ningún servicio Java publica puertos en el host: su salud la mide el *healthche
 Ningún secreto se guarda en el código ni en Git. El administrador debe ubicarlos únicamente en estos lugares:
 
 - **Producción:**
-  - `/opt/energy-monitor/infra/.env.prod` (permisos 600): `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `SECURITY_RESET_PEPPER`, `RABBITMQ_PASSWORD`, `INTERNAL_API_TOKEN`, `MQTT_DEVICE_SERVICE_PASS`, `MQTT_MEASUREMENT_SERVICE_PASS`, credenciales `MAIL_*`, `GOOGLE_CLIENT_SECRET`, claves VAPID y demás secretos. `MQTT_BACKEND_USER/PASS` ya no se usan: el backend no se conecta al broker.
-  - `/opt/energy-monitor/keys/`: par `private.pem` / `public.pem` de los JWT (dueño uid 10001). Solo el servicio de seguridad lee `private.pem`; el gateway, los demás servicios y el backend reciben solo `public.pem`.
+  - `/opt/energy-monitor/infra/.env.prod` (permisos 600): `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `SECURITY_RESET_PEPPER`, `RABBITMQ_PASSWORD`, `INTERNAL_API_TOKEN`, `MQTT_DEVICE_SERVICE_PASS`, `MQTT_MEASUREMENT_SERVICE_PASS`, credenciales `MAIL_*`, `GOOGLE_CLIENT_SECRET`, claves VAPID y demás secretos. `MQTT_BACKEND_USER/PASS`, `BACKEND_URL` y `BACKEND_INTERNAL_URL` ya no se usan: el backend está retirado.
+  - `/opt/energy-monitor/keys/`: par `private.pem` / `public.pem` de los JWT (dueño uid 10001). Solo el servicio de seguridad lee `private.pem`; el gateway y los demás servicios reciben solo `public.pem`.
   - `/opt/energy-monitor/mqtt-certs/`: certificado del broker, copiado desde Let's Encrypt.
-- **Desarrollo local:** `energy-monitor-infra/.env` y `energy-monitor-infra/keys/`; si los servicios se ejecutan desde el IDE, también el `.env` y el `src/main/resources/application-local.yaml` de cada uno (`backend/en-monitor-security-service`, `backend/en-monitor-device-service`, `backend/en-monitor-measurement-service`, `backend/energy-monitor-backend` y el `.env` de `backend/en-monitor-api-gateway`).
+- **Desarrollo local:** `energy-monitor-infra/.env` y `energy-monitor-infra/keys/`; si los servicios se ejecutan desde el IDE, también el `.env` y el `src/main/resources/application-local.yaml` de cada uno (`backend/en-monitor-security-service`, `backend/en-monitor-device-service`, `backend/en-monitor-measurement-service`, `backend/en-monitor-home-service`, `backend/en-monitor-notification-service`, `backend/en-monitor-alert-service`, `backend/en-monitor-recommendation-service` y el `.env` de `backend/en-monitor-api-gateway`).
 
 > *Regla de oro: ningún secreto va a commits, a anexos del manual, a chats ni a directorios compartidos. Los archivos `.env`, `.env.prod`, `application-local.yaml`, `*.pem` y los certificados están en `.gitignore`.*
 
@@ -133,7 +138,7 @@ Ningún secreto se guarda en el código ni en Git. El administrador debe ubicarl
 
 ## 8.1 Tablas que gobiernan la seguridad
 
-Todas las tablas están en la misma base `energy_monitor`. Las de seguridad pertenecen al servicio de seguridad (`en-monitor-security-service`); `notification` pertenece al backend.
+Todas las tablas están en la misma base `energy_monitor`. Las de seguridad pertenecen al servicio de seguridad (`en-monitor-security-service`); `notification` pertenece al servicio de notificaciones. El detalle de todas las tablas está en el [diccionario de datos](../../06-base-datos/diccionario-datos/ES/diccionario-datos.md).
 
 | **Tabla**                                                         | **Propósito**                                                                                     |
 |-------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
@@ -144,7 +149,9 @@ Todas las tablas están en la misma base `energy_monitor`. Las de seguridad pert
 | login_error_log                                                   | Intentos fallidos de acceso con tipo, descripción, IP y fecha.                                    |
 | system_role, permission, user_system_role, system_role_permission | Modelo RBAC de los roles globales (sección 9).                                                   |
 | audit_log                                                         | Auditoría de CREATE/UPDATE/DELETE/LOGIN/LOGIN_FAILED/LOGOUT con IP y aplicación, incluidos los cambios de estado y de rol hechos por los administradores. |
-| notification                                                      | Bitácora de entregas por correo y push (estado SENT/FAILED y motivo) y avisos de administración (canal `IN_APP`, fuente `ADMINISTRATION`). |
+| notification                                                      | Bitácora de entregas por correo y push (estado SENT/FAILED y motivo), notificaciones de actividad y avisos de administración (canal `IN_APP`, fuente `ADMINISTRATION`). |
+| pending_registration                                              | Registros que esperan la verificación del correo; vencen a las 24 horas y un proceso horario los borra. |
+| security_outbox                                                   | Eventos y pedidos de correo pendientes de publicar en RabbitMQ (`last_error` explica un atasco). |
 
 ## 8.2 Auditoría (`audit_log`)
 
@@ -171,7 +178,7 @@ ORDER BY intentos DESC
 LIMIT 20;
 ```
 
-`error_type` puede ser `INVALID_PASSWORD`, `USER_NOT_FOUND`, `ACCOUNT_BLOCKED` o `ACCOUNT_INACTIVE`. Los dos últimos aparecen cuando una cuenta bloqueada o desactivada por un administrador intenta iniciar sesión.
+`error_type` puede ser `INVALID_PASSWORD`, `USER_NOT_FOUND`, `ACCOUNT_BLOCKED`, `ACCOUNT_INACTIVE` o `EMAIL_NOT_VERIFIED` (contraseña correcta, pero el correo aún no se verificó). Los dos últimos aparecen cuando una cuenta bloqueada o desactivada por un administrador intenta iniciar sesión.
 
 # 9. Roles y permisos (RBAC)
 
@@ -197,7 +204,7 @@ El changeset de Liquibase `security-025` crea el rol `ADMIN` con sus tres permis
 | `USER.MANAGE` | Cambiar el estado de una cuenta a activa, inactiva o bloqueada        |
 | `ROLE.MANAGE` | Conceder o revocar roles globales                                     |
 
-Los permisos se leen de la base de datos **en cada solicitud** y no viajan dentro del token de sesión. Por eso conceder o revocar el rol, o bloquear una cuenta, surte efecto en la siguiente solicitud al servicio de seguridad. En las rutas que atiende el backend (por ejemplo, los avisos de administración), el backend consulta los permisos al servicio de seguridad con una caché de 30 segundos, así que el cambio puede tardar hasta ese tiempo en notarse ahí. Revocar el rol desde la web no borra la fila de `user_system_role`: le pone fecha en `deleted_at`.
+Los permisos se leen de la base de datos **en cada solicitud** y no viajan dentro del token de sesión. Por eso conceder o revocar el rol, o bloquear una cuenta, surte efecto en la siguiente solicitud al servicio de seguridad. Los avisos de administración los sirve el servicio de notificaciones, que pregunta el permiso `USER.READ` al servicio de seguridad por su API interna. Revocar el rol desde la web no borra la fila de `user_system_role`: le pone fecha en `deleted_at`.
 
 > *El rol `ADMIN` no da acceso a ningún hogar: un administrador que no es miembro de un hogar no puede ver sus datos.*
 
@@ -227,7 +234,7 @@ Una cuenta con el rol `ADMIN` que inicia sesión en `https://energy-monitor.tech
 - **Notificaciones:** avisos de administración.
 - **Ajustes:** idioma, tema y centro de ayuda. Las preferencias de notificación de los hogares no aparecen, porque una cuenta administradora no tiene hogares.
 
-Las pantallas de hogares (panel, detalle del hogar y favoritos) no están disponibles para una cuenta administradora: si intenta abrirlas, la aplicación la devuelve a la administración. Una cuenta sin el permiso `USER.READ` que intenta abrir la administración vuelve a su panel de hogares, y la API rechaza sus solicitudes de administración con `403`.
+Las pantallas de hogares (panel, detalle del hogar y favoritos) no están disponibles para una cuenta administradora: si intenta abrirlas, la aplicación la devuelve a la administración. Una cuenta sin el permiso `USER.READ` que intenta abrir la administración vuelve a su panel de hogares, y la API rechaza sus solicitudes de administración con `403`. La app móvil no tiene pantallas de administración: la administración solo se hace desde la web.
 
 ## 10.2 Directorio de usuarios
 
@@ -350,13 +357,13 @@ sudo /opt/energy-monitor/infra/deploy/backup-mysql.sh                 # a mano
 
 ## 13.2 Restaurar
 
-Restaurar **sobrescribe** la base de datos, que comparten todos los servicios. Detener antes los servicios que escriben en ella (`emc stop gateway security device measurement backend`) y, desde `/opt/energy-monitor/infra`:
+Restaurar **sobrescribe** la base de datos, que comparten todos los servicios. Detener antes los servicios que escriben en ella (`emc stop gateway security device measurement home notification alert recommendation`) y, desde `/opt/energy-monitor/infra`:
 
 ```bash
 gunzip -c /opt/energy-monitor/backups/<archivo>.sql.gz | \
   docker compose -f docker-compose.prod.yml --env-file .env.prod \
   exec -T -e MYSQL_PWD="<contraseña de root>" mysql mysql -uroot energy_monitor
-emc start security device measurement backend gateway
+emc start security device measurement home notification alert recommendation gateway
 ```
 
 ## 13.3 Volumen de datos
@@ -367,19 +374,19 @@ Los datos persistentes de MySQL viven en el volumen Docker `mysql-data`, y los m
 
 # 14. Actualización del software
 
-En producción, el software se actualiza con GitHub Actions: cada cambio fusionado en `main` se despliega tras la aprobación del entorno `production`, con respaldo previo de la base de datos, prueba de salud y reversión automática si algo falla. Cada repositorio despliega su propio componente, y la prueba de salud espera a que los cinco servicios Java estén `healthy` y la web responda. Liquibase aplica los changesets nuevos de cada servicio al arrancarlo. El procedimiento completo está en el manual de implementación y despliegue (Cortés Parra y García Artunduaga, 2026b).
+En producción, el software se actualiza con GitHub Actions: cada cambio fusionado en `main` se despliega tras la aprobación del entorno `production`, con respaldo previo de la base de datos, prueba de salud y reversión automática si algo falla. Cada repositorio despliega su propio componente, y la prueba de salud espera a que todos los servicios Java estén `healthy`, la web responda y `/api/v1/homes` responda 401 por el gateway. Cuando un cambio agrega un evento nuevo, se despliega primero el servicio que lo consume y después el que lo produce (por ejemplo, `notification` antes que `security` y `home`): un outbox se detiene ante un mensaje que ninguna cola recibe. Liquibase aplica los changesets nuevos de cada servicio al arrancarlo. El procedimiento completo está en el manual de implementación y despliegue (Cortés Parra y García Artunduaga, 2026b).
 
 Si GitHub no está disponible, el mismo procedimiento se ejecuta a mano en el servidor:
 
 ```bash
-sudo /opt/energy-monitor/infra/deploy/deploy.sh backend     # o security, device, measurement, gateway, frontend, infra
+sudo /opt/energy-monitor/infra/deploy/deploy.sh security     # o device, measurement, home, notification, alert, recommendation, gateway, frontend, infra
 ```
 
 > *Cambiar `SECURITY_RESET_PEPPER` invalida todos los códigos de recuperación vigentes. Rotarlo es una decisión de seguridad, no de costumbre.*
 
 # 15. Verificación del correo
 
-Solo el backend envía correo: los de verificación y recuperación los pide el servicio de seguridad por RabbitMQ (`mail.email-verification`, `mail.password-reset`) y los de alertas los genera el propio backend. Cada intento de envío por correo o push queda en la tabla `notification` con estado (`delivery_status`) `SENT` o `FAILED` y, si falla, el motivo (`failure_reason`). Para auditar si el correo falla:
+Solo el servicio de notificaciones envía correo: los de verificación, recuperación y borrado de cuenta los pide el servicio de seguridad por RabbitMQ (`mail.email-verification`, `mail.password-reset`, `mail.account-deletion`), y los de alertas, recomendaciones y actividad salen de los eventos `alert.raised`, `recommendation.created` y de actividad. Cada intento de envío por correo o push queda en la tabla `notification` con estado (`delivery_status`) `SENT` o `FAILED` y, si falla, el motivo (`failure_reason`). Para auditar si el correo falla:
 
 ```sql
 SELECT id_notification, channel, delivery_status, failure_reason, created_at
@@ -389,7 +396,7 @@ ORDER BY created_at DESC
 LIMIT 20;
 ```
 
-Si casi todos fallan, suele deberse a credenciales SMTP incorrectas, a que Gmail exige una «contraseña de aplicación» en lugar de la contraseña de la cuenta, o a que `MAIL_FROM` no coincide con `MAIL_USERNAME` (Google, s. f.). Si un correo de verificación o recuperación ni siquiera aparece en `notification`, revisa en la consola de RabbitMQ que las colas del backend no acumulen mensajes ni los desvíen a su `.dlq`. En desarrollo, revisa que Mailpit esté activo (`http://localhost:8025`).
+Si casi todos fallan, suele deberse a credenciales SMTP incorrectas, a que Gmail exige una «contraseña de aplicación» en lugar de la contraseña de la cuenta, o a que `MAIL_FROM` no coincide con `MAIL_USERNAME` (Google, s. f.). Si un correo de verificación o recuperación ni siquiera aparece en `notification`, revisa en la consola de RabbitMQ que la cola `notification-service.notification.mail` no acumule mensajes ni los desvíe a su `.dlq`, y la columna `last_error` de `security_outbox`. En desarrollo, revisa que Mailpit esté activo (`http://localhost:8025`).
 
 # 16. Incidentes frecuentes y cómo diagnosticarlos
 
@@ -402,11 +409,13 @@ Si casi todos fallan, suele deberse a credenciales SMTP incorrectas, a que Gmail
 | La web indica falta de permiso (`403`) en la administración                        | La cuenta no tiene el permiso que exige la acción               | Revisar sus roles (sección 17) o conceder el rol desde otra cuenta administradora.                            |
 | Un usuario no puede iniciar sesión y `login_error_log` muestra `ACCOUNT_BLOCKED` o `ACCOUNT_INACTIVE` | Un administrador cambió su estado            | Revisar `audit_log`; reactivar la cuenta desde la web si corresponde.                                        |
 | El servicio de seguridad no arranca y nombra claves o pepper                       | Faltan las claves JWT o `SECURITY_RESET_PEPPER`.                | Revisar `/opt/energy-monitor/keys` y `.env.prod` (o `.env` en local).                                         |
-| La web muestra errores y la API responde `503`                                     | El gateway no alcanza al servicio de esa ruta                   | `emc ps` y `emc logs --tail 100 security device measurement backend`.                                         |
+| La web muestra errores y la API responde `503`                                     | El gateway no alcanza al servicio de esa ruta                   | `emc ps` y `emc logs --tail 100 security device measurement home notification alert recommendation`.          |
 | La API responde `504`                                                              | El servicio de esa ruta tardó más de 30 s                       | Revisar los logs de ese servicio y de MySQL.                                                                  |
 | Un servicio queda `unhealthy` con RabbitMQ arriba                                  | `RABBITMQ_USERNAME` / `RABBITMQ_PASSWORD` no coinciden con el usuario que RabbitMQ creó la primera vez | Cambiar la clave dentro de RabbitMQ (`rabbitmqctl change_password`) o corregir `.env.prod`.                  |
 | Un medidor o un servicio es rechazado por el broker (`rc=5`)                       | El servicio de dispositivos no reconoce sus credenciales        | Comprobar que `MQTT_DEVICE_SERVICE_*` y `MQTT_MEASUREMENT_SERVICE_*` coinciden en `.env.prod`; para un medidor, volver a vincularlo. |
 | No llegan correos de recuperación                                                  | SMTP mal configurado o Mailpit apagado.                         | Revisar `notification` (sección 15) y `MAIL_*`.                                                               |
+| No se crean alertas o recomendaciones, o no llega la actividad                     | Servicio detenido, interruptor en `false` o outbox atascado     | `emc ps`; revisar que `.env.prod` no tenga `ALERT_CONSUMERS_ENABLED=false` ni `RECOMMENDATION_SCHEDULER_ENABLED=false`; consultar `last_error` de los `*_outbox`. |
+| Colas `energy-monitor-backend.*` con mensajes en RabbitMQ                          | Restos del backend retirado, sin consumidor                     | Borrarlas con su `.dlq` (`emc exec rabbitmq rabbitmqctl delete_queue <cola>`).                                 |
 | Errores frecuentes `INVALID_PASSWORD`, `USER_NOT_FOUND` en `login_error_log`       | Intentos de acceso inválidos o fuerza bruta.                    | Revisar IPs repetidas y bloquear en el firewall si hace falta.                                                |
 | `docker compose ps` no muestra los servicios en el servidor                        | El comando se ejecutó sin el archivo de producción              | Usar el alias `emc ps`.                                                                                       |
 
@@ -416,24 +425,25 @@ Si casi todos fallan, suele deberse a credenciales SMTP incorrectas, a que Gmail
 |---------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Designar el primer administrador            | `./make-admin.sh --prod correo@ejemplo.com` (desde `/opt/energy-monitor/infra`)                                                                              |
 | Ver estado de los servicios                 | `emc ps` (producción) o `docker compose ps` (local, desde `energy-monitor-infra`)                                                                           |
-| Estado de salud de los servicios            | `emc ps` (los cinco servicios Java en `(healthy)`) o `emc exec gateway curl -fsS http://localhost:8080/actuator/health`                                      |
-| Logs de un servicio                         | `emc logs --tail 100 gateway` (o `security`, `device`, `measurement`, `backend`, `mosquitto`, `rabbitmq`)                                                    |
+| Estado de salud de los servicios            | `emc ps` (el gateway y los siete servicios en `(healthy)`) o `emc exec gateway curl -fsS http://localhost:8080/actuator/health`                                      |
+| Logs de un servicio                         | `emc logs --tail 100 gateway` (o `security`, `device`, `measurement`, `home`, `notification`, `alert`, `recommendation`, `mosquitto`, `rabbitmq`)                                                    |
 | Colas de RabbitMQ                           | `emc exec rabbitmq rabbitmqctl list_queues name messages` (las `.dlq` deben estar en 0)                                                                      |
+| Mensajes pendientes en los outbox           | `SELECT message_type, attempts, last_error FROM home_outbox WHERE published_at IS NULL AND discarded_at IS NULL;` (igual en `security_outbox`, `device_outbox`, `measurement_outbox`, `alert_outbox` y `recommendation_outbox`) |
 | Ver últimas 10 acciones auditadas           | `SELECT * FROM audit_log ORDER BY created_at DESC LIMIT 10;`                                                                                                 |
 | Ver últimos errores de login                | `SELECT * FROM login_error_log ORDER BY created_at DESC LIMIT 20;`                                                                                           |
 | Listar los administradores activos          | `SELECT u.email, r.name FROM user u JOIN user_system_role usr ON usr.user_id = u.id_user JOIN system_role r ON r.id_system_role = usr.system_role_id WHERE usr.deleted_at IS NULL AND u.deleted_at IS NULL;` |
 | Forzar cierre de sesiones de un usuario     | Cambiar su estado desde la web, o `UPDATE user_session …` (sección 12)                                                                                       |
 | Respaldo de la base de datos                | `sudo /opt/energy-monitor/infra/deploy/backup-mysql.sh` (sección 13.1)                                                                                       |
-| Desplegar a mano                            | `sudo /opt/energy-monitor/infra/deploy/deploy.sh <componente>` con `backend`, `security`, `device`, `measurement`, `gateway`, `frontend` o `infra` (sección 14) |
+| Desplegar a mano                            | `sudo /opt/energy-monitor/infra/deploy/deploy.sh <componente>` con `security`, `device`, `measurement`, `home`, `notification`, `alert`, `recommendation`, `gateway`, `frontend` o `infra` (sección 14) |
 
 # 18. Checklist diario / semanal del administrador
 
 | **Revisión**                                             | **Frecuencia** | **Estado esperado**                                   |
 |----------------------------------------------------------|----------------|-------------------------------------------------------|
 | Avisos de administración sin leer                        | Diaria         | Cuentas nuevas y cambios de otros administradores revisados |
-| Servicios sanos (`emc ps`) y `actuator/health`           | Diaria         | Todos `Up`; gateway, security, device, measurement y backend `(healthy)` |
+| Servicios sanos (`emc ps`) y `actuator/health`           | Diaria         | Todos `Up`; gateway, security, device, measurement, home, notification, alert y recommendation `(healthy)` |
 | Logs de los servicios y del broker                       | Diaria         | Sin errores de contexto ni reinicios                  |
-| Colas de RabbitMQ                                        | Semanal        | Colas `.dlq` vacías                                   |
+| Colas de RabbitMQ y outbox                               | Semanal        | Colas `.dlq` vacías; ningún `*_outbox` con mensajes pendientes antiguos |
 | `audit_log` y `login_error_log`                          | Diaria         | Sin ráfagas de `LOGIN_FAILED` ni picos por IP         |
 | Notificaciones `FAILED`                                  | Diaria         | Cola `FAILED` en cero o con motivo conocido           |
 | Lista de administradores activos                         | Semanal        | Solo las cuentas que deben serlo                      |

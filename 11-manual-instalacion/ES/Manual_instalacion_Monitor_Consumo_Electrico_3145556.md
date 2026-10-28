@@ -22,8 +22,8 @@ Ficha: 3145556
 | Programa             | Tecnología en Análisis y Desarrollo de Software (ADSO)                          |
 | Ficha                | 3145556                                                                         |
 | Tipo de documento    | Manual de instalación                                                           |
-| Versión              | 1.2                                                                             |
-| Fecha de elaboración | 07 de octubre de 2026 (actualización: 24 de octubre de 2026)                    |
+| Versión              | 1.3                                                                             |
+| Fecha de elaboración | 07 de octubre de 2026 (actualización: 27 de octubre de 2026)                    |
 
 Año 2026
 
@@ -36,6 +36,8 @@ El historial de cambios del presente manual se registra en la siguiente tabla. C
 | 1.0         | 07/10/2026 | Creación inicial del manual de instalación para backend, frontend web y frontend móvil, con requisitos de la especificación de requisitos y referencias en formato APA.                                                                           | Equipo desarrollador |
 | 1.1         | 13/10/2026 | Actualización al estado final: cinco piezas del sistema, variables de entorno completas, broker MQTT, firmware, vinculación del primer dispositivo, producción, aplicación móvil integrada con la API y verificaciones y soluciones ampliadas.   | Equipo desarrollador |
 | 1.2         | 24/10/2026 | Arquitectura de servicios: clonado de todos los repositorios (incluido `en-monitor-measurement-service`), infraestructura en `energy-monitor-infra` (pila completa y modo desarrollo con MySQL, RabbitMQ y Mosquitto), puertos 8080, 8082, 8083, 8084 y 8085, variables por servicio (`MQTT_DEVICE_SERVICE_*`, `MQTT_MEASUREMENT_SERVICE_*` en lugar de `MQTT_BACKEND_*`, `INTERNAL_API_TOKEN`, `RABBITMQ_*`, `MEASUREMENT_CONTEXT`), broker autenticado por el servicio de dispositivos, firmware en `energy-monitor-backend/firmware/`, verificaciones y soluciones actualizadas. | Equipo desarrollador |
+| 1.3         | 27/10/2026 | Migración terminada: siete microservicios (seguridad 8082, dispositivos 8084, mediciones 8085, hogares 8086, notificaciones 8087, alertas 8088 y recomendaciones 8089) detrás del gateway y backend retirado; clonado, `.env` por servicio, orden de arranque, interruptores de consumidores y relays, primer administrador con `make-admin.sh`, nuevas pruebas de punta a punta, verificaciones y soluciones actualizadas. | Equipo desarrollador |
+| 1.3         | 27/10/2026 | Migración terminada: siete microservicios (seguridad 8082, dispositivos 8084, mediciones 8085, hogares 8086, notificaciones 8087, alertas 8088 y recomendaciones 8089) detrás del gateway y backend retirado; clonado, `.env` por servicio, orden de arranque, interruptores de consumidores y relays, primer administrador con `make-admin.sh`, nuevas pruebas de punta a punta, verificaciones y soluciones actualizadas. | Equipo desarrollador |
 
 # 3. Tabla de contenido
 
@@ -91,9 +93,9 @@ El historial de cambios del presente manual se registra en la siguiente tabla. C
 
 El presente documento es el manual de instalación del software «Monitor de Consumo Eléctrico». Su propósito es que cualquier desarrollador, instructor o técnico —sin importar su experiencia previa con el proyecto— sea capaz de obtener el código fuente, configurar las dependencias, echar a andar los componentes del sistema y verificar que funcionen de forma conjunta en un equipo de trabajo.
 
-El sistema se compone de estas piezas, cada una en su repositorio: un API gateway, única entrada de la API (Spring Cloud Gateway sobre Spring Boot 4.0.8), tres microservicios —seguridad, dispositivos y mediciones— y un backend que sigue siendo un monolito modular con los módulos de hogares, alertas, recomendaciones y notificaciones, todos construidos con Java 21 y Spring Boot 4.1.1; una aplicación web construida con React 19 y Vite 8; una aplicación móvil Android construida con Expo SDK 57 y React Native 0.86; un broker MQTT Eclipse Mosquitto que autentica a cada cliente contra el servicio de dispositivos; y un dispositivo de medición formado por una placa ESP32 y un sensor PZEM-004T V3 (Spring, s. f.; Vite, s. f.; Expo, s. f.; Eclipse Foundation, s. f.). La migración a microservicios de los cuatro módulos que quedan en el backend está en curso. La base de datos MySQL 8.4, la cola de mensajes RabbitMQ 4.1 y el broker se levantan con Docker Compose desde el repositorio de infraestructura, y la entrega del correo puede simularse localmente con Mailpit (Docker Inc., s. f.; RabbitMQ, s. f.; Mailpit, s. f.).
+El sistema se compone de estas piezas, cada una en su repositorio: un API gateway, única entrada de la API (Spring Cloud Gateway sobre Spring Boot 4.0.8), siete microservicios —seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones—, todos construidos con Java 21 y Spring Boot 4.1.1; una aplicación web construida con React 19 y Vite 8; una aplicación móvil Android construida con Expo SDK 57 y React Native 0.86; un broker MQTT Eclipse Mosquitto que autentica a cada cliente contra el servicio de dispositivos; y un dispositivo de medición formado por una placa ESP32 y un sensor PZEM-004T V3 (Spring, s. f.; Vite, s. f.; Expo, s. f.; Eclipse Foundation, s. f.). El antiguo backend modular (`energy-monitor-backend`) está retirado y ya no se instala: solo conserva el firmware del dispositivo. La base de datos MySQL 8.4, la cola de mensajes RabbitMQ 4.1 y el broker se levantan con Docker Compose desde el repositorio de infraestructura, y la entrega del correo puede simularse localmente con Mailpit (Docker Inc., s. f.; RabbitMQ, s. f.; Mailpit, s. f.).
 
-La información consignada fue obtenida directamente de los repositorios del proyecto (gateway, servicios, backend, web, móvil e infraestructura), de la especificación de requisitos y de los README incluidos en cada repositorio, por lo que corresponde a la versión del software en producción el 24 de octubre de 2026. Las referencias se formatearon según el estilo APA, séptima edición (American Psychological Association \[APA\], 2020).
+La información consignada fue obtenida directamente de los repositorios del proyecto (gateway, servicios, web, móvil e infraestructura), de la especificación de requisitos y de los README incluidos en cada repositorio, por lo que corresponde a la rama `dev` de los repositorios el 27 de octubre de 2026. Las referencias se formatearon según el estilo APA, séptima edición (American Psychological Association \[APA\], 2020).
 
 # 5. Objetivo
 
@@ -117,15 +119,15 @@ El manual cubre la instalación en un equipo de desarrollo local de los siguient
 
 - API gateway (en-monitor-api-gateway, puerto 8080).
 
-- Servicio de seguridad (en-monitor-security-service, puerto 8082), servicio de dispositivos (en-monitor-device-service, puerto 8084) y servicio de mediciones (en-monitor-measurement-service, puerto 8085), con perfil local y pruebas JUnit.
+- Servicios de seguridad (en-monitor-security-service, 8082), dispositivos (en-monitor-device-service, 8084), mediciones (en-monitor-measurement-service, 8085), hogares (en-monitor-home-service, 8086), notificaciones (en-monitor-notification-service, 8087), alertas (en-monitor-alert-service, 8088) y recomendaciones (en-monitor-recommendation-service, 8089), con perfil local y pruebas JUnit.
 
-- Backend (energy-monitor-backend, puerto 8083), con perfil local y pruebas JUnit; el repositorio contiene además el firmware del dispositivo (`firmware/`).
+- Firmware del dispositivo, en la carpeta `firmware/` del repositorio retirado `energy-monitor-backend` (solo se clona para el firmware; el backend ya no se ejecuta).
 
 - Aplicación web (Energy-Monitor-application) con Vite.
 
 - Aplicación móvil Android (Energy-Monitor-Mobile) con Expo y Expo Go.
 
-- Utilidades opcionales: Mailpit para correo local, claves RSA propias para los JWT y las pruebas de punta a punta de `energy-monitor-infra/e2e/`.
+- Utilidades: `make-admin.sh` para el primer administrador; opcionales, Mailpit para correo local, claves RSA propias para los JWT y las pruebas de punta a punta de `energy-monitor-infra/e2e/`.
 
 El repositorio `energy-monitor-devices` está retirado: el firmware pasó a `energy-monitor-backend/firmware/` y la configuración del broker a `energy-monitor-infra/mosquitto/`. No cubre la contratación de un servidor ni de un dominio, ni la configuración detallada de un proxy inverso; el procedimiento completo de producción está en el manual de implementación y despliegue.
 
@@ -154,12 +156,12 @@ Más allá de los requisitos del equipo indicados en la especificación de requi
 | Sistema operativo (PC)    | Windows 10 de 64 bits (con Docker Desktop y WSL 2)             | Windows 11 de 64 bits o Linux (Ubuntu 24.04+)                                        |
 | Sistema operativo (móvil) | Android 10 o superior                                          | Última versión de Android disponible                                                 |
 | Procesador                | Intel Core i3 o equivalente                                    | Intel Core i5 o equivalente                                                          |
-| Memoria RAM               | 8 GB                                                           | 16 GB (Docker Desktop, MySQL, RabbitMQ, los cinco servicios Java, Node y herramientas de diseño se abren con holgura) |
+| Memoria RAM               | 8 GB                                                           | 16 GB (Docker Desktop, MySQL, RabbitMQ, el gateway y los siete servicios Java, Node y herramientas de diseño se abren con holgura) |
 | Espacio en disco libre    | 8 GB (código, node_modules, imagen MySQL y contenedores)       | 20 GB o más (para varias versiones, cachés de Docker y archivos de la base de datos) |
 | Conectividad              | Internet estable (para clonar, descargar paquetes y Expo Go)   | Conexión de banda ancha                                                              |
 | Almacenamiento adicional  | Al menos 5 GB libres para datos de prueba y respaldos de MySQL | Espacio a libre disposición                                                          |
 
-> *Si el equipo cumple el mínimo pero no la recomendación, instala solo los componentes que necesites de forma simultánea (p. ej. usa la pila completa en contenedores en lugar de abrir los cinco servicios en el IDE, y no abras Android Studio a la vez).*
+> *Si el equipo cumple el mínimo pero no la recomendación, instala solo los componentes que necesites de forma simultánea (p. ej. usa la pila completa en contenedores en lugar de abrir los ocho servicios Java en el IDE, y no abras Android Studio a la vez).*
 
 ## 7.3 Requisitos de software para la instalación
 
@@ -167,7 +169,7 @@ Las versiones mínimas verificadas sobre los repositorios de los servicios, de l
 
 | **Herramienta**                | **Versión mínima**                   | **Para qué se usa**                                                          |
 |--------------------------------|--------------------------------------|------------------------------------------------------------------------------|
-| Java JDK                       | 21 o superior                        | Compilar y ejecutar el gateway, los servicios y el backend (Spring Boot 4.1.1; el gateway, 4.0.8). |
+| Java JDK                       | 21 o superior                        | Compilar y ejecutar el gateway y los servicios (Spring Boot 4.1.1; el gateway, 4.0.8). |
 | Node.js                        | 22 LTS (mín. 20.19)                  | Tooling de React 19/Vite 8 y de Expo SDK 57.                                 |
 | npm                            | incluido con Node                    | Gestión de dependencias del web y del móvil.                                 |
 | Docker Desktop / Docker Engine | 24 o superior                        | Levantar MySQL 8.4, RabbitMQ 4.1, el broker Mosquitto, la pila completa y Mailpit. |
@@ -193,15 +195,15 @@ Los nombres que siguen son los exactos de los `.env.example` y de los `applicati
 | **Variable / archivo**                                         | **Para qué sirve**                                                                                                                | **Dónde anotarla**                                |
 |----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
 | MYSQL_PASSWORD / MYSQL_ROOT_PASSWORD                           | Contraseñas del usuario `energy_app` de los servicios y de `root`. MySQL las toma solo al crear su volumen.                       | `infra/.env`                                      |
-| SPRING_DATASOURCE_PASSWORD                                     | Misma contraseña que MYSQL_PASSWORD; la usan cada servicio en modo desarrollo y sus pruebas del perfil `test`.                   | `.env` de seguridad, dispositivos, mediciones y backend |
+| SPRING_DATASOURCE_PASSWORD                                     | Misma contraseña que MYSQL_PASSWORD; la usan cada servicio en modo desarrollo y sus pruebas del perfil `test`.                   | `.env` de cada servicio con base de datos |
 | SECURITY_RESET_PEPPER                                          | Pepper largo y aleatorio (HMAC) para el código de recuperación.                                                                   | `infra/.env` y `.env` del servicio de seguridad   |
-| RABBITMQ_USERNAME / RABBITMQ_PASSWORD                          | Usuario de la cola de mensajes (`energy-monitor` por defecto). RabbitMQ lo crea solo al iniciar su volumen.                       | `infra/.env` y `.env` de seguridad, dispositivos, mediciones y backend |
-| INTERNAL_API_TOKEN                                             | Token de las llamadas `/internal/**` entre servicios; el mismo valor en todos.                                                    | `infra/.env` y `.env` de seguridad, dispositivos, mediciones y backend |
+| RABBITMQ_USERNAME / RABBITMQ_PASSWORD                          | Usuario de la cola de mensajes (`energy-monitor` por defecto). RabbitMQ lo crea solo al iniciar su volumen.                       | `infra/.env` y `.env` de cada servicio |
+| INTERNAL_API_TOKEN                                             | Token de las llamadas `/internal/**` entre servicios; el mismo valor en todos.                                                    | `infra/.env` y `.env` de cada servicio |
 | SECURITY_CORS_ALLOWED_ORIGINS                                  | Orígenes permitidos para el navegador; el CORS lo responde el gateway (`http://localhost` en la pila completa, `http://localhost:5173` en modo desarrollo). | `infra/.env` y `.env` del gateway |
-| SECURITY_JWT_PRIVATE_KEY_PATH / SECURITY_JWT_PUBLIC_KEY_PATH   | Rutas absolutas a las claves PEM del token JWT. La privada solo la usa el servicio de seguridad; la pública, el gateway, los demás servicios y el backend. | `.env` de cada servicio (modo desarrollo) |
+| SECURITY_JWT_PRIVATE_KEY_PATH / SECURITY_JWT_PUBLIC_KEY_PATH   | Rutas absolutas a las claves PEM del token JWT. La privada solo la usa el servicio de seguridad; la pública, el gateway y los demás servicios. | `.env` de cada servicio (modo desarrollo) |
 | SECURITY_SESSION_COOKIE_SECURE                                 | `false` en modo desarrollo: la sesión web viaja en cookies HttpOnly y el equipo local se sirve por `http://`.                     | `.env` del servicio de seguridad                  |
 | GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET                        | Credenciales OAuth («Aplicación web») para iniciar sesión con Google. Si están vacías, no aparece el botón de Google.             | `infra/.env` y `.env` del servicio de seguridad   |
-| MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM  | SMTP para los códigos de verificación y recuperación y los correos de alerta. Solo el backend envía correo.                       | `infra/.env` y `.env` del backend                 |
+| MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM  | SMTP para los códigos de verificación, recuperación y borrado y los correos de alertas, recomendaciones y actividad. Solo el servicio de notificaciones envía correo. | `infra/.env` y `.env` del servicio de notificaciones |
 | MQTT_BROKER_URL                                                | Dirección del listener interno del broker (`tcp://localhost:1883` en modo desarrollo).                                            | `.env` de dispositivos y de mediciones            |
 | MQTT_DEVICE_SERVICE_USER / MQTT_DEVICE_SERVICE_PASS            | Credenciales del servicio de dispositivos en el broker (`em-device-service`). Clave aleatoria (`openssl rand -hex 24`).           | `infra/.env` y `.env` de dispositivos             |
 | MQTT_MEASUREMENT_SERVICE_USER / MQTT_MEASUREMENT_SERVICE_PASS  | Credenciales del servicio de mediciones en el broker (`em-measurement-service`). Las comprueba el servicio de dispositivos, así que deben coincidir en los dos. | `infra/.env` y `.env` de mediciones y de dispositivos |
@@ -210,24 +212,27 @@ Los nombres que siguen son los exactos de los `.env.example` y de los `applicati
 | MQTT_AUTH_ALLOWED_NETWORKS                                     | Redes desde las que se puede llamar a `/internal/mqtt/auth/**` del servicio de dispositivos (por defecto `127.0.0.1/32,::1/128,172.16.0.0/12`). | Variable de entorno (opcional) |
 | DEVICE_MQTT_PUBLIC_HOST / DEVICE_MQTT_PUBLIC_PORT              | Dirección del broker que la web escribe en el dispositivo al vincularlo. Nunca `localhost`: en desarrollo, la IP del PC en la red local; en producción, el dominio del broker. Puerto `8883`. | `infra/.env` y `.env` de dispositivos |
 | DEVICE_OFFLINE_AFTER                                           | Tiempo de silencio tras el cual un dispositivo se marca sin conexión (por defecto `PT150S`); lo usa el servicio de dispositivos.  | Variable de entorno (opcional)                    |
-| SECURITY_SERVICE_URL, DEVICE_SERVICE_URL, MEASUREMENT_SERVICE_URL, BACKEND_URL, BACKEND_INTERNAL_URL | Direcciones entre servicios en modo desarrollo (`http://localhost:8082`, `:8084`, `:8085` y `:8083`). Los `.env.example` ya traen los valores locales. | `.env` de cada servicio |
-| NOTIFICATION_WEB_URL                                           | Dirección de la web que usan los enlaces de los correos de alerta (`http://localhost` en la pila completa, `http://localhost:5173` en modo desarrollo). | `infra/.env` y `.env` del backend |
-| NOTIFICATION_VAPID_PUBLIC_KEY / NOTIFICATION_VAPID_PRIVATE_KEY | Par de claves VAPID de las notificaciones push del navegador. Sin ellas se desactiva el push y el correo sigue funcionando.      | `infra/.env` y `.env` del backend                 |
+| SECURITY_SERVICE_URL, DEVICE_SERVICE_URL, MEASUREMENT_SERVICE_URL, HOME_SERVICE_URL, NOTIFICATION_SERVICE_URL, ALERT_SERVICE_URL, RECOMMENDATION_SERVICE_URL | Direcciones entre servicios en modo desarrollo (`http://localhost:8082`, `:8084`, `:8085`, `:8086`, `:8087`, `:8088` y `:8089`). El gateway usa todas; cada servicio, las de los que llama. Los `.env.example` ya traen los valores locales. | `.env` de cada servicio |
+| NOTIFICATION_WEB_URL                                           | Dirección de la web que usan los enlaces de los correos de alerta (`http://localhost` en la pila completa, `http://localhost:5173` en modo desarrollo). | `infra/.env` y `.env` del servicio de notificaciones |
+| NOTIFICATION_VAPID_PUBLIC_KEY / NOTIFICATION_VAPID_PRIVATE_KEY | Par de claves VAPID de las notificaciones push del navegador. Sin ellas se desactiva el push y el correo sigue funcionando. Deben ser siempre las mismas en un entorno. | `infra/.env` y `.env` del servicio de notificaciones |
 | NOTIFICATION_VAPID_SUBJECT                                     | Contacto asociado a las claves VAPID (por defecto un `mailto:` de soporte).                                                       | Variable de entorno (opcional)                    |
-| EXPO_ACCESS_TOKEN                                              | Token de expo.dev para el push de la aplicación móvil. Va solo en el servidor, nunca en la app.                                   | `infra/.env` y `.env` del backend                 |
-| ALERT_LIMIT_ZONE                                               | Zona horaria en la que empiezan el día y el mes de las alertas de límite (por defecto `America/Bogota`).                          | Variable de entorno del backend (opcional)        |
-| RECOMMENDATION_EVALUATE_INTERVAL / RECOMMENDATION_ZONE         | Cada cuánto se evalúan las reglas de ahorro (`PT1H`) y la zona horaria de las reglas por franja del día (`America/Bogota`).       | Variables de entorno del backend (opcionales)     |
-| BACKEND_CONTEXT, SECURITY_CONTEXT, DEVICE_CONTEXT, MEASUREMENT_CONTEXT, GATEWAY_CONTEXT, FRONTEND_CONTEXT | Rutas de los clones; solo si los repositorios no están uno al lado del otro (sección 9.1).                  | `infra/.env`                                      |
+| EXPO_ACCESS_TOKEN                                              | Token de expo.dev para el push de la aplicación móvil. Va solo en el servidor, nunca en la app.                                   | `infra/.env` y `.env` del servicio de notificaciones |
+| ALERT_LIMIT_ZONE                                               | Zona horaria en la que empiezan el día y el mes de las alertas de límite (por defecto `America/Bogota`).                          | Variable de entorno del servicio de alertas (opcional) |
+| RECOMMENDATION_EVALUATE_INTERVAL / RECOMMENDATION_ZONE / RECOMMENDATION_INITIAL_DELAY | Cada cuánto se evalúan las reglas de ahorro (`PT1H`), la zona horaria de las reglas por franja del día (`America/Bogota`) y la espera antes de la primera evaluación (`PT2M`). | Variables de entorno del servicio de recomendaciones (opcionales) |
+| SECURITY_EVENTS_CONSUMER_ENABLED, ALERT_EVENTS_CONSUMER_ENABLED, ACTIVITY_CONSUMER_ENABLED, HOME_OUTBOX_RELAY_ENABLED, ACCOUNT_DELETED_CONSUMER_ENABLED, ALERT_CONSUMERS_ENABLED, ALERT_SERVICE_OUTBOX_RELAY_ENABLED, RECOMMENDATION_SCHEDULER_ENABLED, RECOMMENDATION_OUTBOX_RELAY_ENABLED | Interruptores de los consumidores y relays de notificaciones, hogares, alertas y recomendaciones. Todos `true` por defecto; `false` solo servía para convivir con el backend retirado. | `infra/.env` (opcionales; no los definas) |
+| SECURITY_ACCOUNT_DELETION_CODE_MAIL_ENABLED | Envío del código de borrado a las cuentas de Google (por defecto `false`). Actívalo solo con el servicio de notificaciones desplegado. | `infra/.env` y `.env` del servicio de seguridad (opcional) |
+| SECURITY_CONTEXT, DEVICE_CONTEXT, MEASUREMENT_CONTEXT, HOME_CONTEXT, NOTIFICATION_CONTEXT, ALERT_CONTEXT, RECOMMENDATION_CONTEXT, GATEWAY_CONTEXT, FRONTEND_CONTEXT | Rutas de los clones; solo si los repositorios no están uno al lado del otro (sección 9.1).                  | `infra/.env`                                      |
 | VITE_DEV_API_TARGET                                            | Gateway al que el servidor de Vite reenvía `/api` (por defecto `http://localhost:8080`).                                          | `.env.local` en Energy-Monitor-application (opcional) |
 | VITE_GOOGLE_CLIENT_ID                                          | El mismo ID de cliente de GOOGLE_CLIENT_ID. Vacío: el botón de Google no se muestra.                                              | `infra/.env` (pila completa) y `.env.local` en Energy-Monitor-application |
 | EXPO_PUBLIC_API_BASE_URL                                       | URL de la API para la app móvil, sin `/api/v1` (sección 11.2).                                                                    | `.env` en Energy-Monitor-Mobile                   |
+| EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID                               | ID de cliente web de Google (el mismo de GOOGLE_CLIENT_ID) para el inicio de sesión nativo de la app.                            | `.env` en Energy-Monitor-Mobile (opcional)        |
 | EXPO_PUBLIC_EAS_PROJECT_ID                                     | Identificador del proyecto de Expo; sin él la app no registra el teléfono para recibir push.                                     | `.env` en Energy-Monitor-Mobile                   |
 
-> *Variables retiradas: `MQTT_BACKEND_USER` y `MQTT_BACKEND_PASS` ya no existen, porque el backend no se conecta al broker (recibe las lecturas por RabbitMQ). `MQTT_CLIENT_ID` y `DEVICE_OFFLINE_AFTER` dejaron de ser variables del backend.*
+> *Variables retiradas con el backend: `BACKEND_URL`, `BACKEND_INTERNAL_URL`, `BACKEND_CONTEXT`, `MQTT_BACKEND_USER` y `MQTT_BACKEND_PASS`. Si siguen en un `.env` antiguo, sobran y pueden borrarse.*
 
 # 9. Instalación de los servicios del backend
 
-Repositorios: `en-monitor-api-gateway` (puerto 8080), `en-monitor-security-service` (8082), `en-monitor-device-service` (8084), `en-monitor-measurement-service` (8085) y `energy-monitor-backend` (8083), todos con Java 21 y Spring Boot (4.1.1; el gateway, 4.0.8), MySQL 8.4, Liquibase y JWT RS256, más `energy-monitor-infra` con Docker Compose. La API se consume siempre a través del gateway, en `http://localhost:8080` en modo desarrollo o `http://localhost` con la pila completa (Spring, s. f.).
+Repositorios: `en-monitor-api-gateway` (puerto 8080), `en-monitor-security-service` (8082), `en-monitor-device-service` (8084), `en-monitor-measurement-service` (8085), `en-monitor-home-service` (8086), `en-monitor-notification-service` (8087), `en-monitor-alert-service` (8088) y `en-monitor-recommendation-service` (8089), todos con Java 21 y Spring Boot (4.1.1; el gateway, 4.0.8), MySQL 8.4, Liquibase y JWT RS256, más `energy-monitor-infra` con Docker Compose. La API se consume siempre a través del gateway, en `http://localhost:8080` en modo desarrollo o `http://localhost` con la pila completa (Spring, s. f.).
 
 ## 9.1 Obtener el código
 
@@ -236,10 +241,15 @@ Repositorios: `en-monitor-api-gateway` (puerto 8080), `en-monitor-security-servi
 ```bash
 mkdir energy-monitor && cd energy-monitor
 git clone https://github.com/Juan-Cortes2045/energy-monitor-infra.git infra
+# Retirado: solo se clona porque guarda el firmware (prepare.sh le escribe dev_ca.h).
 git clone https://github.com/Juan-Cortes2045/energy-monitor-backend.git backend/energy-monitor-backend
 git clone https://github.com/Juan-Cortes2045/en-monitor-security-service.git backend/en-monitor-security-service
 git clone https://github.com/Juan-Cortes2045/en-monitor-device-service.git backend/en-monitor-device-service
 git clone https://github.com/Juan-Cortes2045/en-monitor-measurement-service.git backend/en-monitor-measurement-service
+git clone https://github.com/angelgarcia0/en-monitor-home-service.git backend/en-monitor-home-service
+git clone https://github.com/angelgarcia0/en-monitor-notification-service.git backend/en-monitor-notification-service
+git clone https://github.com/angelgarcia0/en-monitor-alert-service.git backend/en-monitor-alert-service
+git clone https://github.com/angelgarcia0/en-monitor-recommendation-service.git backend/en-monitor-recommendation-service
 git clone https://github.com/Juan-Cortes2045/en-monitor-api-gateway.git backend/en-monitor-api-gateway
 git clone https://github.com/Juan-Cortes2045/Energy-Monitor-application.git frontend/energy-monitor-web
 git clone https://github.com/angelgarcia0/Energy-Monitor-Mobile.git frontend/energy-monitor-mobile
@@ -288,7 +298,7 @@ Después elige un modo:
 
 ```bash
 docker compose up -d --build
-docker compose ps        # gateway, security, device, measurement y backend deben quedar (healthy)
+docker compose ps        # gateway, security, device, measurement, home, notification, alert y recommendation deben quedar (healthy)
 ```
 
   La web queda en `http://localhost` y la API en `http://localhost/api/v1/...`, a través del gateway. Los servicios no publican puertos en este modo.
@@ -296,7 +306,7 @@ docker compose ps        # gateway, security, device, measurement y backend debe
 - **Modo desarrollo (servicios en el equipo).** Levanta solo MySQL, RabbitMQ y el broker, y luego cada servicio desde el IDE o la terminal (secciones 9.4 a 9.8):
 
 ```bash
-docker compose stop gateway security device measurement backend frontend   # si la pila completa estaba arriba
+docker compose stop gateway security device measurement home notification alert recommendation frontend   # si la pila completa estaba arriba
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d mysql rabbitmq mosquitto
 docker compose ps
 ```
@@ -311,7 +321,7 @@ Solo en modo desarrollo. En cada servicio, copia su `.env.example` como `.env` y
 cd ../backend/en-monitor-security-service
 cp .env.example .env
 cp src/main/resources/application-local.yaml.example src/main/resources/application-local.yaml
-# Igual en en-monitor-device-service, en-monitor-measurement-service y energy-monitor-backend.
+# Igual en los servicios de dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones.
 # En en-monitor-api-gateway solo hay .env.example.
 ```
 
@@ -319,10 +329,12 @@ Completa cada `.env` con los valores de `infra/.env`:
 
 | **Archivo**                                    | **Valores de `infra/.env`**                                                                                                  | **Propios del modo desarrollo**                                                         |
 |------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| `backend/en-monitor-security-service/.env`     | `MYSQL_PASSWORD` (como `SPRING_DATASOURCE_PASSWORD`), `SECURITY_RESET_PEPPER`, `GOOGLE_CLIENT_ID/SECRET`, `RABBITMQ_*`, `INTERNAL_API_TOKEN` | `SECURITY_JWT_PRIVATE_KEY_PATH`, `SECURITY_JWT_PUBLIC_KEY_PATH`, `SECURITY_SESSION_COOKIE_SECURE=false` |
+| `backend/en-monitor-security-service/.env`     | `MYSQL_PASSWORD` (como `SPRING_DATASOURCE_PASSWORD`), `SECURITY_RESET_PEPPER`, `GOOGLE_CLIENT_ID/SECRET`, `RABBITMQ_*`, `INTERNAL_API_TOKEN` (y `HOME_SERVICE_URL=http://localhost:8086`) | `SECURITY_JWT_PRIVATE_KEY_PATH`, `SECURITY_JWT_PUBLIC_KEY_PATH`, `SECURITY_SESSION_COOKIE_SECURE=false` |
 | `backend/en-monitor-device-service/.env`       | `MYSQL_PASSWORD`, `RABBITMQ_*`, `INTERNAL_API_TOKEN`, `MQTT_MEASUREMENT_SERVICE_USER/PASS`, `MQTT_DEVICE_SERVICE_USER/PASS`, `DEVICE_MQTT_PUBLIC_HOST` | `SECURITY_JWT_PUBLIC_KEY_PATH`                              |
 | `backend/en-monitor-measurement-service/.env`  | `MYSQL_PASSWORD`, `RABBITMQ_*`, `INTERNAL_API_TOKEN`, `MQTT_MEASUREMENT_SERVICE_USER/PASS`                                   | `SECURITY_JWT_PUBLIC_KEY_PATH`, `MEASUREMENT_MQTT_ENABLED=true`                         |
-| `backend/energy-monitor-backend/.env`          | `MYSQL_PASSWORD`, `MAIL_*`, `RABBITMQ_*`, `INTERNAL_API_TOKEN`, VAPID, `EXPO_ACCESS_TOKEN`                                   | `SECURITY_JWT_PUBLIC_KEY_PATH`, `NOTIFICATION_WEB_URL=http://localhost:5173`, `MEASUREMENT_SERVICE_URL=http://localhost:8085` |
+| `backend/en-monitor-home-service/.env`         | `MYSQL_PASSWORD`, `RABBITMQ_*`, `INTERNAL_API_TOKEN`                                                                         | `SECURITY_JWT_PUBLIC_KEY_PATH`, `SECURITY_SERVICE_URL=http://localhost:8082`            |
+| `backend/en-monitor-notification-service/.env` | `MYSQL_PASSWORD`, `MAIL_*`, `RABBITMQ_*`, `INTERNAL_API_TOKEN`, VAPID, `EXPO_ACCESS_TOKEN`                                   | `SECURITY_JWT_PUBLIC_KEY_PATH`, `NOTIFICATION_WEB_URL=http://localhost:5173`, `SECURITY_SERVICE_URL`, `HOME_SERVICE_URL`, `DEVICE_SERVICE_URL` (de `localhost`) |
+| `backend/en-monitor-alert-service/.env` y `backend/en-monitor-recommendation-service/.env` | `MYSQL_PASSWORD`, `RABBITMQ_*`, `INTERNAL_API_TOKEN`                                            | `SECURITY_JWT_PUBLIC_KEY_PATH`, `HOME_SERVICE_URL`, `DEVICE_SERVICE_URL`, `MEASUREMENT_SERVICE_URL` (de `localhost`) |
 | `backend/en-monitor-api-gateway/.env`          | —                                                                                                                            | `SECURITY_JWT_PUBLIC_KEY_PATH`, `SECURITY_CORS_ALLOWED_ORIGINS=http://localhost:5173`   |
 
 En los `application-local.yaml`, la contraseña de `spring.datasource.password` debe ser la misma de `MYSQL_PASSWORD`. Para comprobar que un valor compartido es igual en todos los archivos sin mostrarlo, compara sus resúmenes desde `infra/`:
@@ -354,7 +366,7 @@ openssl genpkey -algorithm RSA -out "$HOME\.energy-monitor\keys\private.pem" -pk
 openssl rsa -in "$HOME\.energy-monitor\keys\private.pem" -pubout -out "$HOME\.energy-monitor\keys\public.pem"
 ```
 
-Indica las rutas absolutas (Java no expande `~`) en el `.env` de cada servicio: `SECURITY_JWT_PRIVATE_KEY_PATH` y `SECURITY_JWT_PUBLIC_KEY_PATH` en el servicio de seguridad, y solo `SECURITY_JWT_PUBLIC_KEY_PATH` en el gateway, los servicios de dispositivos y mediciones y el backend. Todos deben usar el mismo par.
+Indica las rutas absolutas (Java no expande `~`) en el `.env` de cada servicio: `SECURITY_JWT_PRIVATE_KEY_PATH` y `SECURITY_JWT_PUBLIC_KEY_PATH` en el servicio de seguridad, y solo `SECURITY_JWT_PUBLIC_KEY_PATH` en el gateway y los demás servicios. Todos deben usar el mismo par.
 
 ```
 SECURITY_JWT_PRIVATE_KEY_PATH=C:\Users\tu-usuario\.energy-monitor\keys\private.pem
@@ -375,7 +387,7 @@ Copia el mismo valor en `SECURITY_RESET_PEPPER` del `.env` del servicio de segur
 
 ## 9.7 Decidir el correo de recuperación
 
-Elige una de dos opciones: usar Mailpit en local (recomendado para desarrollo) o usar una cuenta Gmail real con una «app password» de 16 caracteres generada en la cuenta de Google (Google, s. f.). El correo lo envía el backend: los valores `MAIL_*` van en `infra/.env` y en el `.env` del backend. Para Mailpit usa `MAIL_HOST=localhost`, `MAIL_PORT=587`, `MAIL_USERNAME=dev`, `MAIL_PASSWORD=dev`; los mensajes se leen en `http://localhost:8025` (sección 16).
+Elige una de dos opciones: usar Mailpit en local (recomendado para desarrollo) o usar una cuenta Gmail real con una «app password» de 16 caracteres generada en la cuenta de Google (Google, s. f.). El correo lo envía el servicio de notificaciones: los valores `MAIL_*` van en `infra/.env` y en el `.env` de ese servicio. Para Mailpit usa `MAIL_HOST=localhost`, `MAIL_PORT=587`, `MAIL_USERNAME=dev`, `MAIL_PASSWORD=dev`; los mensajes se leen en `http://localhost:8025` (sección 16).
 
 ## 9.8 Compilar y arrancar
 
@@ -385,12 +397,15 @@ En modo desarrollo, con MySQL, RabbitMQ y el broker arriba (sección 9.3), arran
 cd backend/en-monitor-security-service    && ./mvnw spring-boot:run   # :8082
 cd backend/en-monitor-device-service      && ./mvnw spring-boot:run   # :8084
 cd backend/en-monitor-measurement-service && ./mvnw spring-boot:run   # :8085
-cd backend/energy-monitor-backend         && ./mvnw spring-boot:run   # :8083
+cd backend/en-monitor-home-service        && ./mvnw spring-boot:run   # :8086
+cd backend/en-monitor-notification-service && ./mvnw spring-boot:run  # :8087
+cd backend/en-monitor-alert-service       && ./mvnw spring-boot:run   # :8088
+cd backend/en-monitor-recommendation-service && ./mvnw spring-boot:run # :8089
 cd backend/en-monitor-api-gateway         && ./mvnw spring-boot:run   # :8080
 # Windows: .\mvnw.cmd spring-boot:run en cada carpeta
 ```
 
-Para las pruebas, en cada repositorio: `./mvnw clean test` (en Windows, `.\mvnw.cmd clean test`). Cada repositorio incluye el Maven Wrapper, por lo que no hace falta instalar Maven por separado. La API queda en `http://localhost:8080` (el gateway); la documentación OpenAPI de cada servicio en `/v3/api-docs` y Swagger UI en `/swagger-ui.html` de su propio puerto (`http://localhost:8082`, `:8084`, `:8085` y `:8083`) (Spring, s. f.). El estado de salud está en `/actuator/health` de cada servicio y del gateway.
+Para las pruebas, en cada repositorio: `./mvnw clean test` (en Windows, `.\mvnw.cmd clean test`). Cada repositorio incluye el Maven Wrapper, por lo que no hace falta instalar Maven por separado. La API queda en `http://localhost:8080` (el gateway); la documentación OpenAPI de cada servicio en `/v3/api-docs` y Swagger UI en `/swagger-ui.html` de su propio puerto (`http://localhost:8082` y `:8084` a `:8089`) (Spring, s. f.). El estado de salud está en `/actuator/health` de cada servicio y del gateway.
 
 > *Las pruebas no son herméticas: las de persistencia corren contra la base de datos real (Liquibase crea el esquema). Por eso MySQL debe estar sano antes de `mvnw test`. El gateway no necesita base de datos.*
 
@@ -474,7 +489,7 @@ El valor depende de dónde se ejecute la aplicación:
 | Teléfono físico        | `http://<IP del PC en la red local>:8080` en modo desarrollo, por ejemplo `http://192.168.1.50:8080`, o `http://<IP del PC>` con la pila completa |
 | Navegador (`npm run web`) | `http://localhost:8080`                                             |
 
-Expo incorpora las variables `EXPO_PUBLIC_*` al compilar: tras cambiar el valor, reinicia `npx expo start`. CORS no aplica a React Native, por lo que no hay que agregar la app a `SECURITY_CORS_ALLOWED_ORIGINS`. El token de push de Expo (`EXPO_ACCESS_TOKEN`) nunca va en este archivo: es del backend.
+Expo incorpora las variables `EXPO_PUBLIC_*` al compilar: tras cambiar el valor, reinicia `npx expo start`. CORS no aplica a React Native, por lo que no hay que agregar la app a `SECURITY_CORS_ALLOWED_ORIGINS`. El token de push de Expo (`EXPO_ACCESS_TOKEN`) nunca va en este archivo: es del servicio de notificaciones. Si se usa el inicio de sesión con Google en la app, agrega `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` con el ID de cliente **web** y crea en el mismo proyecto de Google un cliente Android con el paquete `com.energymonitor.mobile` y el SHA-1 de la llave que firma el APK.
 
 ## 11.3 Arrancar Expo
 
@@ -500,13 +515,21 @@ Instala Expo Go desde Google Play, asegúrate de que el equipo y el móvil esté
 
 - La aplicación móvil no está disponible para iPhone: el manual no cubre iOS ni Xcode.
 
+- La vinculación del módulo desde la app usa Bluetooth nativo (`react-native-ble-plx`): concede el permiso de Bluetooth cuando la app lo pida. Las notificaciones push requieren `EXPO_PUBLIC_EAS_PROJECT_ID` en la app y `EXPO_ACCESS_TOKEN` en el servidor.
+
+- La app guarda la sesión en el almacén seguro del sistema y tiene desactivadas las copias de seguridad de Android: al reinstalarla hay que volver a iniciar sesión.
+
+- La vinculación del módulo desde la app usa Bluetooth nativo (`react-native-ble-plx`): concede el permiso de Bluetooth cuando la app lo pida. Las notificaciones push requieren `EXPO_PUBLIC_EAS_PROJECT_ID` en la app y `EXPO_ACCESS_TOKEN` en el servidor.
+
+- La app guarda la sesión en el almacén seguro del sistema y tiene desactivadas las copias de seguridad de Android: al reinstalarla hay que volver a iniciar sesión.
+
 - Si el QR no abre, comprueba el firewall o inicia con `npx expo start --tunnel`.
 
 # 12. Broker MQTT
 
 El broker es Eclipse Mosquitto con el complemento `mosquitto-go-auth` y su configuración vive en `energy-monitor-infra/mosquitto/`. No guarda usuarios: por cada conexión y cada publicación pregunta al servicio de dispositivos (`POST /internal/mqtt/auth/user` y `/acl`, con caché de 5 minutos), y cada dispositivo solo puede publicar en sus propios tópicos. Se levanta con la compose de infraestructura (sección 9.3), en la pila completa o en modo desarrollo (Eclipse Foundation, s. f.).
 
-Clientes que acepta el broker: el servicio de dispositivos (`em-device-service`, lee telemetría y estado y es el único que publica comandos), el servicio de mediciones (`em-measurement-service`, solo lee la telemetría para guardar las lecturas) y cada dispositivo ESP32 (`device_code` y `api_key`). El backend no se conecta al broker: recibe cada lectura por RabbitMQ.
+Clientes que acepta el broker: el servicio de dispositivos (`em-device-service`, lee telemetría y estado y es el único que publica comandos), el servicio de mediciones (`em-measurement-service`, solo lee la telemetría para guardar las lecturas) y cada dispositivo ESP32 (`device_code` y `api_key`). Ningún otro servicio se conecta al broker: el servicio de alertas recibe cada lectura por RabbitMQ (`measurement.recorded`).
 
 Pasos:
 
@@ -592,19 +615,19 @@ Un dispositivo nuevo, sin configuración, entra solo en el modo de configuració
 
 # 14. Vincular el primer dispositivo
 
-El dispositivo se registra desde la aplicación web; no hace falta insertar nada a mano en la base de datos. Requisitos: base de datos, RabbitMQ, broker, gateway y servicios en ejecución, y la web abierta en Chrome o Edge de escritorio, o Chrome en Android, mediante HTTPS o `localhost`.
+El dispositivo se registra desde la aplicación web o desde la app móvil; no hace falta insertar nada a mano en la base de datos. Requisitos: base de datos, RabbitMQ, broker, gateway y servicios en ejecución, y la web abierta en Chrome o Edge de escritorio, o Chrome en Android, mediante HTTPS o `localhost` (en la app móvil, Bluetooth encendido y su permiso concedido).
 
-1.  En la web: hogar → **Dispositivos** → **Vincular dispositivo** (solo el propietario).
+1.  En la web o la app: hogar → **Dispositivos** → **Vincular dispositivo** (solo el propietario).
 
 2.  Mantén pulsado **BOOT** en la ESP32 durante 3 segundos hasta que el LED parpadee (un dispositivo nunca vinculado ya está en modo de configuración tras cargarlo).
 
-3.  **Buscar dispositivo**: el navegador muestra `EnergyMonitor-<código>`; selecciónalo.
+3.  **Buscar módulo**: el navegador (o la lista de la app) muestra `EnergyMonitor-<código>`; selecciónalo.
 
 4.  Elige el electrodoméstico, el nombre y la habitación.
 
 5.  Elige la red Wi-Fi del hogar de la lista (son las redes que ve la ESP32) y escribe su contraseña.
 
-6.  La web registra el dispositivo en el servicio de dispositivos, que genera su `api_key`, y envía al dispositivo por Bluetooth la red, la contraseña, el servidor (`DEVICE_MQTT_PUBLIC_HOST`), el identificador y la clave.
+6.  La web o la app registra el dispositivo en el servicio de dispositivos, que genera su `api_key`, y envía al dispositivo por Bluetooth la red, la contraseña, el servidor (`DEVICE_MQTT_PUBLIC_HOST`), el identificador y la clave.
 
 7.  Al conectarse al broker, el dispositivo sale solo del modo de configuración.
 
@@ -624,11 +647,11 @@ Salida esperada en el monitor serie:
 
 # 15. Producción
 
-Esta sección resume el despliegue en un servidor con Docker Compose desde `energy-monitor-infra` (`docker-compose.prod.yml` y `.env.prod`): MySQL, RabbitMQ, el broker, el API gateway, los servicios de seguridad, dispositivos y mediciones, el backend y el frontend. El procedimiento completo, con verificación, reversión y despliegue continuo, está en el manual de implementación y despliegue. El `mosquitto.conf` es el mismo archivo que en desarrollo (Let's Encrypt, s. f.).
+Esta sección resume el despliegue en un servidor con Docker Compose desde `energy-monitor-infra` (`docker-compose.prod.yml` y `.env.prod`): MySQL, RabbitMQ, el broker, el API gateway, los siete servicios y el frontend. El procedimiento completo, con verificación, reversión y despliegue continuo, está en el manual de implementación y despliegue. El `mosquitto.conf` es el mismo archivo que en desarrollo (Let's Encrypt, s. f.).
 
 1.  **Servidor y dominio.** Un servidor con Docker, Nginx y Certbot, y registros DNS del dominio de la web, de `www` y del broker (por ejemplo `mqtt.ejemplo.com`) apuntando a él.
 
-2.  **Código.** Los siete repositorios clonados uno al lado del otro en `/opt/energy-monitor` (`infra`, los cinco de `backend/` y `frontend/energy-monitor-web`), como en la sección 9.1, en la rama `main`.
+2.  **Código.** Los repositorios clonados uno al lado del otro en `/opt/energy-monitor` (`infra`, el gateway y los siete servicios en `backend/`, el backend retirado solo por el firmware y `frontend/energy-monitor-web`), como en la sección 9.1, en la rama `main`.
 
 3.  **Certificado del broker.** Obtén un certificado de Let's Encrypt para el dominio del broker (`certbot certonly --nginx -d mqtt.ejemplo.com`); el hook `deploy/renew-mqtt-cert.sh` copia `fullchain.pem` como `server.crt` y `privkey.pem` como `server.key` en la carpeta `MQTT_CERT_DIR` (legible por el usuario 1000) y reinicia `mosquitto` en cada renovación. El firmware no cambia: confía en las raíces de Let's Encrypt.
 
@@ -651,7 +674,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 
 10. **Primer administrador y respaldos.** Registra la cuenta en la web y ejecuta `./make-admin.sh --prod correo@ejemplo.com`; programa `deploy/backup-mysql.sh` en el cron de root.
 
-Las claves VAPID se generan una sola vez por entorno (cambiarlas invalida todas las suscripciones push); los comandos están en el README de `energy-monitor-infra`. Varias instancias de los servicios de dispositivos o de mediciones necesitan valores distintos de `MQTT_CLIENT_ID`. Un servidor que tenía la versión anterior (solo el backend) se migra con el procedimiento de primer despliegue de los servicios del manual de implementación y despliegue.
+Las claves VAPID se generan una sola vez por entorno (cambiarlas invalida todas las suscripciones push); los comandos están en el README de `energy-monitor-infra`. Varias instancias de los servicios de dispositivos o de mediciones necesitan valores distintos de `MQTT_CLIENT_ID`. Un servidor que todavía corre `energy-monitor-backend` se migra con el procedimiento «Retiro de energy-monitor-backend» del README de `energy-monitor-infra` (respaldo, vaciar colas de alertas, comprobar `backend_outbox`, `deploy.sh infra` y `deploy.sh gateway`, borrar las colas `energy-monitor-backend.*`). Cuando se despliega un servicio que consume eventos nuevos, debe desplegarse **antes** que el que los produce: un outbox se detiene ante un mensaje que ninguna cola recibe.
 
 # 16. Correo local con Mailpit (opcional)
 
@@ -662,7 +685,7 @@ docker run -d --name mailpit -p 587:1025 -p 8025:8025 \
   -e MP_SMTP_AUTH_ACCEPT_ANY=1 -e MP_SMTP_AUTH_ALLOW_INSECURE=1 axllent/mailpit
 ```
 
-Usa el puerto 587 del equipo (en lugar del 1025 por defecto de Mailpit) para que al alternar entre Mailpit y Gmail solo cambie `MAIL_HOST` y las credenciales. En el `.env` del backend (modo desarrollo):
+Usa el puerto 587 del equipo (en lugar del 1025 por defecto de Mailpit) para que al alternar entre Mailpit y Gmail solo cambie `MAIL_HOST` y las credenciales. En el `.env` del servicio de notificaciones (modo desarrollo):
 
 ```
 MAIL_HOST=localhost
@@ -680,13 +703,13 @@ Ejecuta esta lista antes de dar por terminada la instalación. Cada comando debe
 
 | **Componente**   | **Comprobación**                                                                  | **Resultado esperado**                                                                           |
 |------------------|-----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| Docker           | `docker compose ps` en `infra/`                                                   | `energy-monitor-mysql` y `energy-monitor-rabbitmq` en `healthy`; en la pila completa, también gateway, security, device, measurement y backend `(healthy)`. |
+| Docker           | `docker compose ps` en `infra/`                                                   | `energy-monitor-mysql` y `energy-monitor-rabbitmq` en `healthy`; en la pila completa, también gateway, security, device, measurement, home, notification, alert y recommendation `(healthy)`. |
 | Web y API        | `curl -s -o /dev/null -w '%{http_code}\n' http://localhost/` (pila completa)      | `200`.                                                                                           |
 | Gateway          | `GET http://localhost/api/v1/homes` (pila completa) o `http://localhost:8080/api/v1/homes` (modo desarrollo), sin sesión | `401`: lo responde el gateway.                                          |
-| Rutas por servicio | `POST /api/v1/auth/login` con `{}`; `GET /api/v1/appliance-types`; `GET /api/v1/consumption-levels` | `400` (llegó al servicio de seguridad), `401` y `401` (rutas de dispositivos y de mediciones). |
-| Servicios        | `http://localhost:8082/actuator/health`, `:8084`, `:8085`, `:8083` y `:8080` (modo desarrollo) | Cada uno responde `UP`.                                                                          |
-| Swagger          | `http://localhost:8082/swagger-ui.html` (y `:8084`, `:8085`, `:8083`) en modo desarrollo | Swagger UI lista la documentación de cada servicio.                                         |
-| OpenAPI          | `GET http://localhost:8083/v3/api-docs` (u otro puerto de servicio)               | JSON con la especificación de OpenAPI.                                                           |
+| Rutas por servicio | `POST /api/v1/auth/login` con `{}`; `GET /api/v1/appliance-types`, `/consumption-levels`, `/home-types`, `/alerts?homeId=x`, `/recommendations?homeId=x`, `/notifications/preferences`; `GET /api/v1/otra-ruta` | `400` (llegó al servicio de seguridad); `401` en las demás (rutas de cada servicio); `404` en la ruta que nadie atiende. |
+| Servicios        | `http://localhost:8080/actuator/health`, `:8082` y `:8084` a `:8089` (modo desarrollo) | Cada uno responde `UP`.                                                                          |
+| Swagger          | `http://localhost:8082/swagger-ui.html` (y `:8084` a `:8089`) en modo desarrollo | Swagger UI lista la documentación de cada servicio.                                         |
+| OpenAPI          | `GET http://localhost:8086/v3/api-docs` (u otro puerto de servicio)               | JSON con la especificación de OpenAPI.                                                           |
 | Broker           | `docker compose logs mosquitto \| grep "New client connected"` en `infra/`        | Conectados `em-device-service` y `em-measurement-service`; puerto 8883 publicado.               |
 | RabbitMQ         | `http://localhost:15672` (`RABBITMQ_USERNAME` / `RABBITMQ_PASSWORD`)              | La consola abre y las colas `.dlq` están vacías.                                                 |
 | Dispositivo      | Monitor serie del ESP32                                                           | `[MQTT] connected as esp32-<identificador>` y `[MQTT] telemetry published`.                      |
@@ -694,18 +717,20 @@ Ejecuta esta lista antes de dar por terminada la instalación. Cada comando debe
 | Web (desarrollo) | `npm run dev` en Energy-Monitor-application                                       | Vite en `http://localhost:5173` muestra la pantalla de acceso.                                   |
 | Móvil            | `npm start` en Energy-Monitor-Mobile                                              | Expo muestra el QR y, al abrirlo con Expo Go, la app permite iniciar sesión contra la API.       |
 | Correo           | `MAIL_HOST=localhost` + Mailpit en :587                                           | Los códigos de recuperación aparecen en `http://localhost:8025`.                                 |
+| Administrador    | `./make-admin.sh correo@ejemplo.com` en `infra/` y volver a iniciar sesión en la web | Aparece **Administración** en el menú lateral y la pantalla `/admin/users`.                   |
+| Administrador    | `./make-admin.sh correo@ejemplo.com` en `infra/` y volver a iniciar sesión en la web | Aparece **Administración** en el menú lateral y la pantalla `/admin/users`.                   |
 
-Para una comprobación de punta a punta: registra un usuario desde la web, verifica su correo (Mailpit o Gmail), inicia sesión, crea un hogar, vincula el dispositivo (sección 14) y confirma que su primera medición aparece (Cortés Parra y García Artunduaga, 2026). Con la pila completa arriba, `infra/e2e/device-flow.sh` y `infra/e2e/measurement-flow.sh` recorren automáticamente lo que cruza los servicios (rutas del gateway, vinculación, broker, lecturas, alertas y eventos) y terminan con el número de comprobaciones aprobadas; usan `jq` y `openssl`.
+Para una comprobación de punta a punta: registra un usuario desde la web, verifica su correo (Mailpit o Gmail), inicia sesión, crea un hogar, vincula el dispositivo (sección 14) y confirma que su primera medición aparece (Cortés Parra y García Artunduaga, 2026). Con la pila completa arriba, los scripts de `infra/e2e/` (`device-flow.sh`, `measurement-flow.sh`, `activity-flow.sh`, `alert-flow.sh`, `recommendation-flow.sh` y `account-deletion-flow.sh`) recorren automáticamente lo que cruza los servicios (rutas del gateway, vinculación, broker, lecturas, alertas, recomendaciones, actividad y borrado de cuenta) y terminan con el número de comprobaciones aprobadas; usan `jq` y `openssl`.
 
 # 18. Resumen de comandos de instalación
 
-| **Paso**      | **Infraestructura (energy-monitor-infra)** | **Servicios Java (gateway, seguridad, dispositivos, mediciones, backend)** | **Web (Energy-Monitor-application)** | **Móvil (Energy-Monitor-Mobile)** |
+| **Paso**      | **Infraestructura (energy-monitor-infra)** | **Servicios Java (gateway y los siete servicios)** | **Web (Energy-Monitor-application)** | **Móvil (Energy-Monitor-Mobile)** |
 |---------------|--------------------------------------------|-----------------------------------------------------------------------------|--------------------------------------|-----------------------------------|
-| Variables     | `cp .env.example .env` y secretos (9.2)    | `cp .env.example .env` y `application-local.yaml` (9.4, modo desarrollo)    | `cp .env.example .env.local` (opcional) | `cp .env.example .env`         |
+| Variables     | `cp .env.example .env` y secretos (9.2); primer administrador con `./make-admin.sh` | `cp .env.example .env` y `application-local.yaml` (9.4, modo desarrollo)    | `cp .env.example .env.local` (opcional) | `cp .env.example .env`         |
 | Deps.         | —                                          | (wrapper Maven incluido)                                                    | `npm install`                        | `npm install`                     |
 | Claves/certificados | `./prepare.sh`                       | Rutas de las claves en `.env` (9.5)                                         | —                                    | —                                 |
 | Infraestructura | Pila completa: `docker compose up -d --build`; desarrollo: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d mysql rabbitmq mosquitto` | — | — | — |
-| Pruebas       | `./e2e/device-flow.sh`, `./e2e/measurement-flow.sh` (pila completa) | `./mvnw test` (`.\mvnw.cmd test` en Windows)                     | `npm test`                           | `npm run lint`                    |
+| Pruebas       | `./e2e/*.sh` (pila completa)               | `./mvnw test` (`.\mvnw.cmd test` en Windows)                     | `npm test`                           | `npm run lint`                    |
 | Ejecutar      | —                                          | `./mvnw spring-boot:run` en cada servicio (9.8)                             | `npm run dev`                        | `npm start`                       |
 | URL típica    | `http://localhost` (pila completa)         | `http://localhost:8080` (gateway)                                           | `http://localhost:5173`              | QR / localhost:8081 (Expo)        |
 
@@ -720,10 +745,13 @@ Broker: `./prepare.sh` en `infra/` genera sus certificados y la compose lo levan
 | `Access denied for user 'energy_app'` en un servicio o al correr tests | Su `SPRING_DATASOURCE_PASSWORD` o su `application-local.yaml` no coinciden con `MYSQL_PASSWORD` de `infra/.env`. | Copiar el valor de `MYSQL_PASSWORD` (sección 9.4).                                                   |
 | Un servicio no arranca por un valor del `.env`              | Un valor con comillas o con `$` (el archivo se lee como `.properties`).                                 | Escribir los valores sin comillas y sin `$`.                                                                    |
 | Un servicio queda `unhealthy` con RabbitMQ arriba           | `RABBITMQ_USERNAME` / `RABBITMQ_PASSWORD` no coinciden con el usuario que RabbitMQ creó la primera vez que arrancó su volumen. | Cambiar la clave dentro de RabbitMQ (`rabbitmqctl change_password`, ver README de infra) o borrar el volumen `rabbitmq-data` (se pierden los mensajes pendientes). |
-| La API responde `503`                                       | El gateway no alcanza al servicio de esa ruta.                                                          | Revisar `docker compose ps` y `docker compose logs security device measurement backend` (o la terminal del servicio en modo desarrollo). |
+| La API responde `503`                                       | El gateway no alcanza al servicio de esa ruta.                                                          | Revisar `docker compose ps` y `docker compose logs security device measurement home notification alert recommendation` (o la terminal del servicio en modo desarrollo). |
+| La API responde `404` en una ruta de `/api/v1` | Ningún servicio atiende esa ruta (el backend retirado ya no recibe «el resto»). | Revisar la ruta o desplegar la versión del gateway que la enruta. |
 | El navegador bloquea las llamadas desde la web              | Falta `SECURITY_CORS_ALLOWED_ORIGINS` con el origen de Vite en el gateway.                              | Agregarlo en el `.env` del gateway (sección 10.4).                                                              |
 | El frontend repite `401` en `/api/v1/homes`                 | Es lo esperado sin sesión.                                                                              | Iniciar sesión (registro o Google).                                                                             |
-| No llegan los códigos de recuperación                       | Correo mal configurado en el backend; el error queda en la tabla `notification`.                       | Revisar `MAIL_*` del backend, usar Mailpit y leer la bandeja en `:8025` (sección 16).                           |
+| No llegan los códigos de verificación o recuperación        | Correo mal configurado en el servicio de notificaciones; el error queda en la tabla `notification`.     | Revisar `MAIL_*` del servicio de notificaciones, la cola `notification-service.notification.mail` y su `.dlq`, usar Mailpit y leer la bandeja en `:8025` (sección 16). |
+| Un evento no llega (alertas, actividad, borrado de hogar)   | El outbox del productor está detenido porque la cola del consumidor no existe.                          | Consultar `last_error` de la tabla `*_outbox`, desplegar el consumidor y esperar a que el relay avance.          |
+| Llegan lecturas pero no se crean alertas                    | El servicio de alertas está detenido o con `ALERT_CONSUMERS_ENABLED=false`.                             | Iniciar `alert`, quitar el `false` de `.env` y revisar la cola `alert-service.measurement.recorded`.             |
 | Mailpit/Docker no arranca                                   | Docker Desktop detenido o puerto ocupado.                                                               | Iniciar Docker Desktop; cambiar puerto con `-p 1587:1025` si 587 está en uso.                                   |
 | El dispositivo no conecta (`[MQTT] connection failed, rc=-2` o `X509 - Certificate verification failed`) | `DEVICE_MQTT_PUBLIC_HOST` apunta a `localhost` o a una IP equivocada, el certificado no es válido para la IP actual o la red lo bloquea. | Usar la IP del PC en la red local, volver a ejecutar `./prepare.sh`, `docker compose up -d --force-recreate mosquitto` y revisar el firewall. |
 | El dispositivo muestra `rc=4` o `rc=5`                      | El código o la clave no coinciden con los del servicio de dispositivos, o ese servicio está detenido.    | Iniciar el servicio de dispositivos y volver a vincular el dispositivo.                                         |
@@ -732,7 +760,7 @@ Broker: `./prepare.sh` en `infra/` genera sus certificados y la compose lo levan
 | Los servicios tardan unos 2 minutos en el primer arranque   | Liquibase ejecuta sus changesets sobre la base nueva.                                                   | Es normal; esperar a `(healthy)` en `docker compose ps`.                                                        |
 | La web no encuentra el dispositivo por Bluetooth            | El dispositivo no está en modo de configuración, el navegador no es compatible o la página no es segura. | Mantener BOOT 3 s hasta que parpadee el LED, usar Chrome o Edge y abrir la web en `localhost` o por HTTPS; en Linux habilitar el flag de la sección 14. |
 | Falla `wifi_failed:auth` al vincular                        | Contraseña de Wi-Fi incorrecta.                                                                         | Volver a vincular con la contraseña correcta.                                                                   |
-| El push del navegador no llega                              | Faltan las claves VAPID o el usuario no concedió el permiso de notificaciones; el navegador exige HTTPS o `localhost`. | Definir `NOTIFICATION_VAPID_PUBLIC_KEY` y `NOTIFICATION_VAPID_PRIVATE_KEY`, reiniciar el backend y activar las notificaciones en el navegador. |
+| El push del navegador no llega                              | Faltan las claves VAPID o el usuario no concedió el permiso de notificaciones; el navegador exige HTTPS o `localhost`. | Definir `NOTIFICATION_VAPID_PUBLIC_KEY` y `NOTIFICATION_VAPID_PRIVATE_KEY`, reiniciar el servicio de notificaciones y activar las notificaciones en el navegador. |
 | Google responde `origin_mismatch` o no aparece el botón     | Falta el origen en *Authorized JavaScript origins* del cliente OAuth, o `GOOGLE_CLIENT_ID` / `VITE_GOOGLE_CLIENT_ID` están vacíos. | Registrar `http://localhost` y `http://localhost:5173` en Google Cloud Console, configurar las variables y reconstruir el frontend o reiniciar Vite. |
 | Falla la carga del firmware: puerto ocupado                 | Otro programa usa el puerto serie.                                                                      | Cerrar el monitor serie de Arduino IDE o cualquier otro programa que use `/dev/ttyUSB0`.                        |
 | «Sketch too big» al compilar                                | El esquema de particiones no es Minimal SPIFFS.                                                         | Compilar con `PartitionScheme=min_spiffs` (sección 13.4).                                                       |
