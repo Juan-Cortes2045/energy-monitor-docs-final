@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Technologist in Software Analysis and Development (ADSO), group (ficha) 3145556
 
-October 14, 2026 (updated October 24, 2026)
+October 14, 2026 (updated October 28, 2026)
 
 ## Version Control
 
@@ -19,6 +19,7 @@ October 14, 2026 (updated October 24, 2026)
 | 1.0     | 10/14/2026 | First version: inventory, traceability and results of the run without a database. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.1     | 10/20/2026 | Run of the full suite against MySQL (1131 tests, 0 failures) locally and in GitHub Actions; DEF-01 and DEF-02 closed; 3 new push notification test classes; traceability, risks and evidence updated. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 10/24/2026 | Services architecture: items under test per repository (gateway, security, device and measurement services, backend) with the `main` commits in production, totals of each suite, end-to-end tests of `energy-monitor-infra` and pipelines per repository. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.3     | 10/28/2026 | Complete migration: eight Java suites per repository (backend retired), web with 228 tests, five end-to-end tests of `energy-monitor-infra`, static verification and manual test protocol of the mobile application, traceability of the acceptance of terms (RF-SEC-13) and of the rules for Google accounts, and updated risks. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Abstract
 
@@ -27,6 +28,8 @@ This document is the test plan and report of EnergyMonitor. It inventories the 1
 Version 1.1 (October 20, 2026) records the run of the full core service suite against MySQL 8.4: 1131 tests in 132 classes, 0 failures, both locally and in the required `Tests` check of GitHub Actions. The 37 pending classes now run, defects DEF-01 and DEF-02 are closed and the web passes its 141 tests again. Traceability stands at 68 requirements with an automated test run and 39 with no coverage.
 
 Version 1.2 (October 24, 2026) corresponds to the services architecture in production: the security, device and measurement modules left the core service for their own repositories (`en-monitor-security-service`, `en-monitor-device-service` and `en-monitor-measurement-service`), behind an API gateway (`en-monitor-api-gateway`), and the core service keeps home, alert, recommendation and notification. Each repository runs its suite in its pipeline: backend 481 tests, measurement service 151, device service 130 and gateway 57 (October 24), and security service 660 (October 22), all green, with `ModularityTests` green. Two end-to-end tests on the local stack (`infra/e2e/device-flow.sh`, 21/21, and `infra/e2e/measurement-flow.sh`, 25/25) verify what crosses the services. The per-class inventory and the traceability of this document are still those of version 1.1.
+
+Version 1.3 (October 28, 2026) corresponds to the complete migration: home, notification, alert and recommendation are also independent services (`en-monitor-home-service`, `en-monitor-notification-service`, `en-monitor-alert-service` and `en-monitor-recommendation-service`) and the core service was retired. Eight Java suites green (security 773, homes 260, notifications 234, measurements 151, devices 129, alerts 119, recommendations 71 and gateway 69), the web with 38 files and 228 tests, and five end-to-end tests of `energy-monitor-infra` (`device-flow` 24, `measurement-flow` 28, `alert-flow` 36, `activity-flow` 60 and `account-deletion-flow` 12). Traceability goes to 108 requirements with the acceptance of terms (RF-SEC-13): 71 with an automated test (with the two language requirements of the mobile application) and 37 without coverage. For the mobile application a unit suite of 78 tests in 8 suites was added, all passed, and type checking and `expo lint` ran without errors; a protocol of 12 manual tests was also defined, still to be run on a device.
 
 *Keywords:* software testing, traceability, JUnit, Vitest, Spring Modulith, EnergyMonitor
 
@@ -38,7 +41,7 @@ To document the tests that already exist and run in EnergyMonitor, and show whic
 
 ### Scope
 
-The core service (seven modules: security, home, device, measurement, alert, recommendation and notification), the web application, MQTT ingestion and broker authorization are tested. Since version 1.2 those contexts are split between the API gateway, the security, device and measurement services and the core service (home, alert, recommendation and notification); each one is tested in its own repository, and the end-to-end tests of `energy-monitor-infra` verify the communication between them (gateway routes, internal API, broker and events on RabbitMQ). The device firmware, the Mosquitto broker, Bluetooth, push notifications and the Android mobile application are outside the automated tests and are declared as known gaps. Performance, load and accessibility (WCAG) are not tested; the specification leaves them as `[TO BE CONFIRMED]`.
+The API gateway and the seven services (security, devices, measurements, homes, notifications, alerts and recommendations), the web application, MQTT ingestion and broker authorization are tested. Up to version 1.1 those contexts were the seven modules of the core service; since 1.2 they were split into services, the core service was retired on October 28, 2026 and each service is tested in its own repository, and the end-to-end tests of `energy-monitor-infra` verify the communication between them (gateway routes, internal API, broker and events on RabbitMQ). The device firmware, the Mosquitto broker, Bluetooth, push notifications and the Android mobile application are outside the automated tests and are declared as known gaps; for the mobile application, type checking and static analysis are also run and a manual test protocol is defined (version 1.3). Performance, load and accessibility (WCAG) are not tested; the specification leaves them as `[TO BE CONFIRMED]`.
 
 ### Document references
 
@@ -46,7 +49,7 @@ Traceability uses the codes of the requirements specification (RF-SEC, RF-HOM, R
 
 ## Items Under Test
 
-Table 2 lists the items under test in version 1.2, with the branch and the `main` commit in production on October 24, 2026. Version 1.1 used `main` (backend `90ae5ef`, web `2b41cb3`, infra `7324110`, mobile `dev` `4ebccfb`) and version 1.0, `dev` (backend `d03bbd3`, web `e6edc12`).
+Table 2 lists the items under test in version 1.3, with the branch and the `main` commit on October 28, 2026 (the ones deployed to production that day). Version 1.2 used `main` of October 24, 2026 (gateway `c070cec`, security `334691a`, devices `f8b8526`, measurements `ee2cb81`, backend `aa9a713`, web `e59bece`, infra `eaf961b`). Version 1.1 used `main` (backend `90ae5ef`, web `2b41cb3`, infra `7324110`, mobile `dev` `4ebccfb`) and version 1.0, `dev` (backend `d03bbd3`, web `e6edc12`).
 
 **Table 2**
 
@@ -54,14 +57,18 @@ Table 2 lists the items under test in version 1.2, with the branch and the `main
 
 | Item                      | Version                         | Branch | Commit  | Remark                                                    |
 |---------------------------|---------------------------------|--------|---------|-----------------------------------------------------------|
-| en-monitor-api-gateway    | Java 21 · Spring Boot 4.0.8 · Spring Cloud Gateway | main | c070cec | API gateway; 57 tests                                |
-| en-monitor-security-service | Java 21 · Spring Boot 4.1.1   | main   | 334691a | Security service; 660 tests (10/22/2026)                  |
-| en-monitor-device-service | Java 21 · Spring Boot 4.1.1     | main   | f8b8526 | Device service; 130 tests                                 |
-| en-monitor-measurement-service | Java 21 · Spring Boot 4.1.1 | main  | ee2cb81 | Measurement service; 151 tests                            |
-| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1 · Spring Modulith | main | aa9a713 | Core service (home, alert, recommendation and notification) and firmware (`firmware/`, version 1.3.8); 481 tests |
-| energy-monitor-web        | React 19 · Vite 8               | main   | e59bece | Web application                                           |
-| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | main   | 894b65a | No automated tests                                        |
-| energy-monitor-infra      | Docker Compose · Mosquitto 2 · RabbitMQ 4.1 | main | eaf961b | Compose, broker and scripts validated in CI; end-to-end tests `e2e/`; replaces the retired `devices` |
+| en-monitor-api-gateway    | Java 21 · Spring Boot 4.0.8 · Spring Cloud Gateway | main | 0b2c164 | API gateway; 69 tests                                  |
+| en-monitor-security-service | Java 21 · Spring Boot 4.1.1   | main   | f57c76b | Security service; 773 tests                                              |
+| en-monitor-device-service | Java 21 · Spring Boot 4.1.1     | main   | 06c1bdc | Device service; 129 tests                                                |
+| en-monitor-measurement-service | Java 21 · Spring Boot 4.1.1 | main  | 8a9b544 | Measurement service; 151 tests                                           |
+| en-monitor-home-service   | Java 21 · Spring Boot 4.1.1     | main   | f424083 | Home service; 260 tests                                                  |
+| en-monitor-notification-service | Java 21 · Spring Boot 4.1.1 | main | 7b10398 | Notification service; 234 tests                                          |
+| en-monitor-alert-service  | Java 21 · Spring Boot 4.1.1     | main   | f050b56 | Alert service; 119 tests                                                 |
+| en-monitor-recommendation-service | Java 21 · Spring Boot 4.1.1 | main | aeeeec5 | Recommendation service; 71 tests                                     |
+| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1 · Spring Modulith | main | c3c6df8 | Retired on 10/28/2026: its modules are the four services above; keeps the firmware (`firmware/`, version 1.3.8) |
+| energy-monitor-web        | React 19 · Vite 8               | main   | 698d4c9 | Web application; 38 files and 228 tests                                  |
+| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev    | 1e4109b | 78 unit tests in 8 suites; `tsc` and `expo lint` without errors. `main` is still at `894b65a`, 193 commits behind `dev` |
+| energy-monitor-infra      | Docker Compose · Mosquitto 2 · RabbitMQ 4.1 | main | ceb1543 | Compose, broker and scripts validated in CI; end-to-end tests `e2e/`; replaces `devices`, retired |
 | energy-monitor-docs-final | Markdown ES/EN                  | dev    | —       | Final documentation (this document)                       |
 
 ## Test Strategy
@@ -353,7 +360,7 @@ Each table corresponds to a module of the core service as it was in version 1.1,
 | services/http/httpClient.refresh.test.js                | 3     | —                                          | Passed |
 | services/http/httpClient.test.js                        | 11    | —                                          | Passed |
 
-Mobile application tests do not exist: the repository has no test files or test script (only expo lint). It is a declared gap.
+Automated tests of the mobile application do not exist: the repository has no test files or test script (only expo lint). It is a declared gap. Since version 1.3 type checking (`tsc`) and `expo lint` are run, and a manual test protocol is defined (Table 38).
 
 ## Requirement → Test Traceability Matrix
 
@@ -365,18 +372,19 @@ The 107 requirements of the specification are crossed with the test classes. “
 
 | Requirement | Description                                                                                                 | Automated tests                                                                                                                                                                            | Coverage  |
 |-------------|-------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
-| RF-SEC-01   | The system must allow registering an account with personal data, email and password                         | RegisterUserServiceTest, AuthControllerWebTest, UserPersonPersistenceTest, UserTest, ValueObjectTest                                                                                       | Automated |
-| RF-SEC-02   | The system must send a six-digit verification code to the registered email and mark the email as verified…  | EmailVerificationServiceTest, EmailSenderTest, AuthControllerWebTest                                                                                                                       | Automated |
+| RF-SEC-01   | The system must allow requesting the registration of an account with personal data, email and password… | RegisterUserServiceTest, MistypedEmailDomainsTest, AuthControllerWebTest, UserPersonPersistenceTest, UserTest, ValueObjectTest | Automated |
+| RF-SEC-02   | The system must send a six-digit verification code to the given email and create the account… | EmailVerificationServiceTest, EmailSenderTest, AuthControllerWebTest | Automated |
 | RF-SEC-03   | The system must allow signing in securely with email and password                                           | AuthenticateUserServiceTest, SecurityLoginFlowTest, AuthControllerWebTest, JwtTokenIssuerTest, BCryptPasswordHasherAdapterTest                                                             | Automated |
 | RF-SEC-04   | The system must keep the user's session without asking for credentials continuously, let the user sign out… | RefreshSessionServiceTest, UserSessionServiceTest, UserSessionTest, RefreshTokenTest, AuthRefreshEndpointWebTest, RefreshLifecycleIntegrationTest, …                                       | Automated |
-| RF-SEC-05   | The system must allow registering and signing in with a Google account                                      | SignInWithGoogleServiceTest, AuthControllerWebTest                                                                                                                                         | Automated |
+| RF-SEC-05   | The system must allow registering and signing in with a Google account, with acceptance of the terms | SignInWithGoogleServiceTest, AuthControllerWebTest | Automated |
 | RF-SEC-06   | The system must allow password recovery with a six-digit code sent to the email, valid for 15 minutes and…  | PasswordResetServiceTest, PasswordResetTokenTest, PepperedHmacResetCodeHasherTest, SendPasswordResetEmailTest, EmailPasswordResetDeliveryAdapterTest, PasswordResetTokenReservationTest, … | Automated |
-| RF-SEC-07   | The system must allow a signed-in user to change their password                                             | ChangePasswordServiceTest, AuthControllerWebTest                                                                                                                                           | Automated |
-| RF-SEC-08   | The system must allow viewing the account data and updating the profile                                     | AccountLifecycleServiceTest, UserProfileQueryServiceTest, AuthControllerWebTest, Account.test.jsx                                                                                          | Automated |
+| RF-SEC-07   | The system must allow a signed-in user to change their password (not Google accounts) | ChangePasswordServiceTest, AuthControllerWebTest, account-deletion-flow.sh | Automated |
+| RF-SEC-08   | The system must allow viewing the account data and updating the profile (first and last name separately) | AccountLifecycleServiceTest, UserProfileQueryServiceTest, AuthControllerWebTest, Account.test.jsx | Automated |
 | RF-SEC-09   | The system must allow knowing the user's permissions                                                        | RbacServiceTest, RbacTest, RbacAssignmentPersistenceTest, AdminRbacIntegrationTest, AuthControllerWebTest                                                                                  | Automated |
 | RF-SEC-10   | The system must identify the user only from their session and must not accept identities indicated by the…  | HomeCallerIdentityIntegrationTest, HomeExceptionHandlerTest                                                                                                                                | Automated |
-| RF-SEC-11   | The system must allow the user to delete their account by confirming their password                         | DeleteAccountServiceTest, RemoveDeletedAccountServiceTest, AccountDeletionIntegrationTest, AccountDeleteError.test.jsx, Account.test.jsx                                                   | Automated |
-| RF-SEC-12   | The system must apply a password policy (minimum length of 8 and maximum of 64 characters) and record…      | PasswordPolicySeedTest, ConfigurationPolicyPersistenceTest, LogPersistenceTest, AuditLogTest, SecuritySupportModelTest, RegisterUserServiceTest                                            | Automated |
+| RF-SEC-11   | The system must allow the user to delete their account by confirming their password or, with Google, a code | DeleteAccountServiceTest, RemoveDeletedAccountServiceTest, AccountDeletionIntegrationTest, AccountDeleteError.test.jsx, Account.test.jsx, account-deletion-flow.sh | Automated |
+| RF-SEC-12   | The system must apply a password policy (minimum length of 8 and maximum of 64 characters) and… | PasswordPolicySeedTest, ConfigurationPolicyPersistenceTest, LogPersistenceTest, AuditLogTest, SecuritySupportModelTest, RegisterUserServiceTest | Automated |
+| RF-SEC-13   | The system must not allow access to an account that has not accepted the terms and conditions… | RegisterUserServiceTest, SignInWithGoogleServiceTest, AuthControllerWebTest, SecurityLoginFlowTest, UserPersonPersistenceTest, registerSchema.test.ts, registerPayload.test.ts, termsConsent.test.ts (mobile) | Automated |
 
 **Table 17**
 
@@ -481,7 +489,7 @@ The 107 requirements of the specification are crossed with the test classes. “
 | RF-CLI-02   | The web application must show a badge with pending alerts, a counter in the tab title and a pop-up notice… | —                                                                                                                   | No coverage |
 | RF-CLI-03   | The web application must link devices over Bluetooth and allow browser notifications, which arrive even…   | —                                                                                                                   | No coverage |
 | RF-CLI-04   | The mobile application must be available for Android only and allow access to the account, homes, alerts,… | —                                                                                                                   | No coverage |
-| RF-CLI-05   | Both applications must allow choosing the language among Spanish, English, French and Portuguese           | —                                                                                                                   | No coverage |
+| RF-CLI-05   | Both applications must allow choosing the language among Spanish, English, French and Portuguese | locales.test.ts (mobile) | Automated |
 | RF-CLI-06   | The applications must allow choosing a color palette with dark mode                                        | —                                                                                                                   | No coverage |
 
 **Table 24**
@@ -553,7 +561,7 @@ The 107 requirements of the specification are crossed with the test classes. “
 | Requirement | Description                                                                         | Automated tests | Coverage    |
 |-------------|-------------------------------------------------------------------------------------|-----------------|-------------|
 | RNF-I18-01  | The web application must be available in Spanish, English, French and Portuguese    | —               | No coverage |
-| RNF-I18-02  | The mobile application must be available in Spanish, English, French and Portuguese | —               | No coverage |
+| RNF-I18-02  | The mobile application must be available in Spanish, English, French and Portuguese | locales.test.ts (mobile) | Automated |
 | RNF-I18-03  | Alerts and recommendations must be shown in the language each user has chosen       | —               | No coverage |
 
 **Table 30**
@@ -662,20 +670,87 @@ No Surefire reports of version 1.2 are attached to the evidence.
 | DEF-02 | Medium   | RecommendationControllerTest.listRequiresHomeId (prueba nueva) | A missing required parameter (for example homeId in GET /api/v1/recommendations or /api/v1/alerts) answers 500 instead of 400: SecurityExceptionHandler declares a globally scoped @ExceptionHandler(Exception.class) that catches MissingServletRequestParameterException. The test was left failing; it was not adjusted. Version 1.1: `handleUnexpected` keeps the 4xx status of framework exceptions (`ErrorResponse`) and `TypeMismatchException` answers 400; the test passes. | Closed |
 | DOC-01 | Low      | Documentación                                                  | Account administration (routes /api/v1/admin, permissions USER.READ, USER.MANAGE and ROLE.MANAGE, the /admin/users screen and administrator notifications) exists in the code but has no requirement in the requirements specification and is not described in the technical and administrator manuals. Version 1.1: the technical and administrator manuals now describe it; the requirement in the specification is still missing `[TO BE CONFIRMED]`. | Partial |
 
+### Version 1.3 (10/28/2026)
+
+With the complete migration each repository runs its suite with `./mvnw test` (against MySQL 8.4 for those that need it) and the web with `npx vitest run`. Table 36 gathers the results, all green.
+
+**Table 36**
+
+*Suites per repository, version 1.3*
+
+| Repository                       | Commit  | Tests   | Result    |
+|----------------------------------|---------|---------|-----------|
+| en-monitor-security-service      | f57c76b | 773     | 0 failures |
+| en-monitor-home-service          | f424083 | 260     | 0 failures |
+| en-monitor-notification-service  | 7b10398 | 234     | 0 failures |
+| en-monitor-measurement-service   | 8a9b544 | 151     | 0 failures |
+| en-monitor-device-service        | 06c1bdc | 129     | 0 failures |
+| en-monitor-alert-service         | f050b56 | 119     | 0 failures |
+| en-monitor-recommendation-service | aeeeec5 | 71     | 0 failures |
+| en-monitor-api-gateway           | 0b2c164 | 69      | 0 failures |
+| energy-monitor-web               | 698d4c9 | 228 (38 files) | 0 failures |
+
+End-to-end tests on the complete local stack (`energy-monitor-infra`, with the eight services `healthy`). Table 37 details what each one verifies.
+
+**Table 37**
+
+*End-to-end tests of energy-monitor-infra*
+
+| Script                         | Checks | What it covers |
+|--------------------------------|--------|----------------|
+| `e2e/device-flow.sh`           | 24     | Gateway routes, linking a module, broker authentication with a correct and an incorrect key, telemetry, `offline` status and `CONNECTIVITY` alert, and home deletion with the `unlink` command |
+| `e2e/measurement-flow.sh`      | 28     | Readings stored once and announced by the *outbox*, `THRESHOLD` alert raised and resolved, consumption, history, statistics and levels through the gateway, and queues with no pending messages |
+| `e2e/alert-flow.sh`            | 36     | Consumption and connectivity alerts end to end across the measurement, device, alert and notification services |
+| `e2e/activity-flow.sh`         | 60     | Home and device activity through the single notification queue: welcome, members, thresholds, ownership and deletion, with its text per recipient |
+| `e2e/account-deletion-flow.sh` | 12     | Account created with Google: it cannot change the password (409), asks for the code by email (security, *outbox*, notifications), a wrong code does not delete and the right one does |
+
+The `e2e/recommendation-flow.sh` script also exists and was not run again in this version. The gateway limits (20 POST per minute per IP and path) mean that consecutive runs of the same script may answer 429.
+
+#### Mobile Application
+
+The mobile application had no automated tests. In version 1.3 a unit suite was added and run, together with two static checks, on `dev` (commit `1e4109b` plus the test files, October 28, 2026), and a manual protocol was defined:
+
+- Unit tests with Jest and `jest-expo` (`npm test`): **8 suites and 78 tests, all passed** (October 28, 2026). They cover the password rules, the registration schema, the verification code, the registration body (trimmed and with `acceptTerms`), the terms prompt (accept, cancel and dismiss), the normalization of network errors and of the 429 with `Retry-After`, the mapping of each operation and status to its message (428, 409, 429, 503), and the parity of the texts in the four languages, including that every error key the API can produce exists in all of them.
+- `npx tsc --noEmit`: 0 errors.
+- `npx expo lint`: no errors (exit code 0).
+
+Unit tests do not replace a test on a device: they do not walk through screens nor make the real API call.
+
+Table 38 is the manual test protocol for an Android device. Its status is **to be run**: none has been performed on a device; the mobile application requirements that become «Automated» are only those the unit suite covers (RF-CLI-05 and RNF-I18-02). Before running them a new APK must be built, because the previous one does not send `acceptTerms` and registration would answer 428.
+
+**Table 38**
+
+*Manual test protocol of the mobile application*
+
+| ID     | Test | Expected result | Requirements | Status |
+|--------|------|-----------------|--------------|--------|
+| MOV-01 | Register without ticking the terms and then ticking them | Unticked it is not sent; ticked the code is requested and the verification screen opens | RF-SEC-01, RF-SEC-13 | To be run |
+| MOV-02 | Register with a misspelled email domain (`name@meil.com`) | The registration is rejected with a readable message | RF-SEC-01 | To be run |
+| MOV-03 | Verify the email with the received code and sign in | The account is created on verification and the dashboard opens | RF-SEC-02, RF-SEC-03 | To be run |
+| MOV-04 | Sign in and out; reopen the application | The session is kept on reopening and closed on exit | RF-SEC-03, RF-SEC-04 | To be run |
+| MOV-05 | Sign in with Google for the first time without accepting the terms | The terms are requested and, once accepted, the account is created | RF-SEC-05, RF-SEC-13 | To be run |
+| MOV-06 | Recover the password (email, code and new password) | It is possible to sign in with the new password | RF-SEC-06 | To be run |
+| MOV-07 | Create a home, mark it as a favorite and change its thresholds | The home appears in the list and in favorites with the new thresholds | RF-HOM-01, RF-CLI-04 | To be run |
+| MOV-08 | View the dashboard of a home with a meter sending data | Consumption and the last reading are shown | RF-MED-07, RF-MED-08, RF-CLI-04 | To be run |
+| MOV-09 | Receive an alert and open the notification inbox; change the preferences | The alert is listed, marked as read and the preferences are saved | RF-ALE-04, RF-NOT-01, RF-CLI-04 | To be run |
+| MOV-10 | Edit the first and last name separately; change the password | Each field is saved on its own; a Google account cannot change the password | RF-SEC-07, RF-SEC-08 | To be run |
+| MOV-11 | Delete the account (with password; with Google, with the code from the email) | The account is deleted and the email can register again | RF-SEC-11 | To be run |
+| MOV-12 | Change the language among the four available and turn on dark mode | Texts and colors change without restarting | RF-CLI-05, RF-CLI-06 | To be run |
+
 ### Evidence
 
 The evidence is in [evidence](../../evidencias/EN/README.md): Surefire summary, trimmed execution log and Vitest summary from version 1.0, the full suite summary and new Vitest run from version 1.1, and the status of version 1.2 (totals per repository and end-to-end tests). It contains no secrets.
 
 ## Risks, Limitations and Known Gaps
 
-**Table 36**
+**Table 39**
 
-*Test risks and limitations*
+*Risks and Limitations of the Tests*
 
 | ID   | Risk or limitation                                                                                                                                                                                                                                                                                                                                               | Effect                                                            | Recommendation                                                 |
 |------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|----------------------------------------------------------------|
 | R-01 | Non-hermetic tests: persistence and full context need real MySQL and SPRING_DATASOURCE_PASSWORD                                                                                                                                                                                                                                                                  | Mitigated in version 1.1: the full suite runs with MySQL locally and in CI; the tests are still not hermetic | Evaluate Testcontainers |
-| R-02 | The mobile application has no automated tests                                                                                                                                                                                                                                                                                                                    | No automated verification                                         | Add component and service tests                                |
+| R-02 | The mobile application has no automated tests | Mitigated in version 1.3 with 78 unit tests, `tsc`, `expo lint` and a manual protocol still to be run | Run the protocol (Table 38) and add component and screen tests |
 | R-03 | MQTT with QoS 0                                                                                                                                                                                                                                                                                                                                                  | A reading may be lost; loss is not tested                         | Evaluate QoS 1 and add a loss test                             |
 | R-04 | No over-the-air (OTA) update                                                                                                                                                                                                                                                                                                                                     | Firmware is updated only by USB                                   | Document the USB upload procedure                              |
 | R-05 | Web Bluetooth limited to Chrome, Edge and Chrome for Android, and to HTTPS or localhost                                                                                                                                                                                                                                                                          | Not verified automatically, nor is the EnergyMonitor-Setup portal | Evaluate browser end-to-end tests                              |
@@ -692,7 +767,9 @@ The core service has a broad and fast suite: 835 tests run without a database in
 
 Version 1.1: the verification of the core service is closed with the full suite (1131 tests, 0 failures) against MySQL, locally and in GitHub Actions. Recommendations (1), (2) and (3) were carried out, and the continuous integration of (6) now exists with required checks on `dev` and `main`. Testcontainers (4), mobile application tests (5), JaCoCo (6) and the administration requirement in the specification (7) remain pending.
 
-Version 1.2: with the services architecture, verification is split across the repositories and every suite is green (backend 481, measurement 151, device 130, gateway 57 and security 660), with `ModularityTests` green and the two end-to-end tests of `energy-monitor-infra` passed (21/21 and 25/25) on the local stack. The same recommendations (4) to (7) remain pending, now in every Java service; JaCoCo is in none of the `pom.xml` files. Redoing the per-class inventory and the traceability per repository remains pending.
+Version 1.2: with the services architecture, verification is split between the repositories and every suite is green (backend 481, measurements 151, devices 130, gateway 57 and security 660), with `ModularityTests` green and the two end-to-end tests of `energy-monitor-infra` passing (21/21 and 25/25) on the local stack. The same recommendations (4) to (7) remain pending, now in each Java service; JaCoCo is in none of the `pom.xml` files. Redoing the per-class inventory and the traceability per repository is pending.
+
+Version 1.3: with the complete migration, the eight Java suites and the web are green (773, 260, 234, 151, 129, 119, 71, 69 and 228 tests) and the five end-to-end tests pass. The traceability incorporates the acceptance of terms (RF-SEC-13) and the rules for Google accounts. The biggest gap is still the mobile application: it has 78 unit tests, but none of components or screens, and its manual protocol has not been run. Recommendations: run that protocol on a device, add component tests to the mobile application (React Native Testing Library), redo the per-class inventory of the services and run `recommendation-flow.sh` again.
 
 ## References
 
