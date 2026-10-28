@@ -23,7 +23,7 @@ Ficha: 3145556
 | Ficha                | 3145556                                                                         |
 | Tipo de documento    | Manual técnico de software                                                      |
 | Versión              | 1.4                                                                             |
-| Fecha de elaboración | 07 de octubre de 2026 (actualización: 27 de octubre de 2026)                    |
+| Fecha de elaboración | 07 de octubre de 2026 (actualización: 28 de octubre de 2026)                    |
 
 Año 2026
 
@@ -38,7 +38,7 @@ El historial de cambios del presente manual se registra en la siguiente tabla. C
 | 1.1         | 13/10/2026 | Actualización al estado final: siete módulos activos, 29 tablas, dispositivos y broker MQTT, API completa, identidad desde el JWT, hash de claves de dispositivo, aplicación móvil integrada con la API y limitaciones vigentes. | Equipo desarrollador |
 | 1.2         | 24/10/2026 | Actualización a la arquitectura en producción (https://energy-monitor.tech): API gateway (8080) y microservicios de seguridad (8082), dispositivos (8084) y mediciones (8085); backend como monolito modular con home, alert, recommendation y notification (8083); REST interno `/internal/**` y eventos en RabbitMQ con transactional outbox; repositorios, variables, despliegue y trabajos pendientes (migración de los cuatro módulos restantes en curso). | Equipo desarrollador |
 | 1.3         | 25/10/2026 | Diccionario de datos: se agrega la tabla push_device (instalaciones de la app móvil con push por el relay de Expo); 30 tablas documentadas. | Equipo desarrollador |
-| 1.4         | 27/10/2026 | Migración terminada: siete microservicios (seguridad 8082, dispositivos 8084, mediciones 8085, hogares 8086, notificaciones 8087, alertas 8088 y recomendaciones 8089) detrás del API gateway; energy-monitor-backend retirado. Rutas del gateway, REST interno y eventos de RabbitMQ por servicio; notificaciones de actividad; rol administrador y sus pantallas web; diccionario regenerado desde Liquibase (37 tablas, todas las columnas) y script SQL en `06-base-datos`. | Equipo desarrollador |
+| 1.4         | 28/10/2026 | Migración terminada: siete microservicios (seguridad 8082, dispositivos 8084, mediciones 8085, hogares 8086, notificaciones 8087, alertas 8088 y recomendaciones 8089) detrás del API gateway; energy-monitor-backend retirado. Rutas del gateway, REST interno y eventos de RabbitMQ por servicio; notificaciones de actividad; rol administrador y sus pantallas web; diccionario regenerado desde Liquibase (37 tablas, todas las columnas) y script SQL en `06-base-datos`. | Equipo desarrollador |
 
 # 3. Tabla de contenido
 
@@ -304,7 +304,7 @@ El sistema adopta una arquitectura cliente-servidor en capas, con la lógica rep
 | en-monitor-measurement-service   | 8085       | Mediciones: único suscriptor que guarda la telemetría (MQTT), historial, última lectura, estadísticas, consumo de un hogar (resumen e historial) y niveles de consumo; publica cada lectura como `measurement.recorded` y ofrece un API interno de niveles, energía por hora y dispositivos que reportan. |
 | en-monitor-home-service          | 8086       | Hogares, unión por código de acceso, miembros y roles, favoritos, transferencia de propiedad, salida y eliminación del hogar, umbrales (6 kWh diarios y 180 kWh mensuales por defecto) y tipos de hogar; API interno de acceso, límites, resumen del hogar y comprobación de borrado de cuenta; publica `home.deleted` y la actividad de los hogares. |
 | en-monitor-notification-service  | 8087       | Correos de códigos (`mail.*`), entrega de alertas y recomendaciones por correo, Web Push y push móvil según las preferencias de cada miembro, notificaciones de actividad (`/api/v1/notifications/activity`), avisos in-app de los administradores (`/api/v1/admin/notifications`), preferencias, suscripciones push y registro de entregas. |
-| en-monitor-alert-service         | 8088       | Alertas: consume `measurement.recorded` y los eventos `device.*`, crea alertas THRESHOLD, LIMIT, CONNECTIVITY y DEVICE, las resuelve, las expone en `/api/v1/alerts` y anuncia cada una como `alert.raised`. |
+| en-monitor-alert-service         | 8088       | Alertas: consume `measurement.recorded` y los eventos `device.*`, crea alertas THRESHOLD (incluida la de consumo inusual de un aparato, `alert.anomaly.device`), LIMIT, CONNECTIVITY y DEVICE, las resuelve, las expone en `/api/v1/alerts` y anuncia cada una como `alert.raised`. |
 | en-monitor-recommendation-service | 8089      | Recomendaciones: cada hora evalúa las reglas PEAK_HOURS, SAVING, HISTORICAL_COMPARISON, THRESHOLD y HIGH_CONSUMPTION sobre los hogares con lecturas en la última semana, las expone en `/api/v1/recommendations` y anuncia cada una como `recommendation.created`. |
 
 ## 9.2 Estilo arquitectónico y patrones de diseño
@@ -1528,6 +1528,8 @@ Cada subsección indica el repositorio del servicio; las rutas de archivo son re
 **Función:** Generación y bandeja de alertas de consumo, de límite, de dispositivo vinculado y de conectividad.
 
 **Estado:** Activo · **Ubicación:** en-monitor-alert-service (puerto 8088).
+
+**Regla de consumo inusual (`RegisterAnomalyAlertService`):** cada lectura es una anomalía cuando su potencia es de al menos 200 W (`MIN_POWER`) y de al menos 2,5 veces (`FACTOR`) la potencia habitual del aparato. La potencia habitual es el promedio de su potencia media por hora en los 7 días previos, excluida la última hora, y solo cuenta con al menos 24 horas de historial (`MIN_HOURS`) y un promedio de al menos 5 W (`MIN_BASELINE`); un aparato nuevo o casi apagado no genera la alerta. La línea base se pide al servicio de mediciones (`DeviceBaselineAdapter`). La alerta es de tipo `THRESHOLD` con `messageKey = alert.anomaly.device`, se resuelve sola cuando el consumo se normaliza y se anuncia por correo y push como cualquier alerta. Los umbrales son constantes del código (DT-27).
 
 **Archivos relacionados:**
 
