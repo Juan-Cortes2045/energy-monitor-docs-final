@@ -7,6 +7,9 @@
 
 ---
 
+> **Update note (10/27/2026).** This document describes the design of version 1.0, when the backend was the `energy-monitor-backend` modular monolith (Spring Modulith). That design evolved: the seven bounded contexts are now **seven microservices** behind the `en-monitor-api-gateway` API gateway (8080) — security 8082, device 8084, measurement 8085, home 8086, notification 8087, alert 8088 and recommendation 8089 —, communicating through internal REST (`/internal/**`) and RabbitMQ events with a transactional outbox, on the same shared MySQL schema (37 tables). The modular backend was retired. The hexagonal layers, contexts and patterns described here live on inside each service; the current architecture, routes, events and configuration are in the [technical manual](../../10-manual-tecnico/EN/Technical_Manual_Electrical_Consumption_Monitor_3145556.md) (sections 9 to 13) and the current data model in [`06-base-datos`](../../06-base-datos/diccionario-datos/EN/data-dictionary.md).
+
+
 ## 1. Purpose of point 05
 
 Software analysis (point 03) determines **what** the system must do and **how it should look**. Software design answers **how it is built**: what structure the system has internally, how its data is organized, which patterns are used to solve each recurring problem, and how the visual design is materialized into reusable components.
@@ -27,10 +30,10 @@ This point is the bridge between analysis and implementation. Every design decis
 
 | **Aspect** | **Definition** |
 |---|---|
-| **Architectural style** | Three-tier client-server + modular monolith (Spring Modulith) + hexagonal architecture per module |
+| **Architectural style** | Layered client-server + API gateway + 7 microservices with hexagonal architecture (version 1.0: Spring Modulith modular monolith, now retired) |
 | **Presentation context** | React 19 + Vite 8 (web) and Expo SDK 57 (mobile), with its own design system on both |
 | **Logic** | Java 21 + Spring Boot 4.1.1, organized into **7 bounded contexts** with boundaries verified by tests |
-| **Data** | MySQL 8.4 with **29 tables**, schema managed with Liquibase, universal soft delete |
+| **Data** | MySQL 8.4, shared schema with **37 tables** (29 business tables in version 1.0, plus outboxes and pending registrations), each service owning its own, Liquibase and soft delete |
 | **Communication** | Stateless REST API under `/api/v1` with JWT RS256; device telemetry over MQTT |
 | **Patterns** | 18 documented patterns, with emphasis on ports and adapters, Observer, Strategy and Repository |
 | **Interface** | Own design system with 32 tokens, 4 themes, 11 typographic sizes, 4 languages |
@@ -40,7 +43,8 @@ This point is the bridge between analysis and implementation. Every design decis
 
 | **Repository** | **Technology** | **Entry point** |
 |---|---|---|
-| `energy-monitor-backend` | Java 21 + Spring Boot 4.1.1 + Maven | `EnergyMonitorBackendApplication.java` (port 8080) |
+| `en-monitor-api-gateway` and seven `en-monitor-*-service` | Java 21 + Spring Boot 4.1.1 (gateway 4.0.8) + Maven | `*Application.java` (gateway 8080; services 8082 and 8084 to 8089) |
+| `energy-monitor-backend` (retired) | Java 21 + Spring Modulith | No longer runs; keeps the firmware |
 | `Energy-Monitor-application` | React 19 + Vite 8 (JavaScript) | `src/main.jsx` over `index.html` (port 5173) |
 | `Energy-Monitor-Mobile` | Expo SDK 57 + React Native 0.86 (TypeScript) | `src/app/_layout.tsx` |
 

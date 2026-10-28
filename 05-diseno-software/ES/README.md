@@ -7,6 +7,9 @@
 
 ---
 
+> **Nota de actualización (27/10/2026).** Este documento describe el diseño de la versión 1.0, cuando el backend era el monolito modular `energy-monitor-backend` (Spring Modulith). Ese diseño evolucionó: los siete contextos acotados son hoy **siete microservicios** detrás del API gateway `en-monitor-api-gateway` (8080) — seguridad 8082, dispositivos 8084, mediciones 8085, hogares 8086, notificaciones 8087, alertas 8088 y recomendaciones 8089 —, comunicados por REST interno (`/internal/**`) y eventos de RabbitMQ con outbox transaccional, sobre el mismo esquema MySQL compartido (37 tablas). El backend modular quedó retirado. Las capas hexagonales, los contextos y los patrones descritos aquí se conservan dentro de cada servicio; la arquitectura vigente, las rutas, los eventos y la configuración están en el [manual técnico](../../10-manual-tecnico/ES/Manual_tecnico_Monitor_Consumo_Electrico_3145556.md) (secciones 9 a 13) y el modelo de datos vigente en [`06-base-datos`](../../06-base-datos/diccionario-datos/ES/diccionario-datos.md).
+
+
 ## 1. Propósito del punto 05
 
 El análisis de software (punto 03) resuelve **qué** debe hacer el sistema y **cómo debe verse**. El diseño de software responde a **cómo se construye**: qué estructura tiene el sistema por dentro, cómo se organizan sus datos, con qué patrones se resuelve cada problema recurrente y cómo se materializa el diseño visual en componentes reutilizables.
@@ -27,10 +30,10 @@ Este punto es el puente entre el análisis y la implementación. Cada decisión 
 
 | **Aspecto** | **Definición** |
 |---|---|
-| **Estilo arquitectónico** | Cliente-servidor de tres capas + monolito modular (Spring Modulith) + arquitectura hexagonal por módulo |
+| **Estilo arquitectónico** | Cliente-servidor en capas + API gateway + 7 microservicios con arquitectura hexagonal (versión 1.0: monolito modular Spring Modulith, hoy retirado) |
 | **Contexto de presentación** | React 19 + Vite 8 (web) y Expo SDK 57 (móvil), con sistema de diseño propio en ambos |
 | **Lógica** | Java 21 + Spring Boot 4.1.1, organizada en **7 contextos acotados** con límites verificados por pruebas |
-| **Datos** | MySQL 8.4 con **29 tablas**, esquema gestionado con Liquibase, borrado lógico universal |
+| **Datos** | MySQL 8.4, esquema compartido con **37 tablas** (29 de negocio en la versión 1.0, más outbox y registros pendientes), cada servicio dueño de las suyas, Liquibase y borrado lógico |
 | **Comunicación** | API REST sin estado bajo `/api/v1` con JWT RS256; telemetría de dispositivos por MQTT |
 | **Patrones** | 18 patrones documentados, con énfasis en puertos y adaptadores, Observer, Strategy y Repository |
 | **Interfaz** | Sistema de diseño propio con 32 tokens, 4 temas, 11 medidas tipográficas, 4 idiomas |
@@ -40,7 +43,8 @@ Este punto es el puente entre el análisis y la implementación. Cada decisión 
 
 | **Repositorio** | **Tecnología** | **Punto de entrada** |
 |---|---|---|
-| `energy-monitor-backend` | Java 21 + Spring Boot 4.1.1 + Maven | `EnergyMonitorBackendApplication.java` (puerto 8080) |
+| `en-monitor-api-gateway` y siete `en-monitor-*-service` | Java 21 + Spring Boot 4.1.1 (gateway 4.0.8) + Maven | `*Application.java` (gateway 8080; servicios 8082 y 8084 a 8089) |
+| `energy-monitor-backend` (retirado) | Java 21 + Spring Modulith | Ya no se ejecuta; conserva el firmware |
 | `Energy-Monitor-application` | React 19 + Vite 8 (JavaScript) | `src/main.jsx` sobre `index.html` (puerto 5173) |
 | `Energy-Monitor-Mobile` | Expo SDK 57 + React Native 0.86 (TypeScript) | `src/app/_layout.tsx` |
 
