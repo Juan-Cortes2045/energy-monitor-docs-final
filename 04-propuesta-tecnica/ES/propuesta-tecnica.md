@@ -16,6 +16,7 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 | 1.1     | 20/10/2026 | Alineación con el sistema desplegado: infraestructura real en producción (VPS Hostinger KVM 2 por un mes, dominio gratuito, Nginx, Let's Encrypt), integración y despliegue continuos con GitHub Actions, costos recalculados, administración global y nuevos eventos, estado por componente, riesgos y discrepancias actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 24/10/2026 | Arquitectura en producción: API gateway y microservicios de seguridad, dispositivos y mediciones; el servicio central queda como monolito modular con home, alert, recommendation y notification, cuya migración está en curso; comunicación por REST interno y eventos en RabbitMQ con *transactional outbox*; pila, infraestructura, estado por componente y riesgos actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.3     | 28/10/2026 | Migración completa: hogares, notificaciones, alertas y recomendaciones como servicios independientes y retiro del servicio central (`energy-monitor-backend`); rutas del gateway, eventos entre servicios (alertas, recomendaciones, actividad de hogares y código de borrado de cuenta), reglas de seguridad de la cuenta (verificación previa del correo, términos y cuentas de Google), integración continua de los ocho repositorios desplegables, pruebas y estado por componente al 28 de octubre. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.4     | 28/10/2026 | Ayuda de la web en Ajustes (documentación por rol, soporte y novedades que el build arma con el historial de git), visor de fotos y fotos de los miembros de un hogar (campo `profileImage` en el perfil interno), alerta de consumo inusual y conteos de pruebas actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
@@ -86,7 +87,7 @@ EnergyMonitor nació como un monolito modular construido con Spring Modulith: un
 | Servicio de mediciones (`en-monitor-measurement-service`, puerto 8085) | Único que guarda la telemetría; historial, última lectura, estadísticas, consumo de un hogar y niveles de consumo; anuncia cada lectura |
 | Servicio de hogares (`en-monitor-home-service`, puerto 8086) | Hogares, tipos de hogar, miembros, roles OWNER y MEMBER, favoritos, umbrales, eliminación del hogar y transferencia de propiedad; responde las verificaciones de borrado de cuenta y de pertenencia a un hogar que hacen los demás servicios |
 | Servicio de notificaciones (`en-monitor-notification-service`, puerto 8087) | Entregas, preferencias, correo electrónico (el único que envía correo), Web Push, push móvil, avisos in-app y actividad de hogares y dispositivos |
-| Servicio de alertas (`en-monitor-alert-service`, puerto 8088) | Alertas de consumo y de conectividad a partir de las lecturas y de los eventos de los dispositivos |
+| Servicio de alertas (`en-monitor-alert-service`, puerto 8088) | Alertas de consumo, de conectividad y de consumo inusual (una lectura de al menos 200 W y 2,5 veces la potencia habitual del dispositivo en los 7 días anteriores) a partir de las lecturas y de los eventos de los dispositivos |
 | Servicio de recomendaciones (`en-monitor-recommendation-service`, puerto 8089) | Reglas de ahorro, evaluadas cada hora con la energía por hora del servicio de mediciones |
 
 ### Reglas de organización
@@ -144,7 +145,7 @@ Los roles globales los administra el servicio de seguridad, mientras que los rol
 
 ### Clientes
 
-La aplicación web separa sus funcionalidades por características, gestiona los textos con i18n y concentra las llamadas HTTP en `src/services/`. Se prueba con Vitest y Testing Library. Una cuenta administradora ve solo la experiencia de administración (usuarios, notificaciones y ajustes). La aplicación móvil usa la estructura de expo-router, archivos de estilos por componente y está disponible en español, inglés, francés y portugués. En el emulador de Android se usa 10.0.2.2 en lugar de localhost, y CORS no aplica en React Native.
+La aplicación web separa sus funcionalidades por características, gestiona los textos con i18n y concentra las llamadas HTTP en `src/services/`. Se prueba con Vitest y Testing Library. Una cuenta administradora ve solo la experiencia de administración (usuarios, notificaciones y ajustes). Ajustes ofrece la ayuda en modales: documentación según el rol, soporte técnico (solo para usuarios, que crean el ticket como un correo a un administrador) y novedades, que el build arma con los commits `feat`, `fix` y `perf` del historial de git, así que cada despliegue de la web las actualiza. La foto de perfil se amplía en un visor dentro de la página (la CSP no permite pedir `data:` con `fetch`) y los miembros de un hogar muestran sus fotos: el perfil interno de seguridad incluye `profileImage` y el servicio de hogares lo devuelve. La aplicación móvil usa la estructura de expo-router, archivos de estilos por componente y está disponible en español, inglés, francés y portugués. En el emulador de Android se usa 10.0.2.2 en lugar de localhost, y CORS no aplica en React Native.
 
 ### Convenciones de desarrollo
 
@@ -173,7 +174,7 @@ La Tabla 4 describe la infraestructura en producción.
 
 ### Integración y despliegue continuos
 
-Los repositorios del API gateway, de los siete servicios, de la aplicación web y de la infraestructura tienen pipelines de GitHub Actions (el servicio de notificaciones incorporó el suyo el 28 de octubre de 2026); la aplicación móvil no tiene pipeline. En cada pull request se ejecutan las pruebas (al 28 de octubre de 2026: 773 del servicio de seguridad, 260 del de hogares, 234 del de notificaciones, 151 del de mediciones, 129 del de dispositivos, 119 del de alertas, 71 del de recomendaciones y 69 del gateway, contra MySQL 8.4 los que lo necesitan; las 228 de la web con su build; y la validación de la configuración de infraestructura), que son requisito para fusionar. Cada cambio que llega a `main` se despliega en el servidor tras una aprobación manual del entorno `production`. El despliegue toma un respaldo de la base de datos, reconstruye solo el componente modificado, comprueba la salud de todos los servicios y, si falla, vuelve a la versión anterior. El detalle está en el manual de implementación y despliegue (Cortés Parra y García Artunduaga, 2026).
+Los repositorios del API gateway, de los siete servicios, de la aplicación web y de la infraestructura tienen pipelines de GitHub Actions (el servicio de notificaciones incorporó el suyo el 28 de octubre de 2026); la aplicación móvil no tiene pipeline. En cada pull request se ejecutan las pruebas (al 28 de octubre de 2026: 774 del servicio de seguridad, 260 del de hogares, 235 del de notificaciones, 151 del de mediciones, 129 del de dispositivos, 128 del de alertas, 71 del de recomendaciones y 69 del gateway, contra MySQL 8.4 los que lo necesitan; las 253 de la web con su build; y la validación de la configuración de infraestructura), que son requisito para fusionar. Cada cambio que llega a `main` se despliega en el servidor tras una aprobación manual del entorno `production`. El despliegue toma un respaldo de la base de datos, reconstruye solo el componente modificado, comprueba la salud de todos los servicios y, si falla, vuelve a la versión anterior. El detalle está en el manual de implementación y despliegue (Cortés Parra y García Artunduaga, 2026).
 
 ### Costo de hardware
 
@@ -329,14 +330,14 @@ La Tabla 12 presenta el avance al 28 de octubre de 2026.
 |---|---|
 | Dispositivo de medición (firmware 1.3.8) | Operativo. La vinculación de un medidor en producción está pendiente de evidencia |
 | API gateway | Desplegado en producción; 69 pruebas automáticas en cada pull request |
-| Servicio de seguridad | Desplegado en producción; 773 pruebas automáticas |
+| Servicio de seguridad | Desplegado en producción; 774 pruebas automáticas |
 | Servicio de dispositivos | Desplegado en producción; 129 pruebas automáticas |
 | Servicio de mediciones | Desplegado en producción; 151 pruebas automáticas |
 | Servicio de hogares | Desplegado en producción el 28 de octubre de 2026; 260 pruebas automáticas |
-| Servicio de notificaciones | Desplegado en producción el 28 de octubre de 2026; 234 pruebas automáticas |
-| Servicio de alertas | Desplegado en producción el 28 de octubre de 2026; 119 pruebas automáticas |
+| Servicio de notificaciones | Desplegado en producción el 28 de octubre de 2026; 235 pruebas automáticas |
+| Servicio de alertas | Desplegado en producción el 28 de octubre de 2026; 128 pruebas automáticas |
 | Servicio de recomendaciones | Desplegado en producción el 28 de octubre de 2026; 71 pruebas automáticas |
-| Aplicación web | Desplegada en producción en `https://energy-monitor.tech`; 228 pruebas automáticas |
+| Aplicación web | Desplegada en producción en `https://energy-monitor.tech`; 253 pruebas automáticas |
 | Aplicación móvil Android | En desarrollo, integrada con la API; 78 pruebas unitarias en 8 suites; fuera del despliegue en producción |
 | Infraestructura | VPS Hostinger KVM 2 con Docker Compose, Nginx, Let's Encrypt, RabbitMQ y GitHub Actions; pruebas de punta a punta de los servicios sobre la pila local (`device-flow` 24, `measurement-flow` 28, `alert-flow` 36, `activity-flow` 60 y `account-deletion-flow` 12, todas en verde) |
 

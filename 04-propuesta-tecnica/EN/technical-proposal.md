@@ -16,6 +16,7 @@ October 12, 2026 (updated October 28, 2026)
 | 1.1     | 10/20/2026 | Alignment with the deployed system: actual production infrastructure (Hostinger KVM 2 VPS for one month, free domain, Nginx, Let's Encrypt), continuous integration and deployment with GitHub Actions, recalculated costs, global administration and new events, status by component, and updated risks and discrepancies. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 10/24/2026 | Architecture in production: API gateway and security, device and measurement microservices; the core service remains a modular monolith with home, alert, recommendation and notification, whose migration is in progress; communication through internal REST and events on RabbitMQ with a *transactional outbox*; updated stack, infrastructure, status by component and risks. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.3     | 10/28/2026 | Complete migration: homes, notifications, alerts and recommendations as independent services and retirement of the core service (`energy-monitor-backend`); gateway routes, events between services (alerts, recommendations, home activity and account deletion code), account security rules (prior email verification, terms and Google accounts), continuous integration of the eight deployable repositories, tests and status by component as of October 28. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.4     | 10/28/2026 | Web help in Settings (documentation by role, support and news that the build assembles from the git history), photo viewer and photos of the members of a home (`profileImage` field in the internal profile), unusual consumption alert and updated test counts. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Abstract
 
@@ -86,7 +87,7 @@ EnergyMonitor started as a modular monolith built with Spring Modulith: a single
 | Measurement service (`en-monitor-measurement-service`, port 8085) | The only one that stores telemetry; history, latest reading, statistics, home consumption and consumption levels; announces each reading |
 | Home service (`en-monitor-home-service`, port 8086) | Homes, home types, members, OWNER and MEMBER roles, favorites, thresholds, home deletion and ownership transfer; answers the account-deletion and home-membership checks made by the other services |
 | Notification service (`en-monitor-notification-service`, port 8087) | Deliveries, preferences, email (the only one that sends email), Web Push, mobile push, in-app notices and home and device activity |
-| Alert service (`en-monitor-alert-service`, port 8088) | Consumption and connectivity alerts from the readings and the device events |
+| Alert service (`en-monitor-alert-service`, port 8088) | Consumption, connectivity and unusual consumption alerts (a reading of at least 200 W and 2.5 times the usual power of the device in the previous 7 days) from the readings and the device events |
 | Recommendation service (`en-monitor-recommendation-service`, port 8089) | Saving rules, evaluated every hour with the hourly energy from the measurement service |
 
 ### Organization Rules
@@ -144,7 +145,7 @@ Global roles are managed by the security service, while the OWNER and MEMBER rol
 
 ### Clients
 
-The web application separates its features by characteristic, manages texts with i18n and concentrates HTTP calls in `src/services/`. It is tested with Vitest and Testing Library. An administrator account sees only the administration experience (users, notifications and settings). The mobile application uses the expo-router structure and per-component style files, and is available in Spanish, English, French and Portuguese. On the Android emulator 10.0.2.2 is used instead of localhost, and CORS does not apply in React Native.
+The web application separates its features by characteristic, manages texts with i18n and concentrates HTTP calls in `src/services/`. It is tested with Vitest and Testing Library. An administrator account sees only the administration experience (users, notifications and settings). Settings offers the help in modals: documentation according to the role, technical support (only for users, who create the ticket as an email to an administrator) and news, which the build assembles from the `feat`, `fix` and `perf` commits of the git history, so every web deployment updates them. The profile photo is enlarged in a viewer inside the page (the CSP does not allow requesting `data:` with `fetch`) and the members of a home show their photos: the internal profile of security includes `profileImage` and the home service returns it. The mobile application uses the expo-router structure and per-component style files, and is available in Spanish, English, French and Portuguese. On the Android emulator 10.0.2.2 is used instead of localhost, and CORS does not apply in React Native.
 
 ### Development Conventions
 
@@ -173,7 +174,7 @@ Table 4 describes the production infrastructure.
 
 ### Continuous Integration and Deployment
 
-The repositories of the API gateway, the seven services, the web application and the infrastructure have GitHub Actions pipelines (the notification service added its own on October 28, 2026); the mobile application has no pipeline. Every pull request runs the tests (as of October 28, 2026: 773 for the security service, 260 for the home service, 234 for the notification service, 151 for the measurement service, 129 for the device service, 119 for the alert service, 71 for the recommendation service and 69 for the gateway, against MySQL 8.4 for those that need it; the 228 web tests with its build; and validation of the infrastructure configuration), which are required to merge. Every change that reaches `main` is deployed to the server after a manual approval of the `production` environment. The deployment takes a database backup, rebuilds only the changed component, checks the health of all the services and, if it fails, goes back to the previous version. The details are in the implementation and deployment manual (Cortés Parra & García Artunduaga, 2026).
+The repositories of the API gateway, the seven services, the web application and the infrastructure have GitHub Actions pipelines (the notification service added its own on October 28, 2026); the mobile application has no pipeline. Every pull request runs the tests (as of October 28, 2026: 774 for the security service, 260 for the home service, 235 for the notification service, 151 for the measurement service, 129 for the device service, 128 for the alert service, 71 for the recommendation service and 69 for the gateway, against MySQL 8.4 for those that need it; the 253 web tests with its build; and validation of the infrastructure configuration), which are required to merge. Every change that reaches `main` is deployed to the server after a manual approval of the `production` environment. The deployment takes a database backup, rebuilds only the changed component, checks the health of all the services and, if it fails, goes back to the previous version. The details are in the implementation and deployment manual (Cortés Parra & García Artunduaga, 2026).
 
 ### Hardware Cost
 
@@ -329,14 +330,14 @@ Table 12 presents progress as of October 28, 2026.
 |---|---|
 | Measuring device (firmware 1.3.8) | Operational. Linking a meter in production is pending evidence |
 | API gateway | Deployed in production; 69 automated tests on every pull request |
-| Security service | Deployed in production; 773 automated tests |
+| Security service | Deployed in production; 774 automated tests |
 | Device service | Deployed in production; 129 automated tests |
 | Measurement service | Deployed in production; 151 automated tests |
 | Home service | Deployed in production on October 28, 2026; 260 automated tests |
-| Notification service | Deployed in production on October 28, 2026; 234 automated tests |
-| Alert service | Deployed in production on October 28, 2026; 119 automated tests |
+| Notification service | Deployed in production on October 28, 2026; 235 automated tests |
+| Alert service | Deployed in production on October 28, 2026; 128 automated tests |
 | Recommendation service | Deployed in production on October 28, 2026; 71 automated tests |
-| Web application | Deployed in production at `https://energy-monitor.tech`; 228 automated tests |
+| Web application | Deployed in production at `https://energy-monitor.tech`; 253 automated tests |
 | Android mobile application | Under development, integrated with the API; 78 unit tests in 8 suites; outside the production deployment |
 | Infrastructure | Hostinger KVM 2 VPS with Docker Compose, Nginx, Let's Encrypt, RabbitMQ and GitHub Actions; end-to-end tests of the services on the local stack (`device-flow` 24, `measurement-flow` 28, `alert-flow` 36, `activity-flow` 60 and `account-deletion-flow` 12, all green) |
 
