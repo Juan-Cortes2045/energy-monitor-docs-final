@@ -8,6 +8,8 @@
 > **Móvil:** la app nativa es un proyecto aparte con su propio árbol de rutas —
 > ver [`navigation-map-mobile.md`](./navigation-map-mobile.md).
 
+> **Actualización del 27 de octubre de 2026 (contrastada con `AppRoutes.jsx`).** Cambios frente a lo que describe el resto de este documento: (1) existe la ruta **`/admin/users`** (administración, solo para cuentas con el rol global ADMIN y el permiso `USER.READ`, guarda `RequirePermission`); (2) `UserOnlyRoute` envía a una cuenta ADMIN de `/dashboard`, `/homes/:homeId` y `/favorites` a `/admin/users`, y su menú lateral solo muestra Administración, Notificaciones y Ajustes; (3) `GuestRoute` lleva al panel a quien abre `/login` o `/register` con sesión; (4) **`/account` ya está dentro de `ProtectedRoute`** (los puntos débiles 1 y 6 quedaron resueltos); (5) existe la ruta de reserva **`*`** con la página «no encontrada» (punto débil 2 resuelto); (6) **«Añadir cuenta» ya no existe** (punto débil 5 resuelto); (7) Notificaciones tiene **cuatro pestañas** (Todas, Alertas, Recomendaciones y Actividad) y un filtro por hogar o cuenta; (8) el responsable puede **transferir la propiedad** desde Usuarios; no hay invitaciones por correo. La versión gráfica actualizada, con el Mapa 4 de administración, está en [`navegacion/mapa-navegacion-web.md`](./navegacion/mapa-navegacion-web.md).
+
 ---
 
 ## 1. Árbol de pantallas
@@ -27,19 +29,21 @@
 │   ├── /recover-password           Pedir recuperación
 │   └── /verifyRecoverPassword      Verificar código → nueva contraseña  (2 pasos, 1 ruta)
 │
-├── /account                        Mi cuenta
-│
 └── PROTEGIDAS  (requieren sesión · sidebar lateral)
+    ├── /account                    Mi cuenta
     ├── /dashboard                  Panel: lista de hogares
     ├── /homes/:homeId              Detalle de un hogar
     │   └── Consumo · Historial · Usuarios · Dispositivos · Umbrales · Hogar
     │       (6 pestañas, NO son rutas: una sola URL)
     ├── /favorites                  Hogares marcados
-    ├── /notifications              Alertas y recomendaciones
-    └── /settings                   Ajustes
+    ├── /notifications              Alertas, recomendaciones y actividad (ADMIN: avisos de administración)
+    ├── /settings                   Ajustes
+    └── /admin/users                Administración (solo ADMIN con USER.READ)
+
+*                                   Página no encontrada
 ```
 
-**15 rutas declaradas.** Ninguna otra existe.
+**16 rutas declaradas más la ruta de reserva `*`.**
 
 ### Pantallas sin URL propia
 
@@ -136,10 +140,11 @@ las rutas usan reemplazo en lugar de apilado en los puntos de entrada y de salid
 |----------|:---------:|:-------:|:-----------:|
 | `/home`, `/about`, `/support` | ✅ | ✅ | ✅ |
 | `/login`, `/register`, `/VerifyAccount`, `/recover-password`, `/verifyRecoverPassword` | ✅ | ✅ | ✅ |
-| `/account` | ⚠️ abre vacío | ✅ | ✅ |
+| `/account` | ↩️ al login | ✅ | ✅ |
+| `/admin/users` | ↩️ al login | ↩️ al panel | ↩️ al panel (solo cuentas ADMIN) |
 | `/dashboard`, `/favorites`, `/notifications`, `/settings` | ↩️ al login | ✅ | ✅ |
 | Detalle → Consumo, Historial | ↩️ al login | ✅ | ✅ |
-| Detalle → Usuarios | ↩️ al login | solo lectura | invita y quita |
+| Detalle → Usuarios | ↩️ al login | solo lectura | quita miembros y transfiere la propiedad |
 | Detalle → Dispositivos | ↩️ al login | solo lectura | vincula y elimina |
 | Detalle → Umbrales | ↩️ al login | solo lectura | edita y guarda |
 | Detalle → Hogar | ↩️ al login | se sale, sin código | código de acceso, elimina |

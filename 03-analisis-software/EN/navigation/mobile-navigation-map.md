@@ -2,7 +2,7 @@
 
 **Project:** Electricity Consumption Monitor — EnergyMonitor
 **Record:** 3145556 — Software Analysis and Development (ADSO), SENA CIES Regional Huila
-**Version:** 1.0
+**Version:** 1.1 (October 27, 2026: legal window at registration, Bluetooth linking, home transfer and deletion, Activity tab, `/homes` redirects to the dashboard; the app has no administration)
 
 ---
 
@@ -35,7 +35,7 @@ flowchart TD
   LOGINCAB --> FORGOT
 
   LOGIN["Log in<br/>email and password<br/>/"]
-  REG["Sign up<br/>/register"]
+  REG["Sign up<br/>/register<br/>terms and privacy window"]
   VERIFY["Email verification<br/>6-digit code<br/>/verify-account"]
   FORGOT["Request recovery<br/>/recover-password"]
   VREC["Verify the recovery code<br/>/verify-recover-password"]
@@ -156,10 +156,10 @@ flowchart TD
     TCG2["Charts: 24 h area,<br/>donut and bars per device"]
     TCL["Progress bars<br/>for the daily and monthly limit"]
     THG["Period bars<br/>and ranking table"]
-    TUO["Owner: remove a member"]
-    TDO["Owner: link with the device<br/>code, edit and unlink"]
+    TUO["Owner: remove a member<br/>and transfer ownership"]
+    TDO["Owner: link over Bluetooth (BLE),<br/>edit, change Wi-Fi and unlink"]
     TTS["Default values switch<br/>and saving of thresholds"]
-    THP["Owner: delete the project"]
+    THP["Owner: delete the home"]
     THM["Member: leave the home"]
 
     TC --> TCG
@@ -207,7 +207,7 @@ flowchart TD
   FAVS --> FAVEMPTY
 
   NOTIF["Notifications<br/>/notifications"]
-  NTABS{"Three tabs with a counter"}
+  NTABS{"Four tabs with a counter<br/>and a filter by home or account"}
   NALL["All"]
   NAL["Alerts"]
   NREC["Recommendations"]
@@ -216,6 +216,9 @@ flowchart TD
   NTABS --> NALL
   NTABS --> NAL
   NTABS --> NREC
+  NTABS --> NACTV
+  NACTV["Activity"]
+  NACTV --> NACT
   NALL --> NACT
   NAL --> NACT
   NREC --> NACT
@@ -230,17 +233,15 @@ flowchart TD
   SETTINGS --> SETAVISO
   SETTINGS --> SETAYUDA
 
-  ACCOUNT["Account<br/>/account"]
+  ACCOUNT["My account<br/>/account, with a page title"]
   ACCED["Edit first and last name"]
   ACCFOTO["Change photo<br/>select from the gallery"]
   ACCPASS["Change password"]
-  ACCDEL["Delete account<br/>confirmation and password"]
-  ACCADDCUENTA["Add account<br/>declared option, not implemented"]
+  ACCDEL["Delete account<br/>password, or a mailed code<br/>for a Google account"]
   ACCOUNT --> ACCED
   ACCOUNT --> ACCFOTO
   ACCOUNT --> ACCPASS
   ACCOUNT --> ACCDEL
-  ACCOUNT --> ACCADDCUENTA
 
   MENU --> FAVS
   MENU --> NOTIF
@@ -256,7 +257,7 @@ flowchart TD
   classDef start fill:#eaf4ff,stroke:#4a90d9,stroke-width:2px,color:#123;
   class NTABS guard
   classDef guard fill:#fff4d6,stroke:#e0a800,stroke-width:2px,color:#4a3b00;
-  class FAVEMPTY,NALL,NAL,NREC,NACT,SETTEMA,SETIDIOMA,SETAVISO,SETAYUDA,ACCED,ACCFOTO,ACCPASS,ACCDEL,ACCADDCUENTA screen
+  class FAVEMPTY,NALL,NAL,NREC,NACT,SETTEMA,SETIDIOMA,SETAVISO,SETAYUDA,ACCED,ACCFOTO,ACCPASS,ACCDEL screen
   classDef screen fill:#ffffff,stroke:#8a8a8a,color:#222;
 ```
 
@@ -296,14 +297,14 @@ flowchart TD
 | Public | `/verify-recover-password` | Verify the recovery code |
 | Public | `/new-password` | Set a new password |
 | Private | `/dashboard` | Main panel |
-| Private | `/homes` | Auxiliary list, with no access from the menu |
+| Private | `/homes` | Redirects to `/dashboard` (no longer a screen) |
 | Private | `/home/[id]` | Home detail |
 | Private | `/favorites` | Favorites |
 | Private | `/notifications` | Notifications |
 | Private | `/settings` | Settings |
 | Private | `/account` | Account |
 
-**Total: 13 routes · 12 functional screens.**
+**Total: 13 routes · 12 functional screens.** The app has no landing page and no administration screens.
 
 ## 7. Side menu structure
 
@@ -317,9 +318,9 @@ Order of the items, from top to bottom:
 | 3 | **Favorites** | `/favorites` |
 | 4 | **Notifications** — with a pending badge | `/notifications` |
 | 5 | **Settings** | `/settings` |
-| Footer | **Profile** — avatar, name and menu button | Menu: My account · Add account · Log out |
+| Footer | **Profile** — avatar and name | My account · Sign out |
 
-The layer opens with a fixed button in the top left corner and closes when the darkened backdrop is tapped, with a 300 millisecond animation.
+The layer opens with a fixed button in the top left corner and closes when the darkened backdrop is tapped or with Android's back button, with a 300 millisecond animation. When closed, it is hidden from the screen reader.
 
 ## 8. Differences with the web navigation
 
@@ -327,11 +328,12 @@ The layer opens with a fixed button in the top left corner and closes when the d
 |---|---|---|
 | Welcome page | Yes (`/home`) | No: it opens at the log in screen |
 | Password recovery | 2 routes | 3 routes |
-| Account screen | Modal over the current screen | Dedicated screen (`/account`) |
+| Account screen | `/account` screen inside the protected zone | Dedicated screen (`/account`) with a title |
+| Administration | Yes (`/admin/users`, ADMIN role) | No |
 | Side menu | Fixed or collapsible | Sliding layer with a 300 ms animation |
 | Detail sections | Top horizontal tabs | Bottom bar with icons |
-| Device registration | Bluetooth from the browser | Code written by hand |
-| Total routes | 14 | 13 |
+| Device registration | Web Bluetooth (Chrome or Edge) | Native phone Bluetooth (BLE) |
+| Total routes | 16 + not found page | 13 |
 
 ## 9. Related artifacts
 

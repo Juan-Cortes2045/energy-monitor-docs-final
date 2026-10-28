@@ -2,7 +2,7 @@
 
 **Proyecto:** Monitor de Consumo Eléctrico — EnergyMonitor
 **Ficha:** 3145556 — Análisis y Desarrollo de Software (ADSO), SENA CIES Regional Huila
-**Versión:** 1.0
+**Versión:** 1.1 (27 de octubre de 2026: ventana legal en el registro, vinculación por Bluetooth, transferencia y eliminación del hogar, pestaña Actividad, `/homes` redirige al panel; la app no tiene administración)
 
 ---
 
@@ -35,7 +35,7 @@ flowchart TD
   LOGINCAB --> FORGOT
 
   LOGIN["Inicio de sesión<br/>correo y contraseña<br/>/"]
-  REG["Registrarse<br/>/register"]
+  REG["Registrarse<br/>/register<br/>ventana de términos y privacidad"]
   VERIFY["Verificación de correo<br/>código de 6 dígitos<br/>/verify-account"]
   FORGOT["Solicitar recuperación<br/>/recover-password"]
   VREC["Verificar código de recuperación<br/>/verify-recover-password"]
@@ -156,10 +156,10 @@ flowchart TD
     TCG2["Gráficas: área de 24 h,<br/>circular y barras por dispositivo"]
     TCL["Barras de avance<br/>del límite diario y mensual"]
     THG["Barras del periodo<br/>y tabla de ranking"]
-    TUO["Propietario: expulsar miembro"]
-    TDO["Propietario: vincular con el código<br/>del dispositivo, editar y desvincular"]
+    TUO["Propietario: quitar miembro<br/>y transferir la propiedad"]
+    TDO["Propietario: vincular por Bluetooth (BLE),<br/>editar, cambiar Wi-Fi y desvincular"]
     TTS["Interruptor de valores predeterminados<br/>y guardado de límites"]
-    THP["Propietario: eliminar el proyecto"]
+    THP["Propietario: eliminar el hogar"]
     THM["Miembro: salir del hogar"]
 
     TC --> TCG
@@ -207,15 +207,18 @@ flowchart TD
   FAVS --> FAVEMPTY
 
   NOTIF["Notificaciones<br/>/notifications"]
-  NTABS{"Tres pestañas con contador"}
+  NTABS{"Cuatro pestañas con contador<br/>y filtro por hogar o cuenta"}
   NALL["Todas"]
   NAL["Alertas"]
   NREC["Recomendaciones"]
+  NACTV["Actividad"]
   NACT["Marcar leída · eliminar<br/>Marcar todas como leídas"]
   NOTIF --> NTABS
   NTABS --> NALL
   NTABS --> NAL
   NTABS --> NREC
+  NTABS --> NACTV
+  NACTV --> NACT
   NALL --> NACT
   NAL --> NACT
   NREC --> NACT
@@ -230,17 +233,15 @@ flowchart TD
   SETTINGS --> SETAVISO
   SETTINGS --> SETAYUDA
 
-  ACCOUNT["Cuenta<br/>/account"]
+  ACCOUNT["Mi cuenta<br/>/account, con título de página"]
   ACCED["Editar nombre y apellido"]
   ACCFOTO["Cambiar fotografía<br/>seleccionar de la galería"]
   ACCPASS["Cambiar contraseña"]
-  ACCDEL["Eliminar cuenta<br/>confirmación y contraseña"]
-  ACCADDCUENTA["Agregar cuenta<br/>opción declarada, sin implementar"]
+  ACCDEL["Eliminar cuenta<br/>contraseña o código por correo<br/>si la cuenta es de Google"]
   ACCOUNT --> ACCED
   ACCOUNT --> ACCFOTO
   ACCOUNT --> ACCPASS
   ACCOUNT --> ACCDEL
-  ACCOUNT --> ACCADDCUENTA
 
   MENU --> FAVS
   MENU --> NOTIF
@@ -256,7 +257,7 @@ flowchart TD
   classDef start fill:#eaf4ff,stroke:#4a90d9,stroke-width:2px,color:#123;
   class NTABS guard
   classDef guard fill:#fff4d6,stroke:#e0a800,stroke-width:2px,color:#4a3b00;
-  class FAVEMPTY,NALL,NAL,NREC,NACT,SETTEMA,SETIDIOMA,SETAVISO,SETAYUDA,ACCED,ACCFOTO,ACCPASS,ACCDEL,ACCADDCUENTA screen
+  class FAVEMPTY,NALL,NAL,NREC,NACT,SETTEMA,SETIDIOMA,SETAVISO,SETAYUDA,ACCED,ACCFOTO,ACCPASS,ACCDEL screen
   classDef screen fill:#ffffff,stroke:#8a8a8a,color:#222;
 ```
 
@@ -296,14 +297,14 @@ flowchart TD
 | Pública | `/verify-recover-password` | Verificar código de recuperación |
 | Pública | `/new-password` | Definir nueva contraseña |
 | Privada | `/dashboard` | Panel principal |
-| Privada | `/homes` | Listado auxiliar, sin acceso desde el menú |
+| Privada | `/homes` | Redirige a `/dashboard` (ya no es una pantalla) |
 | Privada | `/home/[id]` | Detalle del hogar |
 | Privada | `/favorites` | Favoritos |
 | Privada | `/notifications` | Notificaciones |
 | Privada | `/settings` | Ajustes |
 | Privada | `/account` | Cuenta |
 
-**Total: 13 rutas · 12 pantallas funcionales.**
+**Total: 13 rutas · 12 pantallas funcionales.** La app no tiene landing page ni pantallas de administración.
 
 ## 7. Estructura del menú lateral
 
@@ -317,9 +318,9 @@ Orden de los elementos, de arriba hacia abajo:
 | 3 | **Favoritos** | `/favorites` |
 | 4 | **Notificaciones** — con insignia de pendientes | `/notifications` |
 | 5 | **Ajustes** | `/settings` |
-| Pie | **Perfil** — avatar, nombre y botón de menú | Menú: Mi cuenta · Agregar cuenta · Cerrar sesión |
+| Pie | **Perfil** — avatar y nombre | Mi cuenta · Cerrar sesión |
 
-La capa se abre con un botón fijo en la esquina superior izquierda y se cierra al tocar el fondo oscurecido, con una animación de 300 milisegundos.
+La capa se abre con un botón fijo en la esquina superior izquierda y se cierra al tocar el fondo oscurecido o con el botón «atrás» de Android, con una animación de 300 milisegundos. Cerrada, queda oculta para el lector de pantalla.
 
 ## 8. Diferencias con la navegación web
 
@@ -327,11 +328,12 @@ La capa se abre con un botón fijo en la esquina superior izquierda y se cierra 
 |---|---|---|
 | Página de bienvenida | Sí (`/home`) | No: abre en el inicio de sesión |
 | Recuperación de contraseña | 2 rutas | 3 rutas |
-| Pantalla de cuenta | Modal sobre la pantalla actual | Pantalla propia (`/account`) |
+| Pantalla de cuenta | Pantalla `/account` dentro de la zona protegida | Pantalla propia (`/account`) con título |
+| Administración | Sí (`/admin/users`, rol ADMIN) | No |
 | Menú lateral | Fijo o plegable | Capa deslizable con animación de 300 ms |
 | Secciones del detalle | Pestañas horizontales superiores | Barra inferior con iconos |
-| Alta de dispositivo | Bluetooth desde el navegador | Código escrito a mano |
-| Total de rutas | 14 | 13 |
+| Alta de dispositivo | Web Bluetooth (Chrome o Edge) | Bluetooth nativo del teléfono (BLE) |
+| Total de rutas | 16 + página no encontrada | 13 |
 
 ## 9. Artefactos relacionados
 

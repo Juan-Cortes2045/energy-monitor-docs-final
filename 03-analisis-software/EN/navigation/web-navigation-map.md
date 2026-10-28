@@ -2,7 +2,7 @@
 
 **Project:** Electricity Consumption Monitor — EnergyMonitor
 **Record:** 3145556 — Software Analysis and Development (ADSO), SENA CIES Regional Huila
-**Version:** 1.0
+**Version:** 1.1 (October 27, 2026: administrator role, guest, permission and user-only guards, activity notifications, legal window and account inside the protected zone)
 
 ---
 
@@ -33,7 +33,7 @@ flowchart TD
 
   LOGIN["Log in<br/>email and password<br/>/login"]
   REG["Sign up<br/>name, email and password<br/>/register"]
-  LEGAL["Accept the terms of use<br/>and the privacy policy"]
+  LEGAL["Accept the terms of use<br/>and the privacy policy<br/>legal window with two tabs"]
   VERIFY["Email verification<br/>6-digit code<br/>/VerifyAccount"]
   FORGOT["Request recovery<br/>email only<br/>/recover-password"]
   VRESET["Verify the code and set<br/>the new password<br/>/verifyRecoverPassword"]
@@ -45,11 +45,18 @@ flowchart TD
 
   VERIFY -.->|"verified account"| LOGIN
   VRESET -.->|"password saved"| LOGIN
-  LOGIN -.->|"valid credentials"| SIDE
+  LOGIN -.->|"valid credentials"| ROLE
 
-  GUARD{"ProtectedRoute<br/>Is there a session with a token?"}
+  GUEST{"GuestRoute<br/>Is there a session already?"}
+  GUEST -->|"yes: /login and /register<br/>go to the dashboard"| ROLE
+
+  GUARD{"ProtectedRoute<br/>Is there a session?"}
   GUARD -->|no| LOGIN
-  GUARD -->|yes| SIDE
+  GUARD -->|yes| ROLE
+  ROLE{"Does the account have<br/>the ADMIN role?"}
+  ROLE -->|no| SIDE
+  ROLE -->|yes| ADMIN
+  ADMIN["ADMINISTRATION<br/>/admin/users<br/>see Map 4"]
 
   SIDE["SIDE MENU<br/>present throughout the private zone"]
 
@@ -75,9 +82,9 @@ flowchart TD
   LOGOUT:::exit
   classDef start fill:#eaf4ff,stroke:#4a90d9,stroke-width:2px,color:#123;
   classDef exit fill:#fcebeb,stroke:#d97b7b,stroke-width:2px,color:#5c1f1f;
-  class SIDE module
+  class SIDE,ADMIN module
   classDef module fill:#d6f0e4,stroke:#6fbf9a,stroke-width:2px,color:#124;
-  class REDIR,GUARD guard
+  class REDIR,GUARD,GUEST,ROLE guard
   classDef guard fill:#fff4d6,stroke:#e0a800,stroke-width:2px,color:#4a3b00;
   class HOME,ABOUT,SUPPORT,LOGIN,REG,LEGAL,VERIFY,FORGOT,VRESET,NINICIO,NHOGAR,NFAV,NNOTIF,NSET,NPERFIL screen
   classDef screen fill:#ffffff,stroke:#8a8a8a,color:#222;
@@ -155,11 +162,11 @@ flowchart TD
     TCG2["Charts: 24 h area,<br/>donut and bars per device"]
     TCL["Progress bars<br/>for the daily and monthly limit"]
     THG["Period chart<br/>and ranking table"]
-    TUO["Owner: remove a member"]
-    TDO["Owner: link via Bluetooth,<br/>edit and unlink"]
+    TUO["Owner: remove a member<br/>and transfer ownership"]
+    TDO["Owner: link via Bluetooth,<br/>edit, change Wi-Fi and unlink"]
     TTS["Default values switch<br/>and saving of thresholds"]
-    THP["Owner: copy the access code<br/>and delete the project"]
-    THM["Member: copy the code and leave the home"]
+    THP["Owner: copy the access code<br/>and delete the home typing its name"]
+    THM["Member: leave the home"]
 
     TC --> TCG
     TC --> TCG2
@@ -203,15 +210,18 @@ flowchart TD
   FAVS --> FAVEMPTY
 
   NOTIF["Notifications<br/>/notifications"]
-  NTABS{"Three tabs with a counter"}
+  NTABS{"Four tabs with a counter<br/>and a filter by home or account"}
   NALL["All"]
   NAL["Alerts"]
   NREC["Recommendations"]
-  NACT["Mark as read · resolve · delete<br/>Mark all as read"]
+  NACTV["Activity<br/>account, homes and devices"]
+  NACT["Mark as read · delete<br/>Mark all as read<br/>Delete resolved or read"]
   NOTIF --> NTABS
   NTABS --> NALL
   NTABS --> NAL
   NTABS --> NREC
+  NTABS --> NACTV
+  NACTV --> NACT
   NALL --> NACT
   NAL --> NACT
   NREC --> NACT
@@ -226,17 +236,15 @@ flowchart TD
   SETTINGS --> SETAVISO
   SETTINGS --> SETAYUDA
 
-  ACCOUNT["Account<br/>modal over the current screen"]
+  ACCOUNT["My account<br/>/account (requires a session)"]
   ACCED["Edit first and last name"]
   ACCFOTO["Change photo<br/>resize and convert to data URL"]
   ACCPASS["Change password"]
-  ACCDEL["Delete account<br/>confirmation and password"]
-  ACCADDCUENTA["Add account<br/>declared option, not implemented"]
+  ACCDEL["Delete account<br/>password, or a mailed code<br/>for a Google account"]
   ACCOUNT --> ACCED
   ACCOUNT --> ACCFOTO
   ACCOUNT --> ACCPASS
   ACCOUNT --> ACCDEL
-  ACCOUNT --> ACCADDCUENTA
 
   MENU --> FAVS
   MENU --> NOTIF
@@ -252,11 +260,70 @@ flowchart TD
   classDef start fill:#eaf4ff,stroke:#4a90d9,stroke-width:2px,color:#123;
   class NTABS guard
   classDef guard fill:#fff4d6,stroke:#e0a800,stroke-width:2px,color:#4a3b00;
-  class FAVEMPTY,NALL,NAL,NREC,NACT,SETTEMA,SETIDIOMA,SETAVISO,SETAYUDA,ACCED,ACCFOTO,ACCPASS,ACCDEL,ACCADDCUENTA screen
+  class FAVEMPTY,NALL,NAL,NREC,NACTV,NACT,SETTEMA,SETIDIOMA,SETAVISO,SETAYUDA,ACCED,ACCFOTO,ACCPASS,ACCDEL screen
   classDef screen fill:#ffffff,stroke:#8a8a8a,color:#222;
 ```
 
 **Figure 3.** [Download PNG image](web-navigation-map-3.png)
+
+> The PNG Figures 1 to 3 predate version 1.1 (`[TO BE UPDATED]`): export them again from the Mermaid code of this file.
+
+## 3.1 Map 4 — Administration (ADMIN role)
+
+An account with the global `ADMIN` role only sees the administration, its notifications, the settings and its account. `UserOnlyRoute` sends it back to `/admin/users` when it tries to open the home screens, and `RequirePermission` sends to the dashboard whoever lacks `USER.READ`.
+
+```mermaid
+---
+title: Administration — Web application
+---
+flowchart TD
+
+  AENTRY([" Sign-in of an ADMIN account "])
+  APERM{"RequirePermission<br/>Has USER.READ?"}
+  AENTRY --> APERM
+  APERM -->|no| ADASH["Homes dashboard<br/>/dashboard"]
+  APERM -->|yes| AUSERS
+
+  AUSERS["Platform users<br/>/admin/users"]
+  ASEARCH["Search by name or email<br/>pages of 20"]
+  ASTATUS["Change status<br/>Active · Inactive · Blocked<br/>(USER.MANAGE)"]
+  ACONF1["Confirm the change<br/>when leaving Active"]
+  AROLE["Grant or revoke ADMIN<br/>(ROLE.MANAGE)"]
+  ACONF2["Confirm the role"]
+  AUSERS --> ASEARCH
+  AUSERS --> ASTATUS
+  ASTATUS --> ACONF1
+  AUSERS --> AROLE
+  AROLE --> ACONF2
+
+  ASIDE["ADMINISTRATOR SIDE MENU"]
+  ANOTIF["Administration notifications<br/>/notifications"]
+  ANACT["Mark read · all · delete"]
+  ASET["Settings<br/>language, theme and help<br/>no notification preferences"]
+  AACC["My account<br/>/account"]
+  AUSERGUARD{"UserOnlyRoute<br/>/dashboard, /homes/:id, /favorites"}
+  AUSERS --> ASIDE
+  ASIDE --> ANOTIF
+  ANOTIF --> ANACT
+  ASIDE --> ASET
+  ASIDE --> AACC
+  ASIDE -.->|"tries to open homes"| AUSERGUARD
+  AUSERGUARD -.->|"redirects"| AUSERS
+  ASIDE -->|"Sign out"| AOUT(["Back to /login"])
+
+  AENTRY:::start
+  AOUT:::exit
+  classDef start fill:#eaf4ff,stroke:#4a90d9,stroke-width:2px,color:#123;
+  classDef exit fill:#fcebeb,stroke:#d97b7b,stroke-width:2px,color:#5c1f1f;
+  class AUSERS,ASIDE module
+  classDef module fill:#d6f0e4,stroke:#6fbf9a,stroke-width:2px,color:#124;
+  class APERM,AUSERGUARD guard
+  classDef guard fill:#fff4d6,stroke:#e0a800,stroke-width:2px,color:#4a3b00;
+  class ADASH,ASEARCH,ASTATUS,ACONF1,AROLE,ACONF2,ANOTIF,ANACT,ASET,AACC screen
+  classDef screen fill:#ffffff,stroke:#8a8a8a,color:#222;
+```
+
+**Figure 4.** PNG image pending: `web-navigation-map-4.png` (export this diagram).
 
 ## 4. How to read the maps
 
@@ -275,7 +342,10 @@ flowchart TD
 | **Control point** | **Behavior** |
 |---|---|
 | Redirection of `/` | The root route sends to `/home`; there is no intermediate screen |
-| `ProtectedRoute` | Without an access token in the session, every private route redirects to `/login` |
+| `GuestRoute` | With an active session, `/login` and `/register` go straight to the dashboard |
+| `ProtectedRoute` | Without a session, every private route (including `/account`) redirects to `/login` |
+| `UserOnlyRoute` | An ADMIN account opening `/dashboard`, `/homes/:homeId` or `/favorites` goes back to `/admin/users` |
+| `RequirePermission` | Without the `USER.READ` permission, `/admin/users` redirects to `/dashboard` (the API answers 403 anyway) |
 | `HomeRoute` | If the home in the URL does not exist or is not accessible, it shows «Home not found» with a back button |
 | `OWNER` or `MEMBER` role | The detail receives the role through the route context and shows or hides the management actions |
 | Expired session | The HTTP client clears the session and sends the browser to `/login` a single time |
@@ -286,16 +356,20 @@ flowchart TD
 | **Zone** | **Routes** | **Screens** |
 |---|---|---|
 | Public | `/home`, `/about`, `/support`, `/login`, `/register`, `/VerifyAccount`, `/recover-password`, `/verifyRecoverPassword` | 8 |
-| Private | `/dashboard`, `/homes/:homeId`, `/favorites`, `/notifications`, `/settings` | 5 |
-| Modal | `/account` | 1 |
-| **Total** | | **14** |
+| Private (user) | `/dashboard`, `/homes/:homeId`, `/favorites` | 3 |
+| Private (user and administrator) | `/notifications`, `/settings`, `/account` | 3 |
+| Administration | `/admin/users` | 1 |
+| Any other route | `*` | Not found page |
+| **Total** | | **15 + `*`** |
+
+**Note:** `/account` is now **inside** `ProtectedRoute`: without a session it redirects to `/login`.
 
 ## 7. Private screen layout
 
-The five private screens share the same layout:
+The private screens share the same layout:
 
 - **Left column — side menu:** Home · My homes · Favorites · Notifications · Settings
-- **Lower left column — profile:** avatar with a menu for the account, add account and log out
+- **Lower left column — profile:** avatar with My account and Sign out (ADMIN account side menu: Administration · Notifications · Settings)
 - **Right column — header:** breadcrumbs and the screen action button
 - **Right column — body:** the screen content, with its own scrolling
 

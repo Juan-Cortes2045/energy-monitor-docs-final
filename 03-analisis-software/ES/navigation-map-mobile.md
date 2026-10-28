@@ -8,6 +8,8 @@
 > ver [`navigation-map.md`](./navigation-map.md).
 > **Mockups:** [`mockup/layout/mobile/`](../mockup/layout/mobile/) — 27 pantallas, en 7 módulos.
 
+> **Actualización del 27 de octubre de 2026 (contrastada con `src/app/` y `src/components/layout/`).** Cambios frente al resto de este documento: (1) **`/homes` redirige a `/dashboard`**, ya no es una pantalla temporal; (2) **«Añadir cuenta» ya no existe**: el pie del menú lateral ofrece Mi cuenta y Cerrar sesión (punto débil 5 resuelto); (3) el menú se cierra también con el botón «atrás» de Android y queda oculto para el lector de pantalla; (4) el registro abre los términos y la política de privacidad en una ventana con los mismos textos de la web; (5) Notificaciones tiene **cuatro pestañas** (incluida Actividad) y filtro por hogar; (6) la vinculación de dispositivos es por **Bluetooth nativo (BLE)**; (7) el responsable puede transferir la propiedad y eliminar el hogar desde la app; (8) Ajustes y Mi cuenta tienen título de página. La app **no tiene landing page ni pantallas de administración**. La versión gráfica actualizada está en [`navegacion/mapa-navegacion-movil.md`](./navegacion/mapa-navegacion-movil.md).
+
 ---
 
 ## 1. Árbol de pantallas
@@ -31,7 +33,7 @@
     ├── /notifications              Alertas y recomendaciones
     ├── /settings                   Ajustes
     ├── /account                    Mi cuenta
-    └── /homes                      Pantalla temporal, sin destino
+    └── /homes                      Redirige a /dashboard
 ```
 
 **13 rutas de pantalla** más la raíz del enrutador. A diferencia de la web, **no existe landing**: la

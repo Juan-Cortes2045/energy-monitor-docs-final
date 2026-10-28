@@ -2,18 +2,18 @@
 
 **Project:** Electrical Consumption Monitor — EnergyMonitor
 **Record:** 3145556 — Software Analysis and Development (ADSO), SENA CIES Regional Huila
-**Version:** 1.0
+**Version:** 1.1 (October 27, 2026)
 
 ---
 
 ## 1. Contents
 
-Each application is documented with **three maps**, plus the navigation control points.
+Each application is documented with **three maps**, plus the navigation control points; the web has a fourth map with the administration.
 
-| **Document** | **Map 1** | **Map 2** | **Map 3** |
-|---|---|---|---|
-| [`web-navigation-map.md`](web-navigation-map.md) | General flow: entry, public zone, guard and side menu destinations | Dashboard, states and the six sections of the home detail | Favorites, notifications, settings and the account modal |
-| [`mobile-navigation-map.md`](mobile-navigation-map.md) | General flow: launch, session restore, guard and side menu destinations | Main panel, states and the six sections of the home detail | Favorites, notifications, settings and the account screen |
+| **Document** | **Map 1** | **Map 2** | **Map 3** | **Map 4** |
+|---|---|---|---|---|
+| [`web-navigation-map.md`](web-navigation-map.md) | General flow: entry, public zone, guards (guest, session and ADMIN role) and side menu destinations | Dashboard, states and the six sections of the home detail | Favorites, notifications (four tabs), settings and My account | Administration: users, status, role, notices and administrator settings |
+| [`mobile-navigation-map.md`](mobile-navigation-map.md) | General flow: launch, session restore, guard and side menu destinations | Main panel, states and the six sections of the home detail | Favorites, notifications (four tabs), settings and the account screen | — (the app has no administration) |
 
 ### Companion documents
 
@@ -34,9 +34,12 @@ Each diagram also ships as a PNG, ready to drop into the document:
 | `web-navigation-map-1.png` | General flow of the web application |
 | `web-navigation-map-2.png` | Dashboard and home detail |
 | `web-navigation-map-3.png` | Auxiliary screens of the web application |
+| `web-navigation-map-4.png` | Administration (**pending**: does not exist yet) |
 | `mobile-navigation-map-1.png` | General flow of the mobile application |
 | `mobile-navigation-map-2.png` | Main panel and home detail |
 | `mobile-navigation-map-3.png` | Auxiliary screens of the mobile application |
+
+> The existing PNGs are from version 1.0 and must be exported again from the version 1.1 Mermaid (`[TO BE UPDATED]`).
 
 ## 2. Source of the information
 
@@ -100,20 +103,46 @@ The maps are written in **Mermaid**, embedded inside Markdown documents.
 |---|---|---|
 | Welcome page | Yes | No: it opens on log in |
 | Password recovery | 2 routes | 3 routes |
-| Account screen | Modal over the current screen | Own screen (`/account`) |
+| Account screen | Protected `/account` screen | Own screen with a title |
+| Administration | Yes (`/admin/users`, ADMIN role) | No |
+| Device linking | Web Bluetooth (Chrome or Edge) | Native Bluetooth (BLE) |
 | Side menu | Fixed or collapsible | Animated slide-in layer |
 | Detail sections | Top horizontal tabs | Bottom bar with icons |
-| Total routes | 14 | 13 |
+| Total routes | 16 + not found page | 13 |
 
 ## 6. Observations
 
 | **#** | **Observation** | **Detail** |
 |---|---|---|
-| 1 | The mobile `/homes` route has no entry point from any menu | It is an auxiliary screen declared in the router with no link in the interface |
-| 2 | The "Add account" option appears in both profile menus but does nothing | Declared in the interface but not implemented |
-| 3 | The web app has no catch-all route | An unknown address leaves a blank screen |
-| 4 | The mobile app has no catch-all route | Expo Router shows its own "screen not found" page |
-| 5 | The account screen is not behind `ProtectedRoute` on the web | The route is declared outside the protected block; the component is a modal that does not require a close prop |
+| 1 | Solved: the mobile `/homes` route | It now redirects to `/dashboard` |
+| 2 | Solved: the "Add account" option | It no longer appears in the profile menus |
+| 3 | Solved: web catch-all route | `*` shows the "not found" page (`NotFound.jsx`) |
+| 4 | The mobile app has no catch-all route of its own | Expo Router shows its own "screen not found" page |
+| 5 | Solved: `/account` on the web | It is inside `ProtectedRoute` |
+| 6 | An ADMIN account in the mobile app | The app does not distinguish administrators; the administration screens exist only on the web |
+
+## 6.1 Status of the mockups against the code
+
+The HTML mockups in `mockup/layout/` were drawn before the latest features. They were not redrawn in this version; the table shows what is missing or out of date.
+
+| **Screen in the code** | **Platform** | **Mockup** | **Status** |
+|---|---|---|---|
+| Platform users (`/admin/users`): search, table, status and role | Web | — | **Missing** (`mockup/layout/web/admin/users.html`) |
+| Status change and administrator role confirmations | Web | — | **Missing** (`mockup/layout/web/admin/users-confirm-modal.html`) |
+| Administration notifications | Web | — | **Missing** (`mockup/layout/web/admin/notifications.html`) |
+| Administrator side menu and settings (without notifications) | Web | `web/settings/settings.html` (user) | ADMIN variant **missing** |
+| Activity tab and home filter in Notifications | Web and mobile | `web/notifications/*.html`, `mobile/notifications/notifications.html` | Out of date: only three tabs |
+| Terms and privacy window at registration | Web | `web/auth/register-legal-modal.html` | Current |
+| Terms and privacy window at registration | Mobile | — | **Missing** (`mockup/layout/mobile/auth/register-legal-modal.html`) |
+| Persistent password rules hint | Web and mobile | `*/auth/register.html` | Check that it shows the persistent hint |
+| Transfer ownership (confirmation with checkbox) | Web and mobile | `*/home-detail/*users.html` | Modal **missing** |
+| Delete home typing its name | Web and mobile | `web/home-detail/owner/home.html`, `mobile/home-detail/home-detail-home.html` | Modal **missing** |
+| Bluetooth linking (step wizard) | Mobile | `mobile/home-detail/home-detail-link-device.html` | Out of date: showed the code typed by hand |
+| Change Wi-Fi network and edit device | Web and mobile | — | **Missing** |
+| Delete a Google account with a code | Web and mobile | `*/account/account-delete-modal.html` | Out of date: only asks for the password |
+| Page titles on Settings and My account, icons instead of emojis | Mobile | `mobile/settings/settings.html`, `mobile/account/account.html` | Out of date |
+| Support with administrator contacts and footer | Web | `web/landing/support.html` | To review |
+| `mobile/dashboard/homes.html` | Mobile | Exists | Obsolete: the `/homes` route is no longer a screen |
 
 ## 7. Related artifacts
 

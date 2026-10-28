@@ -2,18 +2,18 @@
 
 **Proyecto:** Monitor de Consumo Eléctrico — EnergyMonitor
 **Ficha:** 3145556 — Análisis y Desarrollo de Software (ADSO), SENA CIES Regional Huila
-**Versión:** 1.0
+**Versión:** 1.1 (27 de octubre de 2026)
 
 ---
 
 ## 1. Contenido
 
-Estos mapas son la **versión gráfica** del recorrido de las dos aplicaciones. Cada aplicación se documenta con tres diagramas más el detalle de los puntos de control.
+Estos mapas son la **versión gráfica** del recorrido de las dos aplicaciones. Cada aplicación se documenta con tres diagramas más el detalle de los puntos de control; la web tiene además un cuarto mapa con la administración.
 
-| **Documento** | **Mapa 1** | **Mapa 2** | **Mapa 3** |
-|---|---|---|---|
-| [`mapa-navegacion-web.md`](mapa-navegacion-web.md) | Flujo general: entrada, zona pública, guarda y destinos del menú lateral | Panel de hogares, estados y las seis secciones del detalle | Favoritos, notificaciones, ajustes y el modal de cuenta |
-| [`mapa-navegacion-movil.md`](mapa-navegacion-movil.md) | Flujo general: apertura, restauración, guarda y destinos del menú lateral | Panel principal, estados y las seis secciones del detalle | Favoritos, notificaciones, ajustes y la pantalla de cuenta |
+| **Documento** | **Mapa 1** | **Mapa 2** | **Mapa 3** | **Mapa 4** |
+|---|---|---|---|---|
+| [`mapa-navegacion-web.md`](mapa-navegacion-web.md) | Flujo general: entrada, zona pública, guardas (invitado, sesión y rol ADMIN) y destinos del menú lateral | Panel de hogares, estados y las seis secciones del detalle | Favoritos, notificaciones (cuatro pestañas), ajustes y Mi cuenta | Administración: usuarios, estado, rol, avisos y ajustes del administrador |
+| [`mapa-navegacion-movil.md`](mapa-navegacion-movil.md) | Flujo general: apertura, restauración, guarda y destinos del menú lateral | Panel principal, estados y las seis secciones del detalle | Favoritos, notificaciones (cuatro pestañas), ajustes y la pantalla de cuenta | — (la app no tiene administración) |
 
 ### Documentos complementarios
 
@@ -37,9 +37,12 @@ Cada diagrama incluye además su versión en PNG, lista para insertar en el docu
 | `mapa-navegacion-web-1.png` | Flujo general de la web |
 | `mapa-navegacion-web-2.png` | Panel de hogares y detalle del hogar |
 | `mapa-navegacion-web-3.png` | Pantallas auxiliares de la web |
+| `mapa-navegacion-web-4.png` | Administración (**pendiente**: no existe todavía) |
 | `mapa-navegacion-movil-1.png` | Flujo general del móvil |
 | `mapa-navegacion-movil-2.png` | Panel principal y detalle del hogar |
 | `mapa-navegacion-movil-3.png` | Pantallas auxiliares del móvil |
+
+> Los PNG existentes son de la versión 1.0 y deben exportarse de nuevo desde el Mermaid de la versión 1.1 (`[POR ACTUALIZAR]`).
 
 ## 2. Origen de la información
 
@@ -103,20 +106,46 @@ Los mapas están escritos en **Mermaid**, embebido dentro de los documentos Mark
 |---|---|---|
 | Página de bienvenida | Sí | No: abre en el inicio de sesión |
 | Recuperación de contraseña | 2 rutas | 3 rutas |
-| Pantalla de cuenta | Modal sobre la pantalla actual | Pantalla propia |
+| Pantalla de cuenta | Pantalla `/account` protegida | Pantalla propia con título |
+| Administración | Sí (`/admin/users`, rol ADMIN) | No |
+| Vinculación de dispositivos | Web Bluetooth (Chrome o Edge) | Bluetooth nativo (BLE) |
 | Menú lateral | Fijo o plegable | Capa deslizable animada |
 | Secciones del detalle | Pestañas superiores | Barra inferior con iconos |
-| Total de rutas | 14 | 13 |
+| Total de rutas | 16 + página no encontrada | 13 |
 
 ## 6. Observaciones
 
 | **#** | **Observación** | **Detalle** |
 |---|---|---|
-| 1 | La ruta `/homes` del móvil no tiene acceso desde ningún menú | Es una pantalla auxiliar declarada en el enrutador pero sin enlace en la interfaz |
-| 2 | La opción «Agregar cuenta» aparece en ambos menús de perfil sin funcionar | Está declarada en la interfaz pero no implementada |
-| 3 | La web no tiene ruta de reserva | Una dirección desconocida deja la pantalla en blanco |
-| 4 | El móvil no tiene ruta de reserva | Expo Router muestra su propia pantalla de «pantalla no encontrada» |
-| 5 | La pantalla de cuenta no está protegida por `ProtectedRoute` en la web | La ruta está declarada fuera del bloque protegido; el componente es un modal que no exige prop de cierre |
+| 1 | Resuelta: la ruta `/homes` del móvil | Ahora redirige a `/dashboard` |
+| 2 | Resuelta: la opción «Agregar cuenta» | Ya no aparece en los menús de perfil |
+| 3 | Resuelta: ruta de reserva de la web | `*` muestra la página «no encontrada» (`NotFound.jsx`) |
+| 4 | El móvil no tiene ruta de reserva propia | Expo Router muestra su propia pantalla de «pantalla no encontrada» |
+| 5 | Resuelta: `/account` en la web | Está dentro de `ProtectedRoute` |
+| 6 | Una cuenta ADMIN en la app móvil | La app no distingue administradores; las pantallas de administración solo existen en la web |
+
+## 6.1 Estado de los mockups frente al código
+
+Los mockups HTML de `mockup/layout/` se dibujaron antes de las últimas funciones. No se redibujaron en esta versión; la tabla indica qué falta o qué quedó desactualizado.
+
+| **Pantalla del código** | **Plataforma** | **Mockup** | **Estado** |
+|---|---|---|---|
+| Usuarios de la plataforma (`/admin/users`): búsqueda, tabla, estado y rol | Web | — | **Falta** (`mockup/layout/web/admin/users.html`) |
+| Confirmaciones de cambio de estado y de rol de administrador | Web | — | **Falta** (`mockup/layout/web/admin/users-confirm-modal.html`) |
+| Notificaciones de administración | Web | — | **Falta** (`mockup/layout/web/admin/notifications.html`) |
+| Menú lateral y ajustes del administrador (sin notificaciones) | Web | `web/settings/settings.html` (de usuario) | **Falta** la variante ADMIN |
+| Pestaña Actividad y filtro por hogar en Notificaciones | Web y móvil | `web/notifications/*.html`, `mobile/notifications/notifications.html` | Desactualizado: solo tres pestañas |
+| Ventana de términos y privacidad en el registro | Web | `web/auth/register-legal-modal.html` | Vigente |
+| Ventana de términos y privacidad en el registro | Móvil | — | **Falta** (`mockup/layout/mobile/auth/register-legal-modal.html`) |
+| Ayuda permanente de reglas de contraseña | Web y móvil | `*/auth/register.html` | Revisar que muestre la ayuda permanente |
+| Transferir propiedad (confirmación con casilla) | Web y móvil | `*/home-detail/*users.html` | **Falta** el modal |
+| Eliminar hogar escribiendo su nombre | Web y móvil | `web/home-detail/owner/home.html`, `mobile/home-detail/home-detail-home.html` | **Falta** el modal |
+| Vinculación por Bluetooth (asistente de pasos) | Móvil | `mobile/home-detail/home-detail-link-device.html` | Desactualizado: mostraba el código escrito a mano |
+| Cambiar red Wi-Fi y editar dispositivo | Web y móvil | — | **Falta** |
+| Eliminar cuenta de Google con código | Web y móvil | `*/account/account-delete-modal.html` | Desactualizado: solo pide contraseña |
+| Títulos de página en Ajustes y Mi cuenta, iconos en lugar de emojis | Móvil | `mobile/settings/settings.html`, `mobile/account/account.html` | Desactualizado |
+| Soporte con contacto de administradores y pie de página | Web | `web/landing/support.html` | Revisar |
+| `mobile/dashboard/homes.html` | Móvil | Existe | Obsoleto: la ruta `/homes` ya no es una pantalla |
 
 ## 7. Artefactos relacionados
 
