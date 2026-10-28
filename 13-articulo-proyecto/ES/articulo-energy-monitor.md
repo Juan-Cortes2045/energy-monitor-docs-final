@@ -129,7 +129,7 @@ La aplicación web está construida en React 19 (React, s. f.) con Vite como emp
 
 ### Despliegue e infraestructura
 
-El sistema corre en un VPS Hostinger KVM 2 con Ubuntu, orquestado con Docker Compose (Docker, s. f.): un contenedor por servicio, Nginx como servidor web y punto de entrada, el broker Mosquitto, RabbitMQ y MySQL. Los dominios energy-monitor.tech y mqtt.energy-monitor.tech apuntan al servidor —179.236.83.68 en las mediciones del 28 de octubre de 2026—. Cada repositorio tiene un flujo de GitHub Actions (GitHub, s. f.) que ejecuta la suite de pruebas en cada solicitud de fusión y, desde la rama principal y con aprobación del entorno de producción, despliega su componente mediante un script por SSH. La Tabla 4 recoge la pila tecnológica tal como quedó desplegada.
+El sistema corre en un VPS Hostinger KVM 2 con Ubuntu, orquestado con Docker Compose (Docker, s. f.): un contenedor por servicio, Nginx como servidor web y punto de entrada, el broker Mosquitto, RabbitMQ y MySQL. Los dominios energy-monitor.tech y mqtt.energy-monitor.tech apuntan al servidor. Cada repositorio tiene un flujo de GitHub Actions (GitHub, s. f.) que ejecuta la suite de pruebas en cada solicitud de fusión y, desde la rama principal y con aprobación del entorno de producción, despliega su componente mediante un script por SSH. La Tabla 4 recoge la pila tecnológica tal como quedó desplegada.
 
 **Tabla 4**
 
@@ -268,25 +268,25 @@ En producto, la hoja de ruta ya incluye la actualización del firmware por aire,
 
 ### Reproducibilidad
 
-El sistema se reproduce desde los repositorios públicos del proyecto. Cada componente tiene una rama main de producción y una rama dev de integración; las solicitudes de fusión van primero a dev y de dev a main. La Tabla A1 lista los repositorios vigentes y el commit desplegado el 28 de octubre de 2026, día de la migración completa a microservicios. Los repositorios retirados, energy-monitor-backend (que conserva el firmware del ESP32 en su carpeta firmware/) y energy-monitor-devices, se mantienen como historial.
+El sistema se reproduce desde los repositorios públicos del proyecto. Cada componente tiene una rama main de producción y una rama dev de integración; las solicitudes de fusión van primero a dev y de dev a main. La Tabla A1 lista los repositorios vigentes y el commit de main al 28 de octubre de 2026, día de la migración completa a microservicios; los marcados «despliegue por confirmar» ya están en main pero su despliegue en el servidor no se había confirmado al cierre. Los repositorios retirados, energy-monitor-backend (que conserva el firmware del ESP32 en su carpeta firmware/) y energy-monitor-devices, se mantienen como historial.
 
 **Tabla A1**
 
-*Repositorios vigentes y commits desplegados el 28 de octubre de 2026*
+*Repositorios vigentes y commit de main al 28 de octubre de 2026*
 
 | Componente y repositorio | Commit | Estado en producción |
 |---|---|---|
 | API gateway (en-monitor-api-gateway) | `0b2c164` | Desplegado |
-| Servicio de seguridad (en-monitor-security-service) | `f57c76b` | Desplegado |
+| Servicio de seguridad (en-monitor-security-service) | `de52c95` | En main; despliegue por confirmar |
 | Servicio de dispositivos (en-monitor-device-service) | `06c1bdc` | Desplegado |
 | Servicio de mediciones (en-monitor-measurement-service) | `8a9b544` | Desplegado |
-| Servicio de hogares (en-monitor-home-service) | `f424083` | Desplegado |
-| Servicio de notificaciones (en-monitor-notification-service) | `7b10398` | Desplegado |
-| Servicio de alertas (en-monitor-alert-service) | `f050b56` | Desplegado |
+| Servicio de hogares (en-monitor-home-service) | `6a4e396` | En main; despliegue por confirmar |
+| Servicio de notificaciones (en-monitor-notification-service) | `ecdbc0a` | En main; despliegue por confirmar |
+| Servicio de alertas (en-monitor-alert-service) | `0e65430` | En main; despliegue por confirmar |
 | Servicio de recomendaciones (en-monitor-recommendation-service) | `aeeeec5` | Desplegado |
-| Aplicación web (Energy-Monitor-application) | `698d4c9` | Desplegado |
+| Aplicación web (Energy-Monitor-application) | `27ad9f0` | En main; despliegue por confirmar |
 | Infraestructura (energy-monitor-infra) | `ceb1543` | Desplegado |
-| Aplicación móvil (Energy-Monitor-Mobile) | `894b65a` en main; `1e4109b` en dev | No aplica; no se despliega en el servidor |
+| Aplicación móvil (Energy-Monitor-Mobile) | `894b65a` en main; `8b5edc0` en dev | No aplica; no se despliega en el servidor |
 
 Para repetir la verificación, cada repositorio del backend ejecuta sus pruebas con mvn test dentro de su propio job del integrador; la web corre npm test con Vitest y la móvil npx jest. Los flujos de punta a punta viven en el directorio e2e/ de energy-monitor-infra y se lanzan con Bash contra una pila levantada con Docker Compose. Para repetir las mediciones de producción bastan dos herramientas de línea de comandos: curl con las opciones de temporización para la página de inicio y la API, y openssl s_client contra mqtt.energy-monitor.tech:8883 para comprobar el apretón TLS. Los valores reportados aquí corresponden al entorno público de energy-monitor.tech en la fecha ya indicada.
 

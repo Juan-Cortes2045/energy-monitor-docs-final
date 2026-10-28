@@ -129,7 +129,7 @@ The web application is built in React 19 (React, s. f.) with Vite as the bundler
 
 ### Deployment and infrastructure
 
-The system runs on a Hostinger KVM 2 VPS with Ubuntu, orchestrated with Docker Compose (Docker, s. f.): one container per service, Nginx as the web server and entry point, the Mosquitto broker, RabbitMQ, and MySQL. The domains energy-monitor.tech and mqtt.energy-monitor.tech point at the server —179.236.83.68 in the October 28, 2026 measurements—. Every repository has a GitHub Actions workflow (GitHub, s. f.) that runs the test suite on each pull request and, from the main branch and with production-environment approval, deploys its component through an SSH script. Table 4 records the technology stack as deployed.
+The system runs on a Hostinger KVM 2 VPS with Ubuntu, orchestrated with Docker Compose (Docker, s. f.): one container per service, Nginx as the web server and entry point, the Mosquitto broker, RabbitMQ, and MySQL. The domains energy-monitor.tech and mqtt.energy-monitor.tech point at the server. Every repository has a GitHub Actions workflow (GitHub, s. f.) that runs the test suite on each pull request and, from the main branch and with production-environment approval, deploys its component through an SSH script. Table 4 records the technology stack as deployed.
 
 **Table 4**
 
@@ -267,24 +267,25 @@ On the product side, the roadmap already includes over-the-air firmware updates,
 
 ### Reproducibility
 
-The system is reproducible from the project’s public repositories. Every component has a main production branch and a dev integration branch; pull requests go first to dev and from dev to main. Table A1 lists the active repositories and the commit deployed on October 28, 2026, the day of the complete migration to microservices. The retired repositories, energy-monitor-backend (which keeps the ESP32 firmware in its firmware/ folder) and energy-monitor-devices, are kept as history.
+The system is reproducible from the project’s public repositories. Every component has a main production branch and a dev integration branch; pull requests go first to dev and from dev to main. Table A1 lists the active repositories and the main commit as of October 28, 2026, the day of the complete migration to microservices; those marked “deployment to be confirmed” are already in main but their deployment on the server had not been confirmed at the close. The retired repositories, energy-monitor-backend (which keeps the ESP32 firmware in its firmware/ folder) and energy-monitor-devices, are kept as history.
 
 **Table A1**
 
-*Active repositories and production commit*
+*Active repositories and main commit as of October 28, 2026*
 
 | Component and repository | Commit | Production status |
 |---|---|---|
 | API gateway (en-monitor-api-gateway) | `0b2c164` | Deployed |
-| Device service (energy-monitor-devices-service) | `f1d5026` | Deployed |
-| Measurement service (energy-monitor-measurements-service) | `f9d401a` | Deployed |
-| Alert service (energy-monitor-alerts-service) | `3df0c90` | Deployed |
-| Home service (energy-monitor-homes-service) | `a5c7e23` | Deployed |
-| Notification service (energy-monitor-notifications-service) | `5070d3c` | Deployed |
-| Recommendation service (energy-monitor-recommendations-service) | `0616204` | Deployed |
-| Web application (energy-monitor-web) | `2052230` | Deployed |
-| Infrastructure (energy-monitor-infra) | `3f4f7f8` | Deployed |
-| Mobile application (Energy-Monitor-Mobile) | `894b65a` on main; `1e4109b` on dev | Not applicable; not deployed on the server |
+| Security service (en-monitor-security-service) | `de52c95` | In main; deployment to be confirmed |
+| Device service (en-monitor-device-service) | `06c1bdc` | Deployed |
+| Measurement service (en-monitor-measurement-service) | `8a9b544` | Deployed |
+| Home service (en-monitor-home-service) | `6a4e396` | In main; deployment to be confirmed |
+| Notification service (en-monitor-notification-service) | `ecdbc0a` | In main; deployment to be confirmed |
+| Alert service (en-monitor-alert-service) | `0e65430` | In main; deployment to be confirmed |
+| Recommendation service (en-monitor-recommendation-service) | `aeeeec5` | Deployed |
+| Web application (Energy-Monitor-application) | `27ad9f0` | In main; deployment to be confirmed |
+| Infrastructure (energy-monitor-infra) | `ceb1543` | Deployed |
+| Mobile application (Energy-Monitor-Mobile) | `894b65a` on main; `8b5edc0` on dev | Not applicable; not deployed on the server |
 
 To repeat the verification, each backend repository runs its tests with mvn test inside its own pipeline job; the web runs npm test with Vitest and the mobile npx jest. The end-to-end flows live in the e2e/ directory of energy-monitor-infra and are launched with Bash against a stack raised with Docker Compose. Repeating the production measurements requires just two command-line tools: curl with timing options for the landing page and the API, and openssl s_client against mqtt.energy-monitor.tech:8883 to check the TLS handshake. The values reported here correspond to the public environment at energy-monitor.tech on the date indicated above.
 
