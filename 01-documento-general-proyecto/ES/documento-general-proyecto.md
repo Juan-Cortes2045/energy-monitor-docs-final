@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-16 de octubre de 2026 (actualizado el 24 de octubre de 2026)
+16 de octubre de 2026 (actualizado el 28 de octubre de 2026)
 
 ## Control de versiones
 
@@ -15,10 +15,11 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 | 1.0     | 16/10/2026 | Primera versión del acta de constitución: justificación, objetivos, alcance, presupuesto, cronograma y equipo.   | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.1     | 20/10/2026 | Alineación con el sistema desplegado: administración de cuentas dentro del alcance, presupuesto con el servidor en producción y el costo total estimado, puesta en producción en `https://energy-monitor.tech` con integración y despliegue continuos, y estado de objetivos e hitos al 20 de octubre. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 24/10/2026 | Componentes del alcance según la arquitectura en producción: usuarios, dispositivos y mediciones como servicios independientes detrás de un API gateway, y migración en curso de los módulos restantes. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.3     | 28/10/2026 | Migración completada: el API gateway y los siete servicios en producción, y el backend monolítico retirado. Registro con verificación previa del correo y aceptación de términos, reglas de las cuentas creadas con Google (sin cambio de contraseña y borrado con código por correo) y edición independiente del nombre y el apellido. Estado de hitos y plan de la fase final al 28 de octubre. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
-Este documento es el acta de constitución del proyecto EnergyMonitor, una solución que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, identificar los periodos de mayor demanda, recibir alertas y obtener recomendaciones de ahorro. Define por qué se hace el proyecto y el valor que aporta, sus objetivos con indicadores medibles, el alcance incluido y excluido, el presupuesto, las fases, los hitos y el cronograma hasta la fecha de entrega, el 28 de octubre de 2026, y el equipo de trabajo con sus roles. La solución integra un dispositivo de medición que se conecta a cada electrodoméstico, una aplicación web y una aplicación móvil para Android. Al 20 de octubre de 2026 el sistema está desplegado en producción en `https://energy-monitor.tech` y se actualiza mediante integración y despliegue continuos. El detalle de las funciones se desarrolla en la especificación de requisitos.
+Este documento es el acta de constitución del proyecto EnergyMonitor, una solución que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, identificar los periodos de mayor demanda, recibir alertas y obtener recomendaciones de ahorro. Define por qué se hace el proyecto y el valor que aporta, sus objetivos con indicadores medibles, el alcance incluido y excluido, el presupuesto, las fases, los hitos y el cronograma hasta la fecha de entrega, el 28 de octubre de 2026, y el equipo de trabajo con sus roles. La solución integra un dispositivo de medición que se conecta a cada electrodoméstico, una aplicación web y una aplicación móvil para Android. Al 28 de octubre de 2026 el sistema está desplegado en producción en `https://energy-monitor.tech`, repartido en un API gateway y siete servicios independientes, y se actualiza mediante integración y despliegue continuos. El detalle de las funciones se desarrolla en la especificación de requisitos.
 
 *Palabras clave:* acta de constitución, consumo eléctrico, ahorro de energía, hogares, alertas
 
@@ -78,7 +79,7 @@ La Tabla 2 enumera lo que el proyecto construye y el módulo del sistema que res
 
 | Elemento | Descripción | Módulo o componente |
 |---|---|---|
-| Usuarios y perfiles | Registro, inicio de sesión, verificación de correo, recuperación de contraseña, inicio con Google, perfil y eliminación de cuenta | Módulo de Gestión de Usuarios y Perfiles |
+| Usuarios y perfiles | Registro con verificación previa del correo y aceptación de los términos, inicio de sesión, recuperación de contraseña, inicio con Google, perfil (nombre, apellido y foto) y eliminación de cuenta | Módulo de Gestión de Usuarios y Perfiles |
 | Administración | Consulta de cuentas, cambio de estado, asignación y retiro del rol de administrador, y avisos para los administradores | Módulo de Gestión de Usuarios y Perfiles |
 | Hogares | Hogares, miembros, roles de propietario y miembro, favoritos, límites de consumo, eliminación del hogar y transferencia de propiedad | Módulo de Gestión de Hogares |
 | Dispositivos | Registro, vinculación, edición y desvinculación de los dispositivos de medición | Módulo de Gestión de Dispositivos |
@@ -91,7 +92,7 @@ La Tabla 2 enumera lo que el proyecto construye y el módulo del sistema que res
 | Dispositivo de medición | Aparato físico que mide el consumo de cada electrodoméstico y envía las lecturas | Dispositivo de medición |
 | Despliegue | Publicación del sistema en un servidor con HTTPS, y actualización con pruebas automáticas, aprobación y reversión | Infraestructura |
 
-Desde el 24 de octubre de 2026, los módulos de Gestión de Usuarios y Perfiles (incluida la administración), de Gestión de Dispositivos y de Mediciones y Consumo funcionan en producción como servicios independientes, detrás de un punto de entrada único para la API. Los módulos de Hogares, Alertas, Recomendaciones y Notificaciones siguen en el servicio central, y su separación en servicios está en curso. El detalle técnico está en la propuesta técnica.
+Desde el 28 de octubre de 2026, todos los módulos funcionan en producción como servicios independientes (seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones), detrás de un punto de entrada único para la API. El servicio central que los reunía a todos se retiró. El detalle técnico está en la propuesta técnica.
 
 ### Fuera del alcance
 
@@ -159,7 +160,7 @@ El proyecto inició el 1 de mayo de 2026 y se planificó en cuatro fases con ava
 | 3. Recomendaciones e internacionalización | 1 a 30 de septiembre | Cerrar el ciclo del producto con orientación proactiva y terminar el trabajo transversal de la interfaz. | Un hogar con una semana de historial recibe al menos una recomendación basada en su propio consumo, y la interfaz se verifica en más de un idioma. |
 | 4. Consolidación y entrega | 1 a 28 de octubre | Dejar el sistema listo para demostración y defensa. | El sistema se demuestra en vivo, desde la medición de un dispositivo físico hasta una alerta o recomendación en un teléfono. |
 
-**Estado al 20 de octubre de 2026:** las funciones de las fases 1 a 3 están construidas y, durante la fase 4, el sistema se puso en producción en `https://energy-monitor.tech`, con integración y despliegue continuos. El 24 de octubre de 2026 se puso en producción la separación de los módulos de usuarios, dispositivos y mediciones en servicios independientes, sin cambios para los usuarios.
+**Estado al 20 de octubre de 2026:** las funciones de las fases 1 a 3 están construidas y, durante la fase 4, el sistema se puso en producción en `https://energy-monitor.tech`, con integración y despliegue continuos. El 24 de octubre de 2026 se puso en producción la separación de los módulos de usuarios, dispositivos y mediciones en servicios independientes, y el 28 de octubre de 2026 se completó la separación con los de hogares, notificaciones, alertas y recomendaciones y el retiro del servicio central, sin cambios para los usuarios.
 
 ### Hitos
 
@@ -196,9 +197,10 @@ La Tabla 8 detalla las actividades del periodo comprendido entre el 10 y el 28 d
 | 15 de octubre | Informe técnico y de costos. Ensayo de la demostración en vivo | Informe técnico y de costos |
 | 16 a 20 de octubre | Despliegue en el servidor de producción, pipelines de GitHub Actions y manual de implementación y despliegue | Sistema en producción y manual de implementación y despliegue |
 | Hasta el 24 de octubre | Separación de los módulos de usuarios, dispositivos y mediciones en servicios independientes, con un punto de entrada único para la API | Servicios en producción y documentación actualizada |
+| 25 a 28 de octubre | Separación de hogares, notificaciones, alertas y recomendaciones y retiro del servicio central. Registro con verificación del correo y términos, reglas de las cuentas de Google, pruebas de punta a punta y despliegue en producción del gateway y los siete servicios | El API gateway y los siete servicios en producción, y documentación final actualizada |
 | 28 de octubre | Entrega final y demostración en vivo | Sistema funcionando y documentación completa |
 
-La mejora de seguridad de las credenciales de los dispositivos ya se aplicó: el sistema solo guarda el hash de la clave de cada dispositivo. Queda sin fecha, y se ejecuta solo si el tiempo lo permite, la mejora de confiabilidad en el envío de lecturas. El único pendiente de la gestión de hogares y dispositivos, que es la gestión del historial del dispositivo según el periodo de vinculación, tampoco tiene fecha asignada. La separación en servicios de los módulos de Hogares, Alertas, Recomendaciones y Notificaciones está en curso, a cargo de Miguel Ángel García Artunduaga.
+La mejora de seguridad de las credenciales de los dispositivos ya se aplicó: el sistema solo guarda el hash de la clave de cada dispositivo. Queda sin fecha, y se ejecuta solo si el tiempo lo permite, la mejora de confiabilidad en el envío de lecturas. El único pendiente de la gestión de hogares y dispositivos, que es la gestión del historial del dispositivo según el periodo de vinculación, tampoco tiene fecha asignada. La separación en servicios de los módulos de Hogares, Alertas, Recomendaciones y Notificaciones, a cargo de Miguel Ángel García Artunduaga, se completó y se desplegó el 28 de octubre de 2026.
 
 ## Equipo de trabajo y roles
 

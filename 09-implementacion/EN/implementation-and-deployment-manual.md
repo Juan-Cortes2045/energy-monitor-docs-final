@@ -21,8 +21,8 @@ Group: 3145556
 | Program            | Technology in Software Analysis and Development (ADSO)                            |
 | Group              | 3145556                                                                           |
 | Document type      | Implementation and deployment manual                                              |
-| Version            | 1.2                                                                               |
-| Date               | October 16, 2026 (updated October 24, 2026)                                       |
+| Version            | 1.3                                                                               |
+| Date               | October 16, 2026 (updated October 28, 2026)                                       |
 
 Neiva, Huila · Colombia · 2026
 
@@ -38,6 +38,7 @@ Neiva, Huila · Colombia · 2026
 | 1.0         | 10/16/2026 | Report and production deployment runbook: web, API, MySQL and MQTT broker on a Hostinger VPS with Docker Compose, Nginx and Let's Encrypt; verification and rollback. | Development team |
 | 1.1         | 10/20/2026 | Continuous integration and deployment strategy with GitHub Actions (section 9); selection and cost of the Hostinger KVM 2 plan (3.2); real domain; evidence from the VPS run; incidents of the real deployment; automated update and rollback. | Development team |
 | 1.2         | 10/24/2026 | Service architecture in production: API gateway and security, device and measurement services alongside the backend (home, alert, recommendation and notification), RabbitMQ with a *transactional outbox* and the broker authenticated by the device service; new and retired variables (`MEASUREMENT_CONTEXT`, `MQTT_MEASUREMENT_SERVICE_USER/PASS` replacing `MQTT_BACKEND_USER/PASS`); `deploy.sh` with seven components; pipelines and secrets in each repository; first deployment of the services on an existing server (4.12). | Development team |
+| 1.3         | 10/28/2026 | Complete migration: homes, notifications, alerts and recommendations as independent services and retirement of the backend; `deploy.sh` with ten components; pipelines and secrets in the ten deployable repositories; migration run on the server (4.13) with its incidents (section 7); registration with prior email verification, terms and account-deletion code (`SECURITY_ACCOUNT_DELETION_CODE_MAIL_ENABLED`). | Development team |
 
 # Table of contents
 
@@ -64,17 +65,17 @@ Neiva, Huila · Colombia · 2026
 
 EnergyMonitor measures the electricity used by household appliances with ESP32 + PZEM-004T V3
 modules that publish telemetry over MQTT with TLS; the measurement service stores it in MySQL, the
-backend evaluates alerts and recommendations, and the React web app shows it to the members of each
-home. Since October 24, 2026 the API is split into Spring Boot services behind an **API gateway**:
-security, devices and measurements are microservices of their own, and the backend
-(`energy-monitor-backend`) is a modular monolith with the `home`, `alert`, `recommendation` and
-`notification` modules, whose migration to microservices is in progress. The public API routes did
+alert and recommendation services evaluate it, the notification service informs the users and the
+React web app shows it to the members of each home. Since October 28, 2026 the API is split into
+seven Spring Boot services behind an **API gateway**: security, devices, measurements, homes,
+notifications, alerts and recommendations. The monolithic backend (`energy-monitor-backend`) was
+retired and its repository is kept as history, with the meter firmware. The public API routes did
 not change for the clients.
 
 The system is deployed on a **Hostinger VPS, KVM 2 plan** (2 vCPU, 8 GB RAM) running **Ubuntu 26.04
 LTS**, contracted for one month at **48,000 COP**. The whole platform runs in **Docker Compose** from the
 `energy-monitor-infra` repository (`docker-compose.prod.yml`): MySQL 8.4, RabbitMQ 4.1, the API
-gateway, the security, device and measurement services, the backend, the Mosquitto broker with
+gateway, the seven services, the Mosquitto broker with
 authentication delegated to the device service, and the frontend served by nginx. **Nginx on
 the host** is the only HTTP/HTTPS entry point, with **Let's Encrypt** certificates issued by
 Certbot. The web app and the API are published at `https://energy-monitor.tech`; meters connect to
@@ -93,17 +94,17 @@ The mobile app is **out of scope** for this deployment.
 | **Field**                    | **Recorded information**                                                     |
 |------------------------------|------------------------------------------------------------------------------|
 | System                       | EnergyMonitor · household electricity monitor with IoT                       |
-| Modality                     | React/Vite web app, API gateway and Spring Boot services (security, devices, measurements and backend), RabbitMQ, MQTT broker and ESP32 firmware |
+| Modality                     | React/Vite web app, API gateway and seven Spring Boot services (security, devices, measurements, homes, notifications, alerts and recommendations), RabbitMQ, MQTT broker and ESP32 firmware |
 | Environment                  | Production / demonstration deployment reachable from the Internet            |
 | Infrastructure provider      | Hostinger VPS · **KVM 2** plan · Ubuntu 26.04 LTS                            |
 | Infrastructure cost          | 48,000 COP/month on a monthly contract (27,900 COP/month on a yearly contract); details in 3.2 |
 | Domain                       | `energy-monitor.tech` (web and API) · `mqtt.energy-monitor.tech` (broker)    |
 | Deployment repository        | `energy-monitor-infra`, file `docker-compose.prod.yml`                       |
-| Integration and deployment   | GitHub Actions (`.github/workflows/ci-cd.yml` in the gateway, the security, device and measurement services, backend, web and infra) |
-| Deployed branch              | `main` in the seven deployed repositories                                    |
-| Consolidation date           | October 16, 2026; continuous deployment active since October 19; service architecture in production since October 24 |
+| Integration and deployment   | GitHub Actions (`.github/workflows/ci-cd.yml` in the gateway, the seven services, the web app and the infrastructure) |
+| Deployed branch              | `main` in the ten deployed repositories                                      |
+| Consolidation date           | October 16, 2026; continuous deployment active since October 19; security, device and measurement services since October 24; home, notification, alert and recommendation services and backend retirement on October 28 |
 | Release tag                  | `[TO BE CONFIRMED]` — tagging `v1.0.0` in the repositories is recommended    |
-| Version of this report       | 1.2                                                                          |
+| Version of this report       | 1.3                                                                          |
 
 ## 1.2 Document history
 
@@ -112,6 +113,7 @@ The mobile app is **out of scope** for this deployment.
 | 1.0         | 10/16/2026 | Deployment runbook for web, API, MySQL and MQTT broker in production.  |
 | 1.1         | 10/20/2026 | CI/CD strategy, KVM 2 plan and costs, real evidence and incidents.     |
 | 1.2         | 10/24/2026 | API gateway, security, device and measurement services, RabbitMQ and new variables. |
+| 1.3         | 10/28/2026 | Home, notification, alert and recommendation services; backend retired; migration run on the server. |
 
 ## 1.3 Summary of the changes that enable the deployment
 
@@ -140,6 +142,15 @@ The mobile app is **out of scope** for this deployment.
   outbox*. The broker authenticates against the device service, the measurement service is the only
   one that stores telemetry, and the backend no longer connects to the broker. Each new service has
   its own pipeline and `deploy.sh` accepts seven components.
+- **Version 1.3 (October 28, 2026):** the `home`, `notification`, `alert` and `recommendation`
+  contexts left the backend for `en-monitor-home-service` :8086,
+  `en-monitor-notification-service` :8087, `en-monitor-alert-service` :8088 and
+  `en-monitor-recommendation-service` :8089, and the backend was retired: the
+  `energy-monitor-backend` repository stays as history and holds the firmware. `deploy.sh` accepts
+  ten components, each service has its pipeline and the migration was run on the server on
+  October 28 (4.13). New variables: `HOME_CONTEXT`, `NOTIFICATION_CONTEXT`, `ALERT_CONTEXT` and
+  `RECOMMENDATION_CONTEXT`, and the `SECURITY_ACCOUNT_DELETION_CODE_MAIL_ENABLED` switch for the
+  account-deletion code.
 # 2. Scope, topology and architecture
 
 ## 2.1 Deployed components
@@ -152,7 +163,10 @@ The mobile app is **out of scope** for this deployment.
 | Security service  | Java 21, Spring Boot 4.1.1, `security` container :8082: accounts, sessions, JWT RS256, Google, RBAC and user administration | Internal Docker network only |
 | Device service    | Java 21, Spring Boot 4.1.1, `device` container :8084: linking, credentials, broker authentication and ACL, commands and connectivity | Internal Docker network only |
 | Measurement service | Java 21, Spring Boot 4.1.1, `measurement` container :8085: the only one that stores telemetry; history, statistics, consumption and levels | Internal Docker network only |
-| Backend           | Java 21, Spring Boot 4.1.1, Spring Modulith, `backend` container :8083: homes, alerts, recommendations and notifications (email, Web Push, Expo push) | Internal Docker network only |
+| Home service      | Java 21, Spring Boot 4.1.1, `home` container :8086: homes, members, roles, favorites, thresholds, deletion and transfer; answers the checks the other services make | Internal Docker network only |
+| Notification service | Java 21, Spring Boot 4.1.1, `notification` container :8087: deliveries, preferences, email (the only one that sends email), Web Push, Expo push, in-app notices and home and device activity | Internal Docker network only |
+| Alert service     | Java 21, Spring Boot 4.1.1, `alert` container :8088: consumption and connectivity alerts from the readings and the device events | Internal Docker network only |
+| Recommendation service | Java 21, Spring Boot 4.1.1, `recommendation` container :8089: saving rules evaluated every hour | Internal Docker network only |
 | Message queue     | RabbitMQ 4.1, `rabbitmq-data` volume: events between services (*outbox*) and email requests | Docker network; console on 127.0.0.1:15672 |
 | Database          | MySQL 8.4, a single shared `energy_monitor` database (each service with its own tables), `mysql-data` volume | Internal Docker network only |
 | MQTT broker       | Mosquitto 2.0 + mosquitto-go-auth (auth and ACL delegated to the device service) | `mqtt.energy-monitor.tech:8883` (TLS)  |
@@ -174,9 +188,12 @@ flowchart LR
             G --> SEC[security :8082]
             G --> DEV[device :8084]
             G --> MEA[measurement :8085]
-            G --> B[backend :8083]
-            SEC & DEV & MEA & B --> DB[(mysql :3306)]
-            SEC & DEV & MEA & B -- events --> Q[(rabbitmq :5672)]
+            G --> HOM[home :8086]
+            G --> NOT[notification :8087]
+            G --> ALE[alert :8088]
+            G --> REC[recommendation :8089]
+            SEC & DEV & MEA & HOM & NOT & ALE & REC --> DB[(mysql :3306)]
+            SEC & DEV & MEA & HOM & NOT & ALE & REC -- events --> Q[(rabbitmq :5672)]
             M -- /internal/mqtt/auth --> DEV
             DEV -- MQTT 1883 --> M
             MEA -- MQTT 1883 --> M
@@ -191,7 +208,9 @@ The main domain serves the web app and, under `/api/`, the API. The frontend ngi
 `/api/v1/admin/users/**`, `/api/v1/admin/roles/**` and `/api/v1/support/**` to security;
 `/api/v1/homes/{homeId}/devices/**` and `/api/v1/appliance-types/**` to devices;
 `/api/v1/measurements/**`, `/api/v1/consumption-levels/**` and `/api/v1/homes/{homeId}/consumption/**` to
-measurements; the rest of `/api/v1/**` to the backend) and rejects `/internal/**`. So the internal
+measurements; the rest of `/api/v1/homes/**` and `/api/v1/home-types/**` to homes; `/api/v1/notifications/**` and
+`/api/v1/admin/notifications/**` to notifications; `/api/v1/alerts/**` to alerts;
+`/api/v1/recommendations/**` to recommendations; any other route answers 404) and rejects `/internal/**`. So the internal
 endpoints between services and those the broker uses to authenticate each client
 (`/internal/mqtt/auth/**`) cannot be reached from the Internet. The broker is the only service
 published directly (8883, TLS), because the meters do not speak HTTP.
@@ -204,7 +223,7 @@ published directly (8883, TLS), because the meters do not speak HTTP.
 | Host Nginx            | 80 (redirect) / 443 (TLS)               | Public                      |
 | Frontend (nginx)      | 127.0.0.1:8081 → container :80          | Host only                   |
 | API gateway           | container :8080                         | Private (Docker network)    |
-| Security, device, measurement and backend | containers :8082, :8084, :8085 and :8083 | Private (Docker network) |
+| Security, device, measurement, home, notification, alert and recommendation | containers :8082, :8084, :8085, :8086, :8087, :8088 and :8089 | Private (Docker network) |
 | RabbitMQ              | container :5672 (AMQP); console 127.0.0.1:15672 | Private; console only through an SSH tunnel |
 | MySQL 8.4             | container :3306                         | Private (Docker network)    |
 | Internal Mosquitto    | container :1883 (no TLS)                | Private (Docker network)    |
@@ -218,8 +237,10 @@ validates the token (RS256) except on the public endpoints. The security service
 sessions, JWT and administration; the device service handles linking and credentials and is the only
 source of truth about which device may connect: the broker stores no users and asks it about every
 connection and every topic (with a 5-minute cache). The measurement service is the only one that
-stores telemetry and announces each reading on RabbitMQ (`measurement.recorded`); the backend manages
-homes, alerts, recommendations and notifications, and is the only one that sends email. The services
+stores telemetry and announces each reading on RabbitMQ (`measurement.recorded`); the home service
+manages homes, members and thresholds; the alert service creates the alerts from the readings and
+the device events; the recommendation service evaluates them every hour; and the notification
+service delivers them and is the only one that sends email. The services
 query each other over `/internal/**` (only from the Docker network and with the `X-Internal-Token`
 header) and notify each other through events on RabbitMQ with a *transactional outbox* (at-least-once
 delivery and queues with a *dead-letter* after three attempts). They all use the same MySQL
@@ -297,7 +318,8 @@ a yearly payment. For continuous operation the 12-month contract is the better o
   for the broker.
 - Changes merged into `main` in `energy-monitor-infra`, `en-monitor-api-gateway`,
   `en-monitor-security-service`, `en-monitor-device-service`, `en-monitor-measurement-service`,
-  `energy-monitor-backend` and `Energy-Monitor-application`.
+  `en-monitor-home-service`, `en-monitor-notification-service`, `en-monitor-alert-service`,
+  `en-monitor-recommendation-service` and `Energy-Monitor-application`.
 - An email account for sending (Gmail app password) and, if used, a Google OAuth client with
   `https://energy-monitor.tech` in *Authorized JavaScript origins*.
 - Secrets managed outside the repositories, with restricted permissions (`chmod 600`).
@@ -309,12 +331,13 @@ Only public values are documented; secrets are generated on the server and live 
 
 | **Layer**  | **Variable / value without secrets**                                      | **Purpose**                                     |
 |------------|---------------------------------------------------------------------------|-------------------------------------------------|
-| Code       | `BACKEND_CONTEXT`, `SECURITY_CONTEXT`, `DEVICE_CONTEXT`, `MEASUREMENT_CONTEXT`, `GATEWAY_CONTEXT`, `FRONTEND_CONTEXT` (default `../backend/...` and `../frontend/energy-monitor-web`) | Clones each image is built from |
+| Code       | `SECURITY_CONTEXT`, `DEVICE_CONTEXT`, `MEASUREMENT_CONTEXT`, `HOME_CONTEXT`, `NOTIFICATION_CONTEXT`, `ALERT_CONTEXT`, `RECOMMENDATION_CONTEXT`, `GATEWAY_CONTEXT`, `FRONTEND_CONTEXT` (default `../backend/...` and `../frontend/energy-monitor-web`) | Clones each image is built from |
 | Gateway    | `SECURITY_CORS_ALLOWED_ORIGINS=https://energy-monitor.tech,https://www.energy-monitor.tech` | Allowed origins (CORS is answered by the gateway) |
-| Backend    | `NOTIFICATION_WEB_URL=https://energy-monitor.tech`                        | Links in alert emails                           |
+| Notifications | `NOTIFICATION_WEB_URL=https://energy-monitor.tech`                 | Links in alert emails                           |
 | Devices    | `DEVICE_MQTT_PUBLIC_HOST=mqtt.energy-monitor.tech` · `DEVICE_MQTT_PUBLIC_PORT=8883` | Broker the web app writes to the meter |
 | Security   | `JWT_KEYS_DIR=/opt/energy-monitor/keys` · `BACKEND_UID/GID=10001`         | JWT RSA pair and the user the security service runs as, the only one that reads `private.pem`; the others receive only `public.pem` |
-| Backend    | `MAIL_HOST=smtp.gmail.com` · `MAIL_PORT=587` · `MAIL_FROM=...`            | Recovery, verification and alert emails (only the backend sends email) |
+| Security   | `SECURITY_ACCOUNT_DELETION_CODE_MAIL_ENABLED=true`                        | Switch of the email with the deletion code of a Google account; turn it on only once the notification service is deployed (with the switch off, asking for the code answers 503) |
+| Notifications | `MAIL_HOST=smtp.gmail.com` · `MAIL_PORT=587` · `MAIL_FROM=...`  | Recovery, verification, deletion-code and alert emails (only the notification service sends email) |
 | Messaging  | `RABBITMQ_USERNAME=energy-monitor`                                        | RabbitMQ user, the same in every service        |
 | Broker     | `MQTT_DEVICE_SERVICE_USER=em-device-service` · `MQTT_MEASUREMENT_SERVICE_USER=em-measurement-service` | MQTT users of the device and measurement services |
 | All        | `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `SECURITY_RESET_PEPPER`, `RABBITMQ_PASSWORD`, `INTERNAL_API_TOKEN`, `MQTT_DEVICE_SERVICE_PASS`, `MQTT_MEASUREMENT_SERVICE_PASS`, `MAIL_PASSWORD`, `GOOGLE_CLIENT_SECRET`, `NOTIFICATION_VAPID_PRIVATE_KEY`, `EXPO_ACCESS_TOKEN` (values omitted) | Protected secrets |
@@ -325,13 +348,18 @@ Only public values are documented; secrets are generated on the server and live 
 | GitHub     | `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS` (secrets of the `production` environment of each repository) | GitHub Actions access to the VPS (9.8) |
 
 The internal addresses between services (`SECURITY_SERVICE_URL`, `DEVICE_SERVICE_URL`,
-`MEASUREMENT_SERVICE_URL`, `BACKEND_URL` and `BACKEND_INTERNAL_URL`) are fixed in
-`docker-compose.prod.yml` and do not go in `.env.prod`. `INTERNAL_API_TOKEN` and `RABBITMQ_PASSWORD`
-have the same value in every service: each container takes them from `.env.prod`.
+`MEASUREMENT_SERVICE_URL`, `HOME_SERVICE_URL`, `NOTIFICATION_SERVICE_URL`, `ALERT_SERVICE_URL` and
+`RECOMMENDATION_SERVICE_URL`) are fixed in `docker-compose.prod.yml` and do not go in `.env.prod`.
+`INTERNAL_API_TOKEN` and `RABBITMQ_PASSWORD` have the same value in every service: each container
+takes them from `.env.prod`.
 
-> **Variables retired in version 1.2.** `MQTT_BACKEND_USER/PASS`, `MQTT_CLIENT_ID` and
-> `DEVICE_OFFLINE_AFTER` no longer belong to the backend, which does not connect to the broker. In
-> an earlier `.env.prod`, `MQTT_BACKEND_USER/PASS` can stay or be deleted.
+> **Retired variables.** In version 1.2, `MQTT_BACKEND_USER/PASS`, `MQTT_CLIENT_ID` and
+> `DEVICE_OFFLINE_AFTER` stopped belonging to the backend, which does not connect to the broker. In
+> version 1.3, with the backend retired, `BACKEND_CONTEXT` no longer exists. The switches
+> `HOME_OUTBOX_RELAY_ENABLED`, `ACCOUNT_DELETED_CONSUMER_ENABLED`, `SECURITY_EVENTS_CONSUMER_ENABLED`,
+> `ALERT_EVENTS_CONSUMER_ENABLED`, `ALERT_CONSUMERS_ENABLED`, `ALERT_SERVICE_OUTBOX_RELAY_ENABLED`,
+> `RECOMMENDATION_SCHEDULER_ENABLED` and `RECOMMENDATION_OUTBOX_RELAY_ENABLED` are `true` by default:
+> delete them from `.env.prod` if they were `false`.
 
 > **Important.** `VITE_*` variables are baked in when the frontend image is built: changing
 > `.env.prod` afterwards does not modify an image that was already built; rebuild `frontend`.
@@ -413,8 +441,8 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 ## 4.3 Source code
 
-The production compose file builds the gateway, the services, the backend and the frontend from
-clones next to `infra`. All seven clones follow `main`, the branch GitHub Actions deploys:
+The production compose file builds the gateway, the seven services and the frontend from clones
+next to `infra`. All ten clones follow `main`, the branch GitHub Actions deploys:
 
 ```bash
 sudo mkdir -p $EM && sudo chown "$USER": $EM && cd $EM
@@ -423,7 +451,10 @@ git clone --branch main https://github.com/Juan-Cortes2045/en-monitor-api-gatewa
 git clone --branch main https://github.com/Juan-Cortes2045/en-monitor-security-service.git backend/en-monitor-security-service
 git clone --branch main https://github.com/Juan-Cortes2045/en-monitor-device-service.git backend/en-monitor-device-service
 git clone --branch main https://github.com/Juan-Cortes2045/en-monitor-measurement-service.git backend/en-monitor-measurement-service
-git clone --branch main https://github.com/Juan-Cortes2045/energy-monitor-backend.git backend/energy-monitor-backend
+git clone --branch main https://github.com/angelgarcia0/en-monitor-home-service.git backend/en-monitor-home-service
+git clone --branch main https://github.com/angelgarcia0/en-monitor-notification-service.git backend/en-monitor-notification-service
+git clone --branch main https://github.com/angelgarcia0/en-monitor-alert-service.git backend/en-monitor-alert-service
+git clone --branch main https://github.com/angelgarcia0/en-monitor-recommendation-service.git backend/en-monitor-recommendation-service
 git clone --branch main https://github.com/Juan-Cortes2045/Energy-Monitor-application.git frontend/energy-monitor-web
 ```
 
@@ -437,7 +468,7 @@ as a read-only *Deploy key* on GitHub (Settings → Deploy keys) and clone with 
 
 ```bash
 # JWT RSA pair: only the security service reads private.pem (uid 10001);
-# public.pem is also read by the gateway, the other services and the backend
+# public.pem is also read by the gateway and the other services
 sudo mkdir -p $EM/keys
 sudo openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out $EM/keys/private.pem
 sudo openssl rsa -in $EM/keys/private.pem -pubout -out $EM/keys/public.pem
@@ -542,19 +573,19 @@ source ~/.bashrc
 
 emc up -d --build
 emc ps
-emc logs -f security device measurement backend gateway     # Ctrl+C to exit
+emc logs -f security device measurement home notification alert recommendation gateway     # Ctrl+C to exit
 ```
 
 The first build takes several minutes (Maven and npm dependencies, one image per Java service). On
 the first start each service applies its own Liquibase changesets to the shared database; the
 services take about 2 minutes to be ready and, meanwhile, the web app may answer **502** or the API
-**503**. It is ready when `emc ps` shows `gateway`, `security`, `device`, `measurement` and `backend`
-as `(healthy)`. The services publish no ports on the host; their health is checked inside the
+**503**. It is ready when `emc ps` shows `gateway`, `security`, `device`, `measurement`, `home`, `notification`, `alert` and
+`recommendation` as `(healthy)`. The services publish no ports on the host; their health is checked inside the
 container:
 
 ```bash
 emc exec gateway curl -fsS http://localhost:8080/actuator/health    # {"status":"UP"...}
-emc exec backend curl -fsS http://localhost:8083/actuator/health    # same for security :8082, device :8084, measurement :8085
+emc exec home curl -fsS http://localhost:8086/actuator/health    # same for security :8082, device :8084, measurement :8085, notification :8087, alert :8088 and recommendation :8089
 ```
 
 ## 4.9 First administrator
@@ -618,6 +649,40 @@ recognized in `DATABASECHANGELOG` (they were moved with the same path) and are n
 
 From then on, each new repository deploys its own service with its pipeline (9.4).
 
+## 4.13 Migration of October 28, 2026 (executed)
+
+This is the procedure that was run on the server on October 28, 2026 to go from the three services
+and the backend to the seven services and retire the backend, with what was observed at each step.
+The incidents are in section 7.
+
+1. **Backup.** `deploy/backup-mysql.sh` produced the `.sql.gz` in `/opt/energy-monitor/backups`.
+2. **Pending backend events.** The `backend_outbox` table did not exist on that server (the
+   installed version was older), so there were no events to drain. If it existed, no row with
+   `published_at IS NULL` may remain before retiring the backend.
+3. **Clones.** The four new repositories on `main` (4.3).
+4. **`.env.prod`.** Without the old switches set to `false` and with the required values present
+   (checked without printing them).
+5. **`deploy.sh infra`.** It built home, notification, alert and recommendation, removed the
+   backend container (`--remove-orphans`) and recreated Mosquitto. The second run ended in `OK` at
+   03:54, with infra at `ceb1543` (the first one had incident 1 of section 7).
+6. **One service at a time.** `deploy.sh gateway`, `device` (from `b64bda5` to `06c1bdc`),
+   `measurement`, `frontend` and `security`: they bring the new gateway routes and the account
+   changes. Each one ended in `OK`.
+7. **Backend queues.** `rabbitmqctl delete_queue` of the ten `energy-monitor-backend.*` queues
+   (with their `.dlq`), which nobody consumes anymore.
+8. **Verification.** `emc ps` with the eight services `healthy`, `GET /api/v1/homes` → 401 and, in
+   the logs, only two error lines from `measurement` (MQTT client «Lost connection») that match the
+   Mosquitto restarts of `deploy.sh infra` and recover by themselves.
+9. **Account-deletion code.** Check that the `notification-service.notification.mail` queue has the
+   `mail.account-deletion` binding, add `SECURITY_ACCOUNT_DELETION_CODE_MAIL_ENABLED=true` to
+   `.env.prod` and run `deploy.sh infra` again (`OK` at 04:00).
+
+**Order matters.** The new web app must be deployed before or together with security: the new
+security service answers 202 to registration and requires `acceptTerms` (428 if missing), which the
+previous web app does not send. On the server `frontend` was deployed with the previous version
+because the web PR to `main` had not been merged (incident 3). It was merged afterwards (`main`
+commit `698d4c9`) and the team confirmed on October 28 that the new web app is already deployed.
+
 # 5. IoT integration: MQTT broker and meters
 
 ## 5.1 Goal and exposed service
@@ -642,9 +707,9 @@ Clients the broker accepts:
 | Measurement service          | `MQTT_MEASUREMENT_SERVICE_USER` (`em-measurement-service`) | Only reads telemetry and stores each reading               |
 | ESP32 meter                  | `device_code` + API key                       | Publishes only on its topics `energy-monitor/devices/{deviceId}/telemetry` (every 60 s) and `/status` (retained and *last will*), and receives `/command` |
 
-Both services connect through the internal listener without TLS (`tcp://mosquitto:1883`). The
-backend no longer connects to the broker: it receives each reading over RabbitMQ
-(`measurement.recorded`) for the alerts.
+Both services connect through the internal listener without TLS (`tcp://mosquitto:1883`). No other
+service connects to the broker: the alert service receives each reading over RabbitMQ
+(`measurement.recorded`).
 
 ## 5.3 Certificate and firmware
 
@@ -670,8 +735,8 @@ X1 and X2 roots, so it **does not need to be rebuilt** for production. The devel
 | **Check**                           | **Expected evidence**                                                         | **Status**                 |
 |-------------------------------------|-------------------------------------------------------------------------------|----------------------------|
 | Production compose                  | `docker compose ... config -q` without errors (also on every infra PR)        | Confirmed                  |
-| Service test suites                 | Green: backend 481, measurements 151, devices 130 and gateway 57 (10/24/2026); security 660 (10/22/2026); backend `ModularityTests` green. In version 1.1 the single backend had 1131 | Confirmed |
-| End-to-end tests                    | `infra/e2e/device-flow.sh` (21/21) and `infra/e2e/measurement-flow.sh` (25/25) on the local stack | Confirmed (local stack) |
+| Service test suites                 | Green (10/28/2026): security 773, homes 260, notifications 234, measurements 151, devices 129, alerts 119, recommendations 71 and gateway 69; web 228. In version 1.1 the single backend had 1131 | Confirmed |
+| End-to-end tests                    | `infra/e2e/`: `device-flow` (24), `measurement-flow` (28), `alert-flow` (36), `activity-flow` (60) and `account-deletion-flow` (12) on the local stack | Confirmed (local stack) |
 | Web tests and build                 | Vitest tests and `npm run build` pass (locally and in GitHub Actions)         | Confirmed                  |
 | Nginx template                      | `nginx -t` passes (on every infra PR)                                         | Confirmed                  |
 | DNS                                 | The three names resolve to `<VPS_IP>`                                         | Confirmed                  |
@@ -679,9 +744,9 @@ X1 and X2 roots, so it **does not need to be rebuilt** for production. The devel
 | Certificates                        | Let's Encrypt valid until 01/14/2027, automatic renewal                      | Confirmed                  |
 | API through the proxy               | `GET /api/v1/homes` without a session → 401 (answered by the gateway)         | Confirmed                  |
 | `/internal/**` not exposed          | `POST https://energy-monitor.tech/internal/mqtt/auth/user` → 405 from nginx, never reaches the API | Confirmed |
-| Java services and Liquibase         | `gateway`, `security`, `device`, `measurement` and `backend` `(healthy)` (`deploy.sh` requires it on every deployment) | Confirmed |
+| Java services and Liquibase         | `gateway`, `security`, `device`, `measurement`, `home`, `notification`, `alert` and `recommendation` `(healthy)` (`deploy.sh` requires it on every deployment); confirmed on the server on 10/28/2026 | Confirmed |
 | Broker TLS                          | `openssl s_client` to `mqtt.energy-monitor.tech:8883` → `Verify return code: 0` | Confirmed                |
-| Continuous deployment               | Green runs of the three pipelines with approval (9.9)                         | Confirmed                  |
+| Continuous deployment               | Green runs of the pipelines with approval (9.9); every repository except the mobile app has CI/CD and is in production (confirmed by the team on 10/28/2026) | Confirmed                 |
 | Backup                              | `.sql.gz` produced by `deploy.sh` on every deployment                         | Confirmed                  |
 | Services subscribed to the broker   | Broker log: `New client connected ... u'em-device-service'` and `u'em-measurement-service'` | Evidence pending |
 | Sign-up, login and recovery         | Account created, verification/recovery email with links to the domain        | Evidence pending           |
@@ -690,7 +755,10 @@ X1 and X2 roots, so it **does not need to be rebuilt** for production. The devel
 | Scheduled daily backup              | `crontab` entry and the day's file in `/opt/energy-monitor/backups`           | Evidence pending           |
 | Certificate renewal                 | `certbot renew --dry-run` without errors                                      | Evidence pending           |
 | Performance with several users      | No load tests have been run                                                   | Pending                    |
-| Resources with the service stack    | VPS CPU and RAM usage with the five Java services (`docker stats`)            | Evidence pending           |
+| Resources with the service stack    | VPS CPU and RAM usage with the eight Java services (`docker stats`)           | Evidence pending          |
+| Migration of 10/28/2026             | `deploy.sh infra` `OK`, `/api/v1/homes` → 401, `mail.account-deletion` bound and backend queues deleted (4.13) | Confirmed                 |
+| Web app with terms and Google rules | The deployed web app is the one on `main` (`698d4c9`) and registration answers 202 | Confirmed by the team (10/28/2026) |
+| Google account deletion code        | Email received and account deleted with a test account in production          | Evidence pending          |
 
 ## 6.2 Check commands
 
@@ -699,7 +767,7 @@ From any computer:
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://energy-monitor.tech                          # 200
 curl -s -o /dev/null -w '%{http_code}\n' http://energy-monitor.tech                           # 301
-curl -s -o /dev/null -w '%{http_code}\n' https://energy-monitor.tech/api/v1/homes             # 401 (backend)
+curl -s -o /dev/null -w '%{http_code}\n' https://energy-monitor.tech/api/v1/homes             # 401 (homes)
 curl -s -o /dev/null -w '%{http_code}\n' https://energy-monitor.tech/api/v1/appliance-types   # 401 (devices)
 curl -s -o /dev/null -w '%{http_code}\n' https://energy-monitor.tech/api/v1/consumption-levels # 401 (measurements)
 curl -s -o /dev/null -w '%{http_code}\n' -X POST https://energy-monitor.tech/internal/mqtt/auth/user  # 405
@@ -710,12 +778,14 @@ openssl s_client -connect mqtt.energy-monitor.tech:8883 -servername mqtt.energy-
 On the server:
 
 ```bash
-emc ps                                                   # the five Java services (healthy)
+emc ps                                                   # the eight Java services (healthy)
 emc exec gateway curl -fsS http://localhost:8080/actuator/health
 emc logs --tail 50 mosquitto | grep 'New client connected'
 for r in infra backend/en-monitor-api-gateway backend/en-monitor-security-service \
          backend/en-monitor-device-service backend/en-monitor-measurement-service \
-         backend/energy-monitor-backend frontend/energy-monitor-web; do
+         backend/en-monitor-home-service backend/en-monitor-notification-service \
+         backend/en-monitor-alert-service backend/en-monitor-recommendation-service \
+         frontend/energy-monitor-web; do
   echo "$r: $(git -C /opt/energy-monitor/$r log -1 --oneline)"
 done                                                     # must match main on GitHub
 ls -lh /opt/energy-monitor/backups | tail -3
@@ -726,14 +796,14 @@ sudo certbot renew --dry-run
 
 - Screenshot of `https://energy-monitor.tech` open with the HTTPS padlock, and of the dashboard with
   a home.
-- Output of `emc ps` with the containers `Up` and the five Java services `(healthy)` (no sensitive
+- Output of `emc ps` with the containers `Up` and the eight Java services `(healthy)` (no sensitive
   data).
 - Output of the gateway's `actuator/health` and of `openssl s_client` against the broker, with the
   date.
 - Screenshot of the linked meter as ONLINE and of the measurements received.
 - Screenshot of the verification or recovery email with the link to the public domain.
 - Output of `certbot renew --dry-run` and of a generated backup.
-- Screenshots of the green GitHub Actions runs for the gateway, the services, the backend, web and
+- Screenshots of the green GitHub Actions runs for the gateway, the seven services, the web and
   infra, and of the `production` environment approval.
 
 # 7. Incidents found and technical decisions
@@ -764,7 +834,17 @@ sudo certbot renew --dry-run
 | The web app answered 502 right after a deployment | The backend takes about 2 minutes to start                                         | Wait for `actuator/health` UP; `deploy.sh` waits up to 300 s before declaring success or rolling back.         |
 | Deploying the frontend also rebuilt the backend  | In the compose file the frontend depends on the backend                             | `deploy.sh` uses `up -d --build --no-deps <service>`: only the deployed component changes.                     |
 | The server fingerprint did not match             | `ssh-keygen -lf` was run on the PC instead of the server                            | Compare the `ssh-keyscan` fingerprint with `/etc/ssh/ssh_host_ed25519_key.pub` **on the server**.              |
-| Personal SSH ended in `Uso: deploy.sh …`         | The PC's SSH agent offered the GitHub Actions key, restricted to `deploy.sh`        | `~/.ssh/config` entry with `IdentitiesOnly yes` and the personal key (8.5).                                    |
+| Personal SSH ended in `Uso: deploy.sh …`         | The PC's SSH agent offered the GitHub Actions key, restricted to `deploy.sh`        | Entry in `~/.ssh/config` with `IdentitiesOnly yes` and the personal key (8.5).                                 |
+
+**During the migration of October 28, 2026 (4.13):**
+
+| **Situation**                                    | **Observed cause**                                                                  | **Action taken / lesson**                                                                                      |
+|--------------------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `deploy.sh infra` never finished and repeated `no such service: backend` | The script already loaded in memory was the old one and still required the `backend` container to be healthy, which the infra `git pull` had just removed from the compose file | `Ctrl+C` before the 900 s wait (which would have triggered a rollback) and run `deploy.sh infra` again, which now reads the new script. Lesson: when a change modifies `deploy.sh`, the first deployment runs with the old script; run it twice or `git pull` infra first. |
+| `docker compose ps` asked for every variable     | It was run without `-f docker-compose.prod.yml --env-file .env.prod`                | Use the `emc` alias (4.8); no harm, only the wrong file.                                                       |
+| The deployed web app was still the old one (`current version e59bece`, `new version e59bece`) | The new web version was not merged into `main` | Merge the PR from `dev` to `main` and deploy `frontend`. Meanwhile, registration and Google sign-in answer 428. Lesson: check with `git log` that `main` contains what will be deployed and deploy the web app before security. |
+| The deploy job failed with `remote username contains invalid characters` or `hostname contains invalid characters` | The `DEPLOY_USER` or `DEPLOY_HOST` secret was saved with a trailing newline or space | Type the value again by hand, without pasting it or pressing Enter at the end, and use *Re-run failed jobs* (9.8). |
+| The home, notification, alert and recommendation repositories did not deploy | They lacked the `production` environment with its four secrets, and the notification one had no pipeline | Create the environment and the secrets in each repository (9.8) and the notification `ci-cd.yml` (9.4). |
 
 # 8. Operation, maintenance and rollback plan
 
@@ -774,7 +854,7 @@ sudo certbot renew --dry-run
 emc ps
 docker stats --no-stream
 emc logs --tail 100 gateway
-emc logs --tail 100 security device measurement backend
+emc logs --tail 100 security device measurement home notification alert recommendation
 emc logs --tail 100 mosquitto
 emc exec rabbitmq rabbitmqctl list_queues name messages      # the .dlq queues must stay at 0
 sudo tail -n 50 /var/log/nginx/error.log
@@ -794,7 +874,7 @@ If GitHub is unavailable, the same script can be run by hand on the server; it d
 pipeline does (backup, `git pull` of `main`, build, health check and rollback):
 
 ```bash
-sudo /opt/energy-monitor/infra/deploy/deploy.sh backend     # or security, device, measurement, gateway, frontend, infra
+sudo /opt/energy-monitor/infra/deploy/deploy.sh security     # or device, measurement, home, notification, alert, recommendation, gateway, frontend, infra
 ```
 
 Liquibase applies only each service's new changesets on start-up. An `infra` deployment re-applies
@@ -808,7 +888,7 @@ the compose file, creates or builds the new services and recreates Mosquitto to 
 2. **Manual, code:** redeploy a previous version with a *revert* on `main` (it is traced in the
    history and goes through the same pipeline). Avoid `git reset --hard` on the server.
 3. **Data:** if a Liquibase migration damaged data, stop the services that write to the database
-   (`emc stop gateway security device measurement backend`), restore
+   (`emc stop gateway security device measurement home notification alert recommendation`), restore
    the latest backup from `/opt/energy-monitor/backups` (command in `deploy/backup-mysql.sh`) and
    deploy the previous version. Every changeset has a `rollback`, but restoring the backup is the
    safest option.
@@ -841,7 +921,7 @@ the compose file, creates or builds the new services and recreates Mosquitto to 
 The server has two authorized keys with different purposes: the administrator's **personal** key
 (full shell) and the **GitHub Actions** key (restricted to `deploy.sh`). If the computer's SSH agent
 holds both, it may offer the GitHub key first and the connection ends with
-`Uso: deploy.sh backend|security|device|measurement|gateway|frontend|infra`. To avoid it, on the
+`Uso: deploy.sh security|device|measurement|home|notification|alert|recommendation|gateway|frontend|infra`. To avoid it, on the
 administrator's computer:
 
 ```
@@ -890,7 +970,7 @@ flowchart LR
 
 *Figure 2. From the working branch to production.*
 
-- **All repositories** (gateway, services, backend, web and infra): `feat/*`, `fix/*` or
+- **All repositories** (gateway, seven services, web and infra): `feat/*`, `fix/*` or
   `chore/*` → PR to `dev` → PR from `dev` to `main`. In infra the check runs on PRs to `main`.
 - The rules on `dev` and `main` require a PR and a green CI check to merge.
 - Only `main` is deployed; `dev` is the integration branch and has no server of its own.
@@ -901,21 +981,23 @@ Each repository has a `.github/workflows/ci-cd.yml` file with two jobs:
 
 | **Repository**               | **CI job (required check)**       | **What it validates**                                                                                  | **Runs on**                  |
 |------------------------------|-----------------------------------|--------------------------------------------------------------------------------------------------------|------------------------------|
-| `en-monitor-api-gateway`     | `Tests`                           | Java 21 + `./mvnw test` (57 tests); needs no database. On failure it keeps the Surefire reports. | PR and push to `dev`/`main` |
-| `en-monitor-security-service` | `Tests`                          | Java 21 + `./mvnw test` against a MySQL 8.4 service container (660 tests), with a throwaway RSA pair. | PR and push to `dev`/`main` |
-| `en-monitor-device-service`  | `Tests` and `Docker image`        | Java 21 + `./mvnw test` against a MySQL 8.4 service container (130 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
+| `en-monitor-api-gateway`     | `Tests`                           | Java 21 + `./mvnw test` (69 tests); needs no database. On failure it keeps the Surefire reports. | PR and push to `dev`/`main` |
+| `en-monitor-security-service` | `Tests`                          | Java 21 + `./mvnw test` against a MySQL 8.4 service container (773 tests), with a throwaway RSA pair. | PR and push to `dev`/`main` |
+| `en-monitor-device-service`  | `Tests` and `Docker image`        | Java 21 + `./mvnw test` against a MySQL 8.4 service container (129 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
 | `en-monitor-measurement-service` | `Tests` and `Docker image`    | Java 21 + `./mvnw test` against a MySQL 8.4 service container (151 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
-| `energy-monitor-backend`     | `Tests`                           | Java 21 + `./mvnw test`: 481 tests against a MySQL 8.4 service container, with throwaway RSA keys. On failure it keeps the Surefire reports. | PR and push to `dev`/`main` |
+| `en-monitor-home-service`    | `Tests` and `Docker image`        | Java 21 + `./mvnw test` against a MySQL 8.4 service container (260 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
+| `en-monitor-notification-service` | `Tests` and `Docker image`   | Java 21 + `./mvnw test` against a MySQL 8.4 service container (234 tests), with a throwaway public key; it also builds the Docker image. Added on October 28, 2026. | PR and push to `dev`/`main` |
+| `en-monitor-alert-service`   | `Tests` and `Docker image`        | Java 21 + `./mvnw test` against a MySQL 8.4 service container (119 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
+| `en-monitor-recommendation-service` | `Tests` and `Docker image` | Java 21 + `./mvnw test` against a MySQL 8.4 service container (71 tests), with a throwaway public key; it also builds the Docker image. | PR and push to `dev`/`main` |
 | `Energy-Monitor-application` | `Tests and build`                 | Node 22, `npm ci`, Vitest tests and the production `npm run build`.                                    | PR and push to `dev`/`main`  |
 | `energy-monitor-infra`       | `Validate compose and scripts`    | `docker compose config` for the three modes, `bash -n` and `shellcheck` on the scripts, `nginx -t` on the site template. | PR and push to `main` |
 
 The last job, **`Deploy to production`**, runs only on `main` (on push or with *Run workflow*) and
 only if CI passed. It waits for the `production` environment approval, runs
-`deploy.sh <component>` over SSH (`gateway`, `security`, `device`, `measurement`, `backend`,
-`frontend` or `infra`, depending on the repository) and ends with a public smoke test against
+`deploy.sh <component>` over SSH (`gateway`, `security`, `device`, `measurement`, `home`,
+`notification`, `alert`, `recommendation`, `frontend` or `infra`, depending on the repository) and ends with a public smoke test against
 `https://energy-monitor.tech` (for example, `/api/v1/homes` or `/api/v1/consumption-levels` return
-401 through the gateway). The test counts in the table are those of October 24, 2026 (the security
-service's, of October 22).
+401 through the gateway). The test counts in the table are those of October 28, 2026.
 
 Common settings:
 
@@ -933,7 +1015,7 @@ spends a few minutes building on the server, which the 2 vCPU and 8 GB of the KV
 
 ## 9.6 What `deploy.sh` does on the server
 
-`infra/deploy/deploy.sh <backend|security|device|measurement|gateway|frontend|infra>`:
+`infra/deploy/deploy.sh <security|device|measurement|home|notification|alert|recommendation|gateway|frontend|infra>`:
 
 1. Takes a **lock** (`flock`): two deployments arriving at the same time from different
    repositories run one after the other.
@@ -945,7 +1027,8 @@ spends a few minutes building on the server, which the 2 vCPU and 8 GB of the KV
    the gateway and the gateway on the services, and without `--no-deps` they would be rebuilt too.
    For `infra` it re-applies the whole compose file (`up -d --remove-orphans`, which creates or
    builds the new services) and recreates Mosquitto.
-6. Waits up to 300 s for the five Java services (`security`, `device`, `measurement`, `backend` and
+6. Waits up to 300 s (configurable with `HEALTH_TIMEOUT_S`) for the eight Java services
+   (`security`, `device`, `measurement`, `home`, `notification`, `alert`, `recommendation` and
    `gateway`) to be `healthy` according to their container's *healthcheck* (`/actuator/health`
    inside the Docker network), the web app to answer 200 and `/api/v1/homes` to answer 401 through
    the gateway.
@@ -957,8 +1040,8 @@ spends a few minutes building on the server, which the 2 vCPU and 8 GB of the KV
 - **Dedicated, restricted key:** GitHub connects with its own ed25519 key. In `authorized_keys` it
   carries `command="/opt/energy-monitor/infra/deploy/deploy.sh"` and
   `no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty`: it can only run that script
-  with one of the seven valid arguments. It opens no shell and runs no other command. With a
-  different argument it answers `Uso: deploy.sh backend|security|device|measurement|gateway|frontend|infra`
+  with one of the ten valid arguments. It opens no shell and runs no other command. With a
+  different argument it answers `Uso: deploy.sh security|device|measurement|home|notification|alert|recommendation|gateway|frontend|infra`
   and closes.
 - **Verified server:** the runner uses `StrictHostKeyChecking=yes` with the server fingerprint
   stored in `DEPLOY_KNOWN_HOSTS`, so it does not connect to an impersonated server.
@@ -980,13 +1063,18 @@ spends a few minutes building on the server, which the 2 vCPU and 8 GB of the KV
 5. Test the key: `ssh -i ~/.ssh/energy-monitor-deploy root@<VPS_IP> something` must answer with
    the usage message, and `... frontend` must deploy.
 6. In each repository with a pipeline (`en-monitor-api-gateway`, `en-monitor-security-service`,
-   `en-monitor-device-service`, `en-monitor-measurement-service`, `energy-monitor-backend`,
-   `Energy-Monitor-application` and `energy-monitor-infra`): *Settings → Environments → New
+   `en-monitor-device-service`, `en-monitor-measurement-service`, `en-monitor-home-service`,
+   `en-monitor-notification-service`, `en-monitor-alert-service`,
+   `en-monitor-recommendation-service`, `Energy-Monitor-application` and `energy-monitor-infra`): *Settings → Environments → New
    environment* `production`, with *Required reviewers*, *Deployment branches* = `main` and the four
    secrets (`DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`). A new repository
-   needs its own environment: secrets are not shared between repositories.
+   needs its own environment: secrets are not shared between repositories. The values are typed by
+   hand, with no quotes, spaces or trailing newline: an extra space in `DEPLOY_USER` or
+   `DEPLOY_HOST` makes the job fail with `contains invalid characters`. For the repositories of
+   another account (homes, notifications, alerts and recommendations) administrator permissions
+   are required.
 7. Run each pipeline once and then, under *Settings → Rules → Rulesets* for `dev` and `main`,
-   require the `Tests` (gateway, services and backend), `Tests and build` (web) and `Validate
+   require the `Tests` (gateway and services), `Tests and build` (web) and `Validate
    compose and scripts` (infra) checks.
 
 ## 9.9 Run evidence
@@ -1004,13 +1092,13 @@ The total duration of each run includes the time spent waiting for the manual ap
 deployments took 7 s because the server already had those commits; a deployment with changes also
 includes building the image on the VPS. That run belongs to version 1.1, with the single backend;
 the runs of the gateway and service pipelines are not recorded in this table. The `main` commits in
-production on October 24, 2026 are listed in `15-enlaces-repositorios-github/enlaces.md`.
+production on October 28, 2026 are listed in `15-enlaces-repositorios-github/enlaces.md`.
 
 ## 9.10 Limitations and planned improvements
 
 | **Limitation**                                              | **Proposed improvement**                                                  |
 |-------------------------------------------------------------|---------------------------------------------------------------------------|
-| The backend tests took about 23 minutes per run with the 1131 tests of version 1.1; it has not been measured again with the service architecture | Parallelize the suite or split out the slowest integration tests.         |
+| The backend tests took about 23 minutes per run with the 1131 tests of version 1.1; it has not been measured again with the eight services | Parallelize the suite or split out the slowest integration tests.         |
 | There is no *staging* environment: `dev` is not deployed     | A second stack on the same VPS (another Compose project) for `dev`.       |
 | Images are built on the production server                    | Build the images on GitHub and publish them to GitHub Container Registry. |
 | The mobile app has no pipeline                               | Android build with EAS in GitHub Actions.                                 |
@@ -1020,11 +1108,12 @@ production on October 24, 2026 are listed in `15-enlaces-repositorios-github/enl
 
 EnergyMonitor is **deployed and running** at `https://energy-monitor.tech`, on a Hostinger KVM 2
 VPS contracted for one month at 48,000 COP (27,900 COP/month on a yearly contract). A single Compose file brings up the database, message queue,
-API gateway, security, device and measurement services, backend, broker and frontend; Nginx
+API gateway, the seven services (security, devices, measurements, homes, notifications, alerts and
+recommendations), broker and frontend; Nginx
 centralizes HTTPS; the gateway is the only entry point of the API; the broker is the only service
 published directly and delegates every access decision to the device service; and the meters work
-in production without rebuilding the firmware. The move to the service architecture (October 24,
-2026) did not change the public API routes nor require relinking the meters.
+in production without rebuilding the firmware. The move to the service architecture (October 24 and
+28, 2026) did not change the public API routes nor require relinking the meters.
 
 With GitHub Actions, every change goes through automated tests before it is merged and reaches
 production with approval, a prior backup, a health check and automatic rollback. The incidents of
@@ -1033,11 +1122,14 @@ runbook.
 
 To close the deployment as ready for real use, the evidence marked as pending in section 6.1 is
 still needed (meter in production, email, administration, scheduled backup and certificate
-renewal), as well as measuring resource usage with several meters connected. The mobile app will be
-deployed in a later phase. The migration to microservices of the four modules still in the backend
-(`home`, `alert`, `recommendation` and `notification`) is in progress, led by Miguel Ángel García
-Artunduaga; when each new service reaches production, this manual must be updated with its
-repository, its container and its `deploy.sh` component.
+renewal), as well as measuring resource usage with several meters connected. After the October 28
+migration the team confirmed that the new web app and every service are deployed and that every
+repository except the mobile app has CI/CD in production; only the evidence of deleting a Google
+account with the emailed code is missing. The mobile app will be deployed in a later phase and its APK must be rebuilt, because
+the previous one does not send `acceptTerms`. The migration to microservices of the four modules that
+were still in the backend (`home`, `alert`, `recommendation` and `notification`), carried out by
+Miguel Ángel García Artunduaga, was completed on October 28, 2026 and the backend was retired; each
+new service already has its repository, its container and its `deploy.sh` component.
 
 > **Result.** Production deployment and CI/CD **confirmed** with real runs; the remaining functional
 > checks are flagged so configuration is not mistaken for final testing.
@@ -1048,7 +1140,7 @@ repository, its container and its `deploy.sh` component.
 |---------------------------------|-----------------------------------------------------------------------|
 | Production compose              | `/opt/energy-monitor/infra/docker-compose.prod.yml`                   |
 | Configuration (protected)       | `/opt/energy-monitor/infra/.env.prod`                                 |
-| Service code                    | `/opt/energy-monitor/backend/` (`en-monitor-api-gateway`, `en-monitor-security-service`, `en-monitor-device-service`, `en-monitor-measurement-service`, `energy-monitor-backend`) |
+| Service code                    | `/opt/energy-monitor/backend/` (`en-monitor-api-gateway`, `en-monitor-security-service`, `en-monitor-device-service`, `en-monitor-measurement-service`, `en-monitor-home-service`, `en-monitor-notification-service`, `en-monitor-alert-service`, `en-monitor-recommendation-service`) |
 | Web code                        | `/opt/energy-monitor/frontend/energy-monitor-web`                     |
 | JWT keys                        | `/opt/energy-monitor/keys`                                            |
 | Broker certificate              | `/opt/energy-monitor/mqtt-certs` (copied from `/etc/letsencrypt/live/mqtt.energy-monitor.tech/`) |
@@ -1056,11 +1148,11 @@ repository, its container and its `deploy.sh` component.
 | Nginx site                      | `/etc/nginx/sites-available/energy-monitor`                           |
 | Renewal hook                    | `/etc/letsencrypt/renewal-hooks/deploy/energy-monitor-mqtt.sh`        |
 | Status                          | `emc ps`                                                              |
-| Manual deployment               | `sudo /opt/energy-monitor/infra/deploy/deploy.sh backend\|security\|device\|measurement\|gateway\|frontend\|infra` |
+| Manual deployment               | `sudo /opt/energy-monitor/infra/deploy/deploy.sh security\|device\|measurement\|home\|notification\|alert\|recommendation\|gateway\|frontend\|infra` |
 | RabbitMQ console                | `ssh -L 15672:127.0.0.1:15672 energy-monitor` and open `http://localhost:15672` |
 | First administrator             | `./make-admin.sh --prod email@example.com`                            |
-| Firmware                        | `energy-monitor-backend/firmware/esp32-pzem-monitor`                  |
-| Pipelines                       | `.github/workflows/ci-cd.yml` in the gateway, services, backend, web and infra |
+| Firmware                        | `energy-monitor-backend/firmware/esp32-pzem-monitor` (retired repository, kept with the firmware) |
+| Pipelines                       | `.github/workflows/ci-cd.yml` in the gateway, the seven services, the web app and infra |
 | Deployment lock                 | `/var/lock/energy-monitor-deploy.lock`                                |
 
 # Annex B. Reference repositories
@@ -1068,13 +1160,13 @@ repository, its container and its `deploy.sh` component.
 1. `energy-monitor-infra`: `README.md`, `docker-compose.prod.yml`, `deploy/deploy.sh` and
    `.github/workflows/ci-cd.yml`: run modes, services, deployment procedure and infrastructure
    pipeline.
-2. `energy-monitor-backend`: `README.md`, `docs/Architecture.md`, `Dockerfile`,
-   `firmware/README.md` and `.github/workflows/ci-cd.yml`: configuration of the backend (home, alert,
-   recommendation and notification) and its proxies, MQTT contract, firmware and pipeline.
+2. `energy-monitor-backend` (retired): `firmware/README.md`, MQTT contract and meter firmware, and its
+   `README.md` with the history of the monolith.
 3. `Energy-Monitor-application` (web frontend): `Dockerfile`, `nginx.conf` and
    `.github/workflows/ci-cd.yml`: frontend image, `/api/` proxy and web pipeline.
-4. `en-monitor-api-gateway`, `en-monitor-security-service`, `en-monitor-device-service` and
-   `en-monitor-measurement-service`: the `README.md`, `Dockerfile` and `.github/workflows/ci-cd.yml`
+4. `en-monitor-api-gateway`, `en-monitor-security-service`, `en-monitor-device-service`,
+   `en-monitor-measurement-service`, `en-monitor-home-service`, `en-monitor-notification-service`,
+   `en-monitor-alert-service` and `en-monitor-recommendation-service`: the `README.md`, `Dockerfile` and `.github/workflows/ci-cd.yml`
    of each one (and `docs/Architecture.md` in the first three): gateway routes, internal API,
    events, variables and pipeline of each service.
 

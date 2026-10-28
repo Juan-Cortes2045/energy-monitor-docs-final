@@ -6,14 +6,15 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Technologist in Software Analysis and Development (ADSO), group (ficha) 3145556
 
-Version 2.1, October 20, 2026
+Version 2.2, October 28, 2026
 
-October 16, 2026 (updated October 20, 2026)
+October 16, 2026 (updated October 28, 2026)
 
 ## Version Control
 
 - Version 2.0 (10/10/2026): functional requirements per module, non-functional requirements, 15 user stories and 2 use cases.
 - Version 2.1 (10/20/2026): Platform Administration Module (RF-ADM-01 to RF-ADM-10), security requirement for the administration functions (RNF-SEG-11), continuous integration and deployment (RNF-MAN-05), push notifications in the mobile application, user story HU-16 and renumbering of tables 12 to 23.
+- Version 2.2 (10/28/2026): registration with prior email verification (the account does not exist until it is verified) and rejection of domains with a typing error (RF-SEC-01, RF-SEC-02), mandatory acceptance of the terms (RF-SEC-13), rules for accounts created with Google (RF-SEC-05, RF-SEC-07, RF-SEC-11), independent editing of the first and last name (RF-SEC-08), attempt limit for the deletion code (RNF-SEG-06) and acceptance criteria CA-39 to CA-42.
 
 ## Abstract
 
@@ -116,18 +117,19 @@ Table 4 lists the functional requirements of the User and Profile Management Mod
 
 | Code | Requirement |
 |---|---|
-| RF-SEC-01 | The system must allow registering an account with personal data, email and password. If the email is already registered, it must reject the registration and inform the user. |
-| RF-SEC-02 | The system must send a six-digit verification code to the registered email and mark the email as verified when the user enters it. The user must be able to ask for the code to be sent again. An unverified account can sign in. The code lasts between 15 and 30 minutes and changing the email invalidates it. |
+| RF-SEC-01 | The system must allow requesting the registration of an account with personal data, email and password. The account does not exist until the user verifies their email: the request stays pending for 24 hours and, if it is not verified, it is discarded. It must reject the registration if the email already has an account, if the domain does not exist or does not receive mail, or if the domain looks like a typing error of a well-known provider (for example `meil.com`), and inform the user. |
+| RF-SEC-02 | The system must send a six-digit verification code to the given email and create the account, with the email already verified, when the user enters it. The user must be able to ask for the code to be sent again, and registering again with the same email replaces the pending request. Without verification it is not possible to sign in. The code lasts between 15 and 30 minutes and changing the email of an account invalidates it. |
 | RF-SEC-03 | The system must allow signing in securely with email and password. |
 | RF-SEC-04 | The system must keep the user's session without asking for credentials continuously, let the user sign out and close the session if it detects an attempt to reuse a session credential that was already used. |
-| RF-SEC-05 | The system must allow registering and signing in with a Google account. The first time it creates the account with the Google first name, last name (if any), photo and email, and the email is verified. If the email belongs to an account registered with a password, it must reject the access and report the conflict. If the Google service is not available, it must notify the user. |
+| RF-SEC-05 | The system must allow registering and signing in with a Google account. The first time it creates the account with the Google first name, last name (if any), photo and email, the email is verified and acceptance of the terms is required. If the email belongs to an account registered with a password, it must reject the access and report the conflict. If the Google service is not available, it must notify the user. |
 | RF-SEC-06 | The system must allow password recovery with a six-digit code sent to the email, valid for 15 minutes and single use. It must answer the same whether or not the account exists, and requesting a new code cancels the previous ones. |
-| RF-SEC-07 | The system must allow a signed-in user to change their password. |
-| RF-SEC-08 | The system must allow viewing the account data and updating the profile. |
+| RF-SEC-07 | The system must allow a signed-in user to change their password. An account created with Google has no password of its own and cannot change it: the system must reject the request with a readable message. |
+| RF-SEC-08 | The system must allow viewing the account data and updating the profile, editing the first name and the last name separately, and the photo. |
 | RF-SEC-09 | The system must allow knowing the user's permissions. General permissions are evaluated on every query and are not fixed in the session. |
 | RF-SEC-10 | The system must identify the user only from their session and must not accept identities indicated by the application making the request. |
-| RF-SEC-11 | The system must allow the user to delete their account by confirming their password. With a wrong password it must reject the request. Deletion is soft and all-or-nothing: it closes sessions, marks personal data as deleted, releases the email for a new registration and handles memberships in homes. A home of which the account is the only member is deleted. If the account is the only owner of a home with other members, the system rejects the deletion with a readable message until ownership is transferred or the members are removed. Access already granted before deletion may remain valid for at most 15 minutes and cannot be renewed. |
+| RF-SEC-11 | The system must allow the user to delete their account by confirming their password. With a wrong password it must reject the request. An account created with Google has no password: it confirms with a six-digit code that the system sends to its email, and a wrong or expired code rejects the request. Deletion is soft and all-or-nothing: it closes sessions, marks personal data as deleted, releases the email and the Google identity for a new registration and handles memberships in homes. A home of which the account is the only member is deleted. If the account is the only owner of a home with other members, the system rejects the deletion with a readable message until ownership is transferred or the members are removed. Access already granted before deletion may remain valid for at most 15 minutes and cannot be renewed. |
 | RF-SEC-12 | The system must apply a password policy (minimum length of 8 and maximum of 64 characters) and record failed access attempts and security-relevant actions. Account lockout after failed attempts and 90-day password expiration appear in the initial configuration: whether they are enforced is `[TO BE CONFIRMED]`. |
+| RF-SEC-13 | The system must not allow access to an account that has not accepted the terms and conditions, whatever the method: registration with a password, the first sign-in with Google and the sign-in of an account without acceptance require the user's express acceptance, and without it the system answers asking for it and neither creates nor changes anything. The moment of acceptance is recorded. |
 
 ### Home Management Module
 
@@ -301,7 +303,7 @@ Table 13 sets the security requirements.
 | RNF-SEG-03 | The system must only serve requests from authorized web applications. Others must be rejected. |
 | RNF-SEG-04 | The data that measuring devices send must travel encrypted. |
 | RNF-SEG-05 | Recovery codes must be stored in a protected way, so that a data leak does not allow them to be used. |
-| RNF-SEG-06 | Redeeming recovery codes must be limited to 10 attempts per address per 15-minute window, and tell the user how long to wait. Email verification must additionally be limited to 5 attempts per address per window. |
+| RNF-SEG-06 | Redeeming recovery codes must be limited to 10 attempts per address per 15-minute window, and tell the user how long to wait. Email verification and the confirmation of account deletion with a code must additionally be limited to 5 attempts per address per window. |
 | RNF-SEG-07 | The internal functions used to authenticate devices must only be reachable from the system's own network and never from the internet. |
 | RNF-SEG-08 | The system must protect user information in accordance with Law 1581 of 2012 (Congreso de la República de Colombia, 2012). |
 | RNF-SEG-09 | Device credentials must be checked securely. Only a protected hash of each key is kept. |
@@ -435,10 +437,12 @@ User stories describe the interactions from the perspective of whoever uses them
 
 As a person who wants to monitor their consumption, I want to register and verify my email, so that I can access the system.
 
-Related requirements: RF-SEC-01, RF-SEC-02.
+Related requirements: RF-SEC-01, RF-SEC-02, RF-SEC-13.
 
 - CA-01. Given an email that is already registered, when I try to register with it, then the system shows an error and does not create a second account.
-- CA-02. Given a successful registration, when I enter the six-digit code that arrived in my email within its validity window, then the email is verified.
+- CA-02. Given a successful registration, when I enter the six-digit code that arrived in my email within its validity window, then my account is created with the email already verified. If I do not verify within 24 hours, the request is discarded and no account is left.
+- CA-39. Given a registration without accepting the terms and conditions, when I submit it, then the system rejects it asking for the acceptance and stores nothing. The same happens with the first sign-in with Google.
+- CA-40. Given an email with a domain that looks like a typing error of a well-known provider (`meil.com`) or that does not exist, when I try to register, then the system rejects it and, where applicable, names the provider I probably meant to type.
 
 #### HU-02 Sign In and Keep the Session
 
@@ -467,6 +471,8 @@ Related requirements: RF-SEC-11.
 
 - CA-08. Given a wrong password, when I request to delete the account, then the system rejects it. With the correct password it deletes it, the email can register again and the sessions are closed.
 - CA-09. Given that I am the only owner of a home with other members, when I request to delete the account, then the system rejects it with a readable message and changes no data.
+- CA-41. Given an account created with Google, when I request to delete it, then the system sends a code to my email and deletes it only with the correct code; with a wrong or expired one it rejects it, and after five attempts in 15 minutes it asks me to wait. Once deleted, I can register again with the same Google account.
+- CA-42. Given an account created with Google, when I try to change the password, then the system rejects it with a readable message.
 
 #### HU-05 Create a Home and Set Its Thresholds
 

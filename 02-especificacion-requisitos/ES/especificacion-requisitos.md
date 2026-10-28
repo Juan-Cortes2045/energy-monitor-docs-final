@@ -6,14 +6,15 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-Versión 2.1, 20 de octubre de 2026
+Versión 2.2, 28 de octubre de 2026
 
-16 de octubre de 2026 (actualizado el 20 de octubre de 2026)
+16 de octubre de 2026 (actualizado el 28 de octubre de 2026)
 
 ## Control de versiones
 
 - Versión 2.0 (10/10/2026): requisitos funcionales por módulo, requisitos no funcionales, 15 historias de usuario y 2 casos de uso.
 - Versión 2.1 (20/10/2026): Módulo de Administración de la Plataforma (RF-ADM-01 a RF-ADM-10), requisito de seguridad de las funciones de administración (RNF-SEG-11), integración y despliegue continuos (RNF-MAN-05), notificaciones push en la aplicación móvil, historia de usuario HU-16 y renumeración de las tablas 12 a 23.
+- Versión 2.2 (28/10/2026): registro con verificación previa del correo (la cuenta no existe hasta verificarlo) y rechazo de dominios con error de escritura (RF-SEC-01, RF-SEC-02), aceptación obligatoria de los términos (RF-SEC-13), reglas de las cuentas creadas con Google (RF-SEC-05, RF-SEC-07, RF-SEC-11), edición independiente del nombre y el apellido (RF-SEC-08), límite de intentos del código de eliminación (RNF-SEG-06) y criterios de aceptación CA-39 a CA-42.
 
 ## Resumen
 
@@ -116,18 +117,19 @@ La Tabla 4 enumera los requisitos funcionales del Módulo de Gestión de Usuario
 
 | Código | Requisito |
 |---|---|
-| RF-SEC-01 | El sistema debe permitir registrar una cuenta con datos personales, correo y contraseña. Si el correo ya está registrado, debe rechazar el registro e informar al usuario. |
-| RF-SEC-02 | El sistema debe enviar al correo registrado un código de verificación de seis dígitos y marcar el correo como verificado cuando el usuario lo ingrese. El usuario debe poder pedir que se le reenvíe el código. Una cuenta sin verificar puede iniciar sesión. El código dura entre 15 y 30 minutos y cambiar el correo lo invalida. |
+| RF-SEC-01 | El sistema debe permitir solicitar el registro de una cuenta con datos personales, correo y contraseña. La cuenta no existe hasta que el usuario verifica su correo: la solicitud queda pendiente 24 horas y, si no se verifica, se descarta. Debe rechazar el registro si el correo ya tiene una cuenta, si el dominio no existe o no recibe correo, o si el dominio parece un error de escritura de un proveedor conocido (por ejemplo `meil.com`), e informar al usuario. |
+| RF-SEC-02 | El sistema debe enviar al correo indicado un código de verificación de seis dígitos y crear la cuenta, con el correo ya verificado, cuando el usuario lo ingrese. El usuario debe poder pedir que se le reenvíe el código, y registrarse de nuevo con el mismo correo reemplaza la solicitud pendiente. Sin verificar no se puede iniciar sesión. El código dura entre 15 y 30 minutos y cambiar el correo de una cuenta lo invalida. |
 | RF-SEC-03 | El sistema debe permitir iniciar sesión de forma segura con correo y contraseña. |
 | RF-SEC-04 | El sistema debe mantener la sesión del usuario sin pedirle sus credenciales continuamente, permitirle cerrar la sesión y cerrarla si detecta que se intenta reutilizar una credencial de sesión ya usada. |
-| RF-SEC-05 | El sistema debe permitir registrarse e iniciar sesión con una cuenta de Google. La primera vez crea la cuenta con el nombre, el apellido (si existe), la foto y el correo de Google, y el correo queda verificado. Si el correo pertenece a una cuenta registrada con contraseña, debe rechazar el acceso e informar el conflicto. Si el servicio de Google no está disponible, debe avisar al usuario. |
+| RF-SEC-05 | El sistema debe permitir registrarse e iniciar sesión con una cuenta de Google. La primera vez crea la cuenta con el nombre, el apellido (si existe), la foto y el correo de Google, el correo queda verificado y se exige aceptar los términos. Si el correo pertenece a una cuenta registrada con contraseña, debe rechazar el acceso e informar el conflicto. Si el servicio de Google no está disponible, debe avisar al usuario. |
 | RF-SEC-06 | El sistema debe permitir recuperar la contraseña con un código de seis dígitos enviado al correo, válido 15 minutos y de un solo uso. Debe responder igual exista o no la cuenta, y pedir un código nuevo anula los anteriores. |
-| RF-SEC-07 | El sistema debe permitir al usuario con sesión iniciada cambiar su contraseña. |
-| RF-SEC-08 | El sistema debe permitir consultar los datos de la cuenta y actualizar el perfil. |
+| RF-SEC-07 | El sistema debe permitir al usuario con sesión iniciada cambiar su contraseña. Una cuenta creada con Google no tiene contraseña propia y no puede cambiarla: el sistema debe rechazar la solicitud con un mensaje legible. |
+| RF-SEC-08 | El sistema debe permitir consultar los datos de la cuenta y actualizar el perfil, editando el nombre y el apellido por separado, y la foto. |
 | RF-SEC-09 | El sistema debe permitir conocer los permisos del usuario. Los permisos generales se evalúan en cada consulta y no quedan fijados en la sesión. |
 | RF-SEC-10 | El sistema debe identificar al usuario únicamente a partir de su sesión y no debe aceptar identidades indicadas por la aplicación que realiza la solicitud. |
-| RF-SEC-11 | El sistema debe permitir al usuario eliminar su cuenta confirmando su contraseña. Con una contraseña incorrecta debe rechazar la solicitud. La eliminación es lógica y se realiza completa o no se realiza: cierra las sesiones, marca como eliminados los datos personales, libera el correo para un registro nuevo y gestiona las membresías en los hogares. Un hogar del que la cuenta es el único miembro se elimina. Si la cuenta es el único propietario de un hogar con otros miembros, el sistema rechaza la eliminación con un mensaje legible hasta que se transfiera la propiedad o se retire a los miembros. El acceso ya iniciado antes de la eliminación puede seguir vigente 15 minutos como máximo y no puede renovarse. |
+| RF-SEC-11 | El sistema debe permitir al usuario eliminar su cuenta confirmando su contraseña. Con una contraseña incorrecta debe rechazar la solicitud. Una cuenta creada con Google no tiene contraseña: la confirma con un código de seis dígitos que el sistema envía a su correo, y el código incorrecto o vencido rechaza la solicitud. La eliminación es lógica y se realiza completa o no se realiza: cierra las sesiones, marca como eliminados los datos personales, libera el correo y la identidad de Google para un registro nuevo y gestiona las membresías en los hogares. Un hogar del que la cuenta es el único miembro se elimina. Si la cuenta es el único propietario de un hogar con otros miembros, el sistema rechaza la eliminación con un mensaje legible hasta que se transfiera la propiedad o se retire a los miembros. El acceso ya iniciado antes de la eliminación puede seguir vigente 15 minutos como máximo y no puede renovarse. |
 | RF-SEC-12 | El sistema debe aplicar una política de contraseñas (longitud mínima de 8 y máxima de 64 caracteres) y registrar los intentos fallidos de acceso y las acciones relevantes para la seguridad. El bloqueo de la cuenta tras intentos fallidos y la expiración de la contraseña a los 90 días figuran en la configuración inicial: `[POR CONFIRMAR]` si se aplican. |
+| RF-SEC-13 | El sistema no debe permitir el acceso a una cuenta que no haya aceptado los términos y condiciones, sea cual sea el método: el registro con contraseña, el primer inicio con Google y el inicio de sesión de una cuenta sin aceptación exigen la aceptación expresa del usuario, y sin ella el sistema responde pidiéndola y no crea ni modifica nada. El momento de la aceptación queda registrado. |
 
 ### Módulo de Gestión de Hogares
 
@@ -301,7 +303,7 @@ La Tabla 13 establece los requisitos de seguridad.
 | RNF-SEG-03 | El sistema solo debe atender las solicitudes de las aplicaciones web autorizadas. Las demás deben rechazarse. |
 | RNF-SEG-04 | Los datos que envían los dispositivos de medición deben viajar cifrados. |
 | RNF-SEG-05 | Los códigos de recuperación deben almacenarse de forma protegida, de modo que una filtración de los datos no permita usarlos. |
-| RNF-SEG-06 | El canje de códigos de recuperación debe limitarse a 10 intentos por dirección y por ventana de 15 minutos, e indicar al usuario cuánto debe esperar. La verificación de correo debe limitarse además a 5 intentos por dirección y por ventana. |
+| RNF-SEG-06 | El canje de códigos de recuperación debe limitarse a 10 intentos por dirección y por ventana de 15 minutos, e indicar al usuario cuánto debe esperar. La verificación de correo y la confirmación de la eliminación de la cuenta con código deben limitarse además a 5 intentos por dirección y por ventana. |
 | RNF-SEG-07 | Las funciones internas con las que se autentica a los dispositivos solo deben ser accesibles desde la red del propio sistema y nunca desde internet. |
 | RNF-SEG-08 | El sistema debe proteger la información de los usuarios conforme a la Ley 1581 de 2012 (Congreso de la República de Colombia, 2012). |
 | RNF-SEG-09 | Las credenciales de los dispositivos deben comprobarse de forma segura. Solo se conserva una huella protegida (hash) de cada clave. |
@@ -435,10 +437,12 @@ Las historias de usuario describen las interacciones desde la perspectiva de qui
 
 Como persona que quiere monitorear su consumo, quiero registrarme y verificar mi correo, para acceder al sistema.
 
-Requisitos relacionados: RF-SEC-01, RF-SEC-02.
+Requisitos relacionados: RF-SEC-01, RF-SEC-02, RF-SEC-13.
 
 - CA-01. Dado un correo ya registrado, cuando intento registrarme con él, entonces el sistema muestra un error y no crea una segunda cuenta.
-- CA-02. Dado un registro exitoso, cuando ingreso el código de seis dígitos que llegó a mi correo dentro de su ventana de validez, entonces el correo queda verificado.
+- CA-02. Dado un registro exitoso, cuando ingreso el código de seis dígitos que llegó a mi correo dentro de su ventana de validez, entonces se crea mi cuenta con el correo ya verificado. Si no lo verifico en 24 horas, la solicitud se descarta y no queda ninguna cuenta.
+- CA-39. Dado un registro sin aceptar los términos y condiciones, cuando lo envío, entonces el sistema lo rechaza pidiendo la aceptación y no guarda nada. Lo mismo ocurre con el primer inicio con Google.
+- CA-40. Dado un correo con un dominio que parece un error de escritura de un proveedor conocido (`meil.com`) o que no existe, cuando intento registrarme, entonces el sistema lo rechaza y, si corresponde, indica el proveedor que probablemente quise escribir.
 
 #### HU-02 Iniciar y mantener la sesión
 
@@ -467,6 +471,8 @@ Requisitos relacionados: RF-SEC-11.
 
 - CA-08. Dada una contraseña incorrecta, cuando solicito eliminar la cuenta, entonces el sistema la rechaza. Con la contraseña correcta la elimina, el correo puede registrarse de nuevo y las sesiones quedan cerradas.
 - CA-09. Dado que soy el único propietario de un hogar con otros miembros, cuando solicito eliminar la cuenta, entonces el sistema la rechaza con un mensaje legible y no modifica ningún dato.
+- CA-41. Dada una cuenta creada con Google, cuando solicito eliminarla, entonces el sistema me envía un código a mi correo y solo la elimina con el código correcto; con uno equivocado o vencido la rechaza, y tras cinco intentos en 15 minutos me pide esperar. Al eliminarla, puedo volver a registrarme con la misma cuenta de Google.
+- CA-42. Dada una cuenta creada con Google, cuando intento cambiar la contraseña, entonces el sistema lo rechaza con un mensaje legible.
 
 #### HU-05 Crear un hogar y definir sus umbrales
 

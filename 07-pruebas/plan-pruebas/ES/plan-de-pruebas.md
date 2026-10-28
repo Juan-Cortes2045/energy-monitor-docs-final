@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-14 de octubre de 2026 (actualizado el 24 de octubre de 2026)
+14 de octubre de 2026 (actualizado el 28 de octubre de 2026)
 
 ## Control de versiones
 
@@ -19,6 +19,7 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 | 1.0     | 14/10/2026 | Primera versión: inventario, trazabilidad y resultados de la ejecución sin base de datos. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.1     | 20/10/2026 | Ejecución de la suite completa contra MySQL (1131 pruebas, 0 fallos) en local y en GitHub Actions; cierre de DEF-01 y DEF-02; 3 clases de prueba nuevas de notificaciones push; trazabilidad, riesgos y evidencias actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 | 1.2     | 24/10/2026 | Arquitectura de servicios: elementos bajo prueba por repositorio (gateway, servicios de seguridad, dispositivos y mediciones, backend) con los commits de `main` en producción, totales de cada suite, pruebas de punta a punta de `energy-monitor-infra` y pipelines por repositorio. | Cortés Parra, J. E.; García Artunduaga, M. A. |
+| 1.3     | 28/10/2026 | Migración completa: ocho suites Java por repositorio (backend retirado), web con 228 pruebas, cinco pruebas de punta a punta de `energy-monitor-infra`, verificación estática y protocolo de pruebas manuales de la aplicación móvil, trazabilidad de la aceptación de términos (RF-SEC-13) y de las reglas de las cuentas de Google, y riesgos actualizados. | Cortés Parra, J. E.; García Artunduaga, M. A. |
 
 ## Resumen
 
@@ -27,6 +28,8 @@ Este documento es el plan y reporte de pruebas de EnergyMonitor. Inventaría las
 La versión 1.1 (20 de octubre de 2026) registra la ejecución de la suite completa del servicio central contra MySQL 8.4: 1131 pruebas en 132 clases, 0 fallos, tanto en local como en el *check* obligatorio `Tests` de GitHub Actions. Las 37 clases pendientes ya se ejecutan, los defectos DEF-01 y DEF-02 están cerrados y la web vuelve a aprobar sus 141 pruebas. La trazabilidad queda en 68 requisitos con prueba automatizada ejecutada y 39 sin cobertura.
 
 La versión 1.2 (24 de octubre de 2026) corresponde a la arquitectura de servicios en producción: los módulos security, device y measurement salieron del servicio central a sus propios repositorios (`en-monitor-security-service`, `en-monitor-device-service` y `en-monitor-measurement-service`), detrás de un API gateway (`en-monitor-api-gateway`), y el servicio central conserva home, alert, recommendation y notification. Cada repositorio ejecuta su suite en su pipeline: backend 481 pruebas, servicio de mediciones 151, servicio de dispositivos 130 y gateway 57 (24 de octubre), y servicio de seguridad 660 (22 de octubre), todas en verde, con `ModularityTests` en verde. Dos pruebas de punta a punta sobre la pila local (`infra/e2e/device-flow.sh`, 21/21, y `infra/e2e/measurement-flow.sh`, 25/25) verifican lo que cruza los servicios. El inventario por clase y la trazabilidad de este documento siguen siendo los de la versión 1.1.
+
+La versión 1.3 (28 de octubre de 2026) corresponde a la migración completa: home, notification, alert y recommendation también son servicios independientes (`en-monitor-home-service`, `en-monitor-notification-service`, `en-monitor-alert-service` y `en-monitor-recommendation-service`) y el servicio central se retiró. Ocho suites Java en verde (seguridad 773, hogares 260, notificaciones 234, mediciones 151, dispositivos 129, alertas 119, recomendaciones 71 y gateway 69), la web con 38 archivos y 228 pruebas, y cinco pruebas de punta a punta de `energy-monitor-infra` (`device-flow` 24, `measurement-flow` 28, `alert-flow` 36, `activity-flow` 60 y `account-deletion-flow` 12). La trazabilidad pasa a 108 requisitos con la aceptación de términos (RF-SEC-13): 71 con prueba automatizada (con los dos de idiomas de la aplicación móvil) y 37 sin cobertura. De la aplicación móvil se agregó una suite unitaria de 78 pruebas en 8 suites, todas aprobadas, y se ejecutaron la verificación de tipos y `expo lint` sin errores; además se definió un protocolo de 12 pruebas manuales, que sigue por ejecutar en un dispositivo.
 
 *Palabras clave:* pruebas de software, trazabilidad, JUnit, Vitest, Spring Modulith, EnergyMonitor
 
@@ -38,7 +41,7 @@ Documentar las pruebas que ya existen y se ejecutan en EnergyMonitor, y mostrar 
 
 ### Alcance
 
-Se prueba el servicio central (siete módulos: security, home, device, measurement, alert, recommendation y notification), la aplicación web, la ingesta MQTT y la autorización del broker. Desde la versión 1.2 esos contextos se reparten entre el API gateway, los servicios de seguridad, dispositivos y mediciones y el servicio central (home, alert, recommendation y notification); cada uno se prueba en su repositorio, y las pruebas de punta a punta de `energy-monitor-infra` verifican la comunicación entre ellos (rutas del gateway, API interna, broker y eventos en RabbitMQ). El firmware del dispositivo, el broker Mosquitto, Bluetooth, las notificaciones push y la aplicación móvil Android quedan fuera de las pruebas automatizadas y se declaran como vacíos conocidos. No se prueban el rendimiento, la carga ni la accesibilidad (WCAG), que la especificación deja como `[POR CONFIRMAR]`.
+Se prueban el API gateway y los siete servicios (seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones), la aplicación web, la ingesta MQTT y la autorización del broker. Hasta la versión 1.1 esos contextos eran los siete módulos del servicio central; desde la 1.2 se repartieron en servicios, el servicio central se retiró el 28 de octubre de 2026 y cada servicio se prueba en su repositorio, y las pruebas de punta a punta de `energy-monitor-infra` verifican la comunicación entre ellos (rutas del gateway, API interna, broker y eventos en RabbitMQ). El firmware del dispositivo, el broker Mosquitto, Bluetooth, las notificaciones push y la aplicación móvil Android quedan fuera de las pruebas automatizadas y se declaran como vacíos conocidos; de la aplicación móvil se ejecutan además la verificación de tipos y el análisis estático, y se define un protocolo de pruebas manuales (versión 1.3). No se prueban el rendimiento, la carga ni la accesibilidad (WCAG), que la especificación deja como `[POR CONFIRMAR]`.
 
 ### Referencias del documento
 
@@ -46,7 +49,7 @@ La trazabilidad usa los códigos de la especificación de requisitos (RF-SEC, RF
 
 ## Elementos bajo prueba
 
-La Tabla 2 lista los elementos bajo prueba en la versión 1.2, con la rama y el commit de `main` en producción el 24 de octubre de 2026. La versión 1.1 usó `main` (backend `90ae5ef`, web `2b41cb3`, infra `7324110`, móvil `dev` `4ebccfb`) y la 1.0, `dev` (backend `d03bbd3`, web `e6edc12`).
+La Tabla 2 lista los elementos bajo prueba en la versión 1.3, con la rama y el commit de `main` el 28 de octubre de 2026 (los que se desplegaron en producción ese día). La versión 1.2 usó `main` del 24 de octubre de 2026 (gateway `c070cec`, seguridad `334691a`, dispositivos `f8b8526`, mediciones `ee2cb81`, backend `aa9a713`, web `e59bece`, infra `eaf961b`). La versión 1.1 usó `main` (backend `90ae5ef`, web `2b41cb3`, infra `7324110`, móvil `dev` `4ebccfb`) y la 1.0, `dev` (backend `d03bbd3`, web `e6edc12`).
 
 **Tabla 2**
 
@@ -54,14 +57,18 @@ La Tabla 2 lista los elementos bajo prueba en la versión 1.2, con la rama y el 
 
 | Elemento                  | Versión                         | Rama | Commit  | Observación                                                              |
 |---------------------------|---------------------------------|------|---------|--------------------------------------------------------------------------|
-| en-monitor-api-gateway    | Java 21 · Spring Boot 4.0.8 · Spring Cloud Gateway | main | c070cec | API gateway; 57 pruebas                                  |
-| en-monitor-security-service | Java 21 · Spring Boot 4.1.1   | main | 334691a | Servicio de seguridad; 660 pruebas (22/10/2026)                          |
-| en-monitor-device-service | Java 21 · Spring Boot 4.1.1     | main | f8b8526 | Servicio de dispositivos; 130 pruebas                                    |
-| en-monitor-measurement-service | Java 21 · Spring Boot 4.1.1 | main | ee2cb81 | Servicio de mediciones; 151 pruebas                                     |
-| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1 · Spring Modulith | main | aa9a713 | Servicio central (home, alert, recommendation y notification) y firmware (`firmware/`, versión 1.3.8); 481 pruebas |
-| energy-monitor-web        | React 19 · Vite 8               | main | e59bece | Aplicación web                                                           |
-| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | main | 894b65a | Sin pruebas automatizadas                                                |
-| energy-monitor-infra      | Docker Compose · Mosquitto 2 · RabbitMQ 4.1 | main | eaf961b | Compose, broker y scripts validados en CI; pruebas de punta a punta `e2e/`; reemplaza a `devices`, retirado |
+| en-monitor-api-gateway    | Java 21 · Spring Boot 4.0.8 · Spring Cloud Gateway | main | 0b2c164 | API gateway; 69 pruebas                                  |
+| en-monitor-security-service | Java 21 · Spring Boot 4.1.1   | main | f57c76b | Servicio de seguridad; 773 pruebas                                       |
+| en-monitor-device-service | Java 21 · Spring Boot 4.1.1     | main | 06c1bdc | Servicio de dispositivos; 129 pruebas                                    |
+| en-monitor-measurement-service | Java 21 · Spring Boot 4.1.1 | main | 8a9b544 | Servicio de mediciones; 151 pruebas                                     |
+| en-monitor-home-service   | Java 21 · Spring Boot 4.1.1     | main | f424083 | Servicio de hogares; 260 pruebas                                         |
+| en-monitor-notification-service | Java 21 · Spring Boot 4.1.1 | main | 7b10398 | Servicio de notificaciones; 234 pruebas                                  |
+| en-monitor-alert-service  | Java 21 · Spring Boot 4.1.1     | main | f050b56 | Servicio de alertas; 119 pruebas                                         |
+| en-monitor-recommendation-service | Java 21 · Spring Boot 4.1.1 | main | aeeeec5 | Servicio de recomendaciones; 71 pruebas                              |
+| energy-monitor-backend    | Java 21 · Spring Boot 4.1.1 · Spring Modulith | main | c3c6df8 | Retirado el 28/10/2026: sus módulos son los cuatro servicios anteriores; conserva el firmware (`firmware/`, versión 1.3.8) |
+| energy-monitor-web        | React 19 · Vite 8               | main | 698d4c9 | Aplicación web; 38 archivos y 228 pruebas                                |
+| energy-monitor-mobile     | Expo SDK 57 · React Native 0.86 | dev  | 1e4109b | 78 pruebas unitarias en 8 suites; `tsc` y `expo lint` sin errores. `main` sigue en `894b65a`, 193 commits por detrás de `dev` |
+| energy-monitor-infra      | Docker Compose · Mosquitto 2 · RabbitMQ 4.1 | main | ceb1543 | Compose, broker y scripts validados en CI; pruebas de punta a punta `e2e/`; reemplaza a `devices`, retirado |
 | energy-monitor-docs-final | Markdown ES/EN                  | dev  | —       | Documentación final (este documento)                                     |
 
 ## Estrategia de pruebas
@@ -353,7 +360,7 @@ Cada tabla corresponde a un módulo del servicio central tal como estaba en la v
 | services/http/httpClient.refresh.test.js                | 3       | —                                          | Aprobada |
 | services/http/httpClient.test.js                        | 11      | —                                          | Aprobada |
 
-Las pruebas de la aplicación móvil no existen: el repositorio no tiene archivos de prueba ni script de pruebas (solo expo lint). Es una brecha declarada.
+Las pruebas automatizadas de la aplicación móvil no existen: el repositorio no tiene archivos de prueba ni script de pruebas (solo expo lint). Es una brecha declarada. Desde la versión 1.3 se ejecutan la verificación de tipos (`tsc`) y `expo lint`, y se define un protocolo de pruebas manuales (Tabla 38).
 
 ## Matriz de trazabilidad requisito → prueba
 
@@ -365,18 +372,19 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 
 | Requisito | Descripción                                                                                               | Pruebas automatizadas                                                                                                                                                                      | Cobertura    |
 |-----------|-----------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
-| RF-SEC-01 | El sistema debe permitir registrar una cuenta con datos personales, correo y contraseña                   | RegisterUserServiceTest, AuthControllerWebTest, UserPersonPersistenceTest, UserTest, ValueObjectTest                                                                                       | Automatizada |
-| RF-SEC-02 | El sistema debe enviar al correo registrado un código de verificación de seis dígitos y marcar el correo… | EmailVerificationServiceTest, EmailSenderTest, AuthControllerWebTest                                                                                                                       | Automatizada |
+| RF-SEC-01 | El sistema debe permitir solicitar el registro de una cuenta con datos personales, correo y contraseña…   | RegisterUserServiceTest, MistypedEmailDomainsTest, AuthControllerWebTest, UserPersonPersistenceTest, UserTest, ValueObjectTest                                                            | Automatizada |
+| RF-SEC-02 | El sistema debe enviar al correo indicado un código de verificación de seis dígitos y crear la cuenta…    | EmailVerificationServiceTest, EmailSenderTest, AuthControllerWebTest                                                                                                                       | Automatizada |
 | RF-SEC-03 | El sistema debe permitir iniciar sesión de forma segura con correo y contraseña                           | AuthenticateUserServiceTest, SecurityLoginFlowTest, AuthControllerWebTest, JwtTokenIssuerTest, BCryptPasswordHasherAdapterTest                                                             | Automatizada |
 | RF-SEC-04 | El sistema debe mantener la sesión del usuario sin pedirle sus credenciales continuamente, permitirle…    | RefreshSessionServiceTest, UserSessionServiceTest, UserSessionTest, RefreshTokenTest, AuthRefreshEndpointWebTest, RefreshLifecycleIntegrationTest, …                                       | Automatizada |
-| RF-SEC-05 | El sistema debe permitir registrarse e iniciar sesión con una cuenta de Google                            | SignInWithGoogleServiceTest, AuthControllerWebTest                                                                                                                                         | Automatizada |
+| RF-SEC-05 | El sistema debe permitir registrarse e iniciar sesión con una cuenta de Google, con aceptación de términos | SignInWithGoogleServiceTest, AuthControllerWebTest                                                                                                                                         | Automatizada |
 | RF-SEC-06 | El sistema debe permitir recuperar la contraseña con un código de seis dígitos enviado al correo, válido… | PasswordResetServiceTest, PasswordResetTokenTest, PepperedHmacResetCodeHasherTest, SendPasswordResetEmailTest, EmailPasswordResetDeliveryAdapterTest, PasswordResetTokenReservationTest, … | Automatizada |
-| RF-SEC-07 | El sistema debe permitir al usuario con sesión iniciada cambiar su contraseña                             | ChangePasswordServiceTest, AuthControllerWebTest                                                                                                                                           | Automatizada |
-| RF-SEC-08 | El sistema debe permitir consultar los datos de la cuenta y actualizar el perfil                          | AccountLifecycleServiceTest, UserProfileQueryServiceTest, AuthControllerWebTest, Account.test.jsx                                                                                          | Automatizada |
+| RF-SEC-07 | El sistema debe permitir al usuario con sesión iniciada cambiar su contraseña (no a las cuentas de Google) | ChangePasswordServiceTest, AuthControllerWebTest, account-deletion-flow.sh                                                                                                                 | Automatizada |
+| RF-SEC-08 | El sistema debe permitir consultar los datos de la cuenta y actualizar el perfil (nombre y apellido por separado) | AccountLifecycleServiceTest, UserProfileQueryServiceTest, AuthControllerWebTest, Account.test.jsx                                                                          | Automatizada |
 | RF-SEC-09 | El sistema debe permitir conocer los permisos del usuario                                                 | RbacServiceTest, RbacTest, RbacAssignmentPersistenceTest, AdminRbacIntegrationTest, AuthControllerWebTest                                                                                  | Automatizada |
 | RF-SEC-10 | El sistema debe identificar al usuario únicamente a partir de su sesión y no debe aceptar identidades…    | HomeCallerIdentityIntegrationTest, HomeExceptionHandlerTest                                                                                                                                | Automatizada |
-| RF-SEC-11 | El sistema debe permitir al usuario eliminar su cuenta confirmando su contraseña                          | DeleteAccountServiceTest, RemoveDeletedAccountServiceTest, AccountDeletionIntegrationTest, AccountDeleteError.test.jsx, Account.test.jsx                                                   | Automatizada |
+| RF-SEC-11 | El sistema debe permitir al usuario eliminar su cuenta confirmando su contraseña o, con Google, un código  | DeleteAccountServiceTest, RemoveDeletedAccountServiceTest, AccountDeletionIntegrationTest, AccountDeleteError.test.jsx, Account.test.jsx, account-deletion-flow.sh                         | Automatizada |
 | RF-SEC-12 | El sistema debe aplicar una política de contraseñas (longitud mínima de 8 y máxima de 64 caracteres) y…   | PasswordPolicySeedTest, ConfigurationPolicyPersistenceTest, LogPersistenceTest, AuditLogTest, SecuritySupportModelTest, RegisterUserServiceTest                                            | Automatizada |
+| RF-SEC-13 | El sistema no debe permitir el acceso a una cuenta que no haya aceptado los términos y condiciones…       | RegisterUserServiceTest, SignInWithGoogleServiceTest, AuthControllerWebTest, SecurityLoginFlowTest, UserPersonPersistenceTest, registerSchema.test.ts, registerPayload.test.ts, termsConsent.test.ts (móvil)                                                              | Automatizada |
 
 **Tabla 17**
 
@@ -481,7 +489,7 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 | RF-CLI-02 | La aplicación web debe mostrar una insignia con las alertas pendientes, un contador en el título de la…     | —                                                                                                                   | Sin cobertura |
 | RF-CLI-03 | La aplicación web debe vincular dispositivos por Bluetooth y permitir notificaciones del navegador, que…    | —                                                                                                                   | Sin cobertura |
 | RF-CLI-04 | La aplicación móvil debe estar disponible solo para Android y permitir el acceso a la cuenta, los hogares,… | —                                                                                                                   | Sin cobertura |
-| RF-CLI-05 | Ambas aplicaciones deben permitir elegir el idioma entre español, inglés, francés y portugués               | —                                                                                                                   | Sin cobertura |
+| RF-CLI-05 | Ambas aplicaciones deben permitir elegir el idioma entre español, inglés, francés y portugués | locales.test.ts (móvil) | Automatizada |
 | RF-CLI-06 | Las aplicaciones deben permitir elegir una paleta de colores con modo oscuro                                | —                                                                                                                   | Sin cobertura |
 
 **Tabla 24**
@@ -495,7 +503,7 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 | RNF-SEG-03 | El sistema solo debe atender las solicitudes de las aplicaciones web autorizadas                           | SecurityCorsConfigurationTest, SecurityCorsWebTest                                                                      | Automatizada  |
 | RNF-SEG-04 | Los datos que envían los dispositivos de medición deben viajar cifrados                                    | —                                                                                                                       | Sin cobertura |
 | RNF-SEG-05 | Los códigos de recuperación deben almacenarse de forma protegida, de modo que una filtración de los datos… | PepperedHmacResetCodeHasherTest                                                                                         | Automatizada  |
-| RNF-SEG-06 | El canje de códigos de recuperación debe limitarse a 10 intentos por dirección y por ventana de 15…        | InMemoryResetAttemptLimiterTest, ResetAttemptLimiterBeforeDatabaseTest, PoolSaturatedLimiterTest, AuthControllerWebTest | Automatizada  |
+| RNF-SEG-06 | El canje de códigos de recuperación debe limitarse a 10 intentos por dirección y por ventana de 15…        | InMemoryResetAttemptLimiterTest, ResetAttemptLimiterBeforeDatabaseTest, PoolSaturatedLimiterTest, DeleteAccountServiceTest, AuthControllerWebTest | Automatizada  |
 | RNF-SEG-07 | Las funciones internas con las que se autentica a los dispositivos solo deben ser accesibles desde la red… | —                                                                                                                       | Sin cobertura |
 | RNF-SEG-08 | El sistema debe proteger la información de los usuarios conforme a la Ley 1581 de 2012 (Congreso de la…    | —                                                                                                                       | Sin cobertura |
 | RNF-SEG-09 | Las credenciales de los dispositivos deben comprobarse de forma segura                                     | ApiKeyHashTest, DeviceApiKeyStorageIntegrationTest, BrokerAccessServiceTest                                             | Automatizada  |
@@ -553,7 +561,7 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 | Requisito  | Descripción                                                                                  | Pruebas automatizadas | Cobertura     |
 |------------|----------------------------------------------------------------------------------------------|-----------------------|---------------|
 | RNF-I18-01 | La aplicación web debe estar disponible en español, inglés, francés y portugués              | —                     | Sin cobertura |
-| RNF-I18-02 | La aplicación móvil debe estar disponible en español, inglés, francés y portugués            | —                     | Sin cobertura |
+| RNF-I18-02 | La aplicación móvil debe estar disponible en español, inglés, francés y portugués | locales.test.ts (móvil) | Automatizada |
 | RNF-I18-03 | Las alertas y las recomendaciones deben mostrarse en el idioma que haya elegido cada usuario | —                     | Sin cobertura |
 
 **Tabla 30**
@@ -662,20 +670,87 @@ Se escribieron 4 clases para requisitos críticos sin ninguna cobertura automati
 | DEF-02 | Media     | RecommendationControllerTest.listRequiresHomeId (prueba nueva) | Un parámetro obligatorio ausente (por ejemplo homeId en GET /api/v1/recommendations o /api/v1/alerts) responde 500 en lugar de 400: SecurityExceptionHandler declara @ExceptionHandler(Exception.class) con alcance global y atrapa MissingServletRequestParameterException. La prueba se dejó fallando; no se ajustó. Versión 1.1: `handleUnexpected` conserva el estado 4xx de las excepciones del framework (`ErrorResponse`) y `TypeMismatchException` responde 400; la prueba aprueba. | Cerrado |
 | DOC-01 | Baja      | Documentación                                                  | La administración de cuentas (rutas /api/v1/admin, permisos USER.READ, USER.MANAGE y ROLE.MANAGE, pantalla /admin/users y notificaciones de administrador) existe en el código pero no tiene requisito en la especificación de requisitos ni está descrita en los manuales técnico y de administrador. Versión 1.1: los manuales técnico y de administrador ya la describen; falta el requisito en la especificación `[POR CONFIRMAR]`. | Parcial |
 
+### Versión 1.3 (28/10/2026)
+
+Con la migración completa cada repositorio ejecuta su suite con `./mvnw test` (contra MySQL 8.4 los que lo necesitan) y la web con `npx vitest run`. La Tabla 36 recoge los resultados, todos en verde.
+
+**Tabla 36**
+
+*Suites por repositorio, versión 1.3*
+
+| Repositorio                      | Commit  | Pruebas | Resultado |
+|----------------------------------|---------|---------|-----------|
+| en-monitor-security-service      | f57c76b | 773     | 0 fallos  |
+| en-monitor-home-service          | f424083 | 260     | 0 fallos  |
+| en-monitor-notification-service  | 7b10398 | 234     | 0 fallos  |
+| en-monitor-measurement-service   | 8a9b544 | 151     | 0 fallos  |
+| en-monitor-device-service        | 06c1bdc | 129     | 0 fallos  |
+| en-monitor-alert-service         | f050b56 | 119     | 0 fallos  |
+| en-monitor-recommendation-service | aeeeec5 | 71     | 0 fallos  |
+| en-monitor-api-gateway           | 0b2c164 | 69      | 0 fallos  |
+| energy-monitor-web               | 698d4c9 | 228 (38 archivos) | 0 fallos |
+
+Pruebas de punta a punta sobre la pila local completa (`energy-monitor-infra`, con los ocho servicios `healthy`). La Tabla 37 detalla lo que verifica cada una.
+
+**Tabla 37**
+
+*Pruebas de punta a punta de energy-monitor-infra*
+
+| Script                        | Comprobaciones | Qué recorre |
+|-------------------------------|----------------|-------------|
+| `e2e/device-flow.sh`          | 24             | Rutas del gateway, vinculación de un módulo, autenticación del broker con clave correcta e incorrecta, telemetría, estado `offline` y alerta `CONNECTIVITY`, y borrado del hogar con el comando `unlink` |
+| `e2e/measurement-flow.sh`     | 28             | Lecturas guardadas una sola vez y anunciadas por el *outbox*, alerta `THRESHOLD` levantada y resuelta, consumo, historial, estadísticas y niveles por el gateway, y colas sin mensajes pendientes |
+| `e2e/alert-flow.sh`           | 36             | Alertas de consumo y de conectividad de punta a punta entre los servicios de mediciones, dispositivos, alertas y notificaciones |
+| `e2e/activity-flow.sh`        | 60             | Actividad de hogares y dispositivos por la cola única de notificaciones: bienvenida, miembros, umbrales, propiedad y borrado, con su texto por destinatario |
+| `e2e/account-deletion-flow.sh` | 12            | Cuenta creada con Google: no puede cambiar la contraseña (409), pide el código por correo (seguridad, *outbox*, notificaciones), un código equivocado no borra y el correcto sí |
+
+El script `e2e/recommendation-flow.sh` también existe y no se volvió a ejecutar en esta versión. Los límites del gateway (20 POST por minuto por IP y ruta) hacen que ejecuciones consecutivas del mismo script puedan responder 429.
+
+#### Aplicación móvil
+
+La aplicación móvil no tenía pruebas automatizadas. En la versión 1.3 se agregó una suite unitaria y se ejecutó, junto con dos verificaciones estáticas, sobre `dev` (commit `1e4109b` más los archivos de prueba, 28 de octubre de 2026), y se definió un protocolo manual:
+
+- Pruebas unitarias con Jest y `jest-expo` (`npm test`): **8 suites y 78 pruebas, todas aprobadas** (28 de octubre de 2026). Cubren las reglas de contraseña, el esquema de registro, el código de verificación, el cuerpo del registro (recortado y con `acceptTerms`), el aviso de términos (aceptar, cancelar y descartar), la normalización de errores de red y del 429 con `Retry-After`, el mapeo de cada operación y estado a su mensaje (428, 409, 429, 503), y la paridad de los textos de los cuatro idiomas, incluida la existencia en todos de cada clave de error que la API puede producir.
+- `npx tsc --noEmit`: 0 errores.
+- `npx expo lint`: sin errores (código de salida 0).
+
+Las pruebas unitarias no sustituyen la prueba en un dispositivo: no recorren pantallas ni la llamada real a la API.
+
+La Tabla 38 es el protocolo de pruebas manuales para un dispositivo Android. Su estado es **por ejecutar**: ninguna se ha realizado sobre un dispositivo; los requisitos de la aplicación móvil que pasan a «Automatizada» son solo los que cubre la suite unitaria (RF-CLI-05 y RNF-I18-02). Antes de ejecutarlas hay que construir un APK nuevo, porque el anterior no envía `acceptTerms` y el registro respondería 428.
+
+**Tabla 38**
+
+*Protocolo de pruebas manuales de la aplicación móvil*
+
+| ID     | Prueba | Resultado esperado | Requisitos | Estado |
+|--------|--------|--------------------|------------|--------|
+| MOV-01 | Registrarse sin marcar los términos y luego marcándolos | Sin marcar no se envía; marcado se pide el código y se abre la pantalla de verificación | RF-SEC-01, RF-SEC-13 | Por ejecutar |
+| MOV-02 | Registrarse con un correo de dominio mal escrito (`nombre@meil.com`) | El registro se rechaza con un mensaje legible | RF-SEC-01 | Por ejecutar |
+| MOV-03 | Verificar el correo con el código recibido e iniciar sesión | La cuenta se crea al verificar y se entra al panel | RF-SEC-02, RF-SEC-03 | Por ejecutar |
+| MOV-04 | Iniciar y cerrar sesión; reabrir la aplicación | La sesión se mantiene al reabrir y se cierra al salir | RF-SEC-03, RF-SEC-04 | Por ejecutar |
+| MOV-05 | Entrar con Google por primera vez sin aceptar términos | Se piden los términos y, aceptados, se crea la cuenta | RF-SEC-05, RF-SEC-13 | Por ejecutar |
+| MOV-06 | Recuperar la contraseña (correo, código y contraseña nueva) | Se puede entrar con la contraseña nueva | RF-SEC-06 | Por ejecutar |
+| MOV-07 | Crear un hogar, marcarlo como favorito y cambiar sus umbrales | El hogar aparece en la lista y en favoritos con los umbrales nuevos | RF-HOM-01, RF-CLI-04 | Por ejecutar |
+| MOV-08 | Consultar el panel de un hogar con un medidor enviando datos | Se ven el consumo y la última lectura | RF-MED-07, RF-MED-08, RF-CLI-04 | Por ejecutar |
+| MOV-09 | Recibir una alerta y abrir la bandeja de notificaciones; cambiar las preferencias | La alerta se lista, se marca como leída y las preferencias se guardan | RF-ALE-04, RF-NOT-01, RF-CLI-04 | Por ejecutar |
+| MOV-10 | Editar el nombre y el apellido por separado; cambiar la contraseña | Cada campo se guarda solo; una cuenta de Google no puede cambiar la contraseña | RF-SEC-07, RF-SEC-08 | Por ejecutar |
+| MOV-11 | Eliminar la cuenta (con contraseña; con Google, con el código del correo) | La cuenta se elimina y el correo puede volver a registrarse | RF-SEC-11 | Por ejecutar |
+| MOV-12 | Cambiar el idioma entre los cuatro disponibles y activar el modo oscuro | Los textos y los colores cambian sin reiniciar | RF-CLI-05, RF-CLI-06 | Por ejecutar |
+
 ### Evidencias
 
 Las evidencias están en [evidencias](../../evidencias/ES/README.md): resumen de Surefire, log recortado de la ejecución y resumen de Vitest de la versión 1.0, resumen de la suite completa y nueva ejecución de Vitest de la versión 1.1, y el estado de la versión 1.2 (totales por repositorio y pruebas de punta a punta). No contienen secretos.
 
 ## Riesgos, limitaciones y vacíos conocidos
 
-**Tabla 36**
+**Tabla 39**
 
 *Riesgos y limitaciones de las pruebas*
 
 | ID   | Riesgo o limitación                                                                                                                                                                                                                                                                                                                                                 | Efecto                                                                      | Recomendación                                                           |
 |------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------|
 | R-01 | Pruebas no herméticas: persistencia y contexto completo necesitan MySQL real y SPRING_DATASOURCE_PASSWORD                                                                                                                                                                                                                                                           | Mitigado en la versión 1.1: la suite completa corre con MySQL en local y en CI; siguen sin ser herméticas | Evaluar Testcontainers |
-| R-02 | La aplicación móvil no tiene pruebas automatizadas                                                                                                                                                                                                                                                                                                                  | Sin verificación automatizada                                               | Agregar pruebas de componentes y de servicios                           |
+| R-02 | La aplicación móvil no tiene pruebas automatizadas                                                                                                                                                                                                                                                                                                                  | Mitigado en la versión 1.3 con 78 pruebas unitarias, `tsc`, `expo lint` y un protocolo manual aún por ejecutar | Ejecutar el protocolo (Tabla 38) y agregar pruebas de componentes y de pantallas |
 | R-03 | MQTT con QoS 0                                                                                                                                                                                                                                                                                                                                                      | Una lectura puede perderse; no se prueba la pérdida                         | Evaluar QoS 1 y agregar una prueba de pérdida                           |
 | R-04 | Sin actualización por aire (OTA)                                                                                                                                                                                                                                                                                                                                    | El firmware se actualiza solo por USB                                       | Documentar el procedimiento de carga por USB                            |
 | R-05 | Web Bluetooth limitado a Chrome, Edge y Chrome para Android, y a HTTPS o localhost                                                                                                                                                                                                                                                                                  | No se verifica de forma automatizada, tampoco el portal EnergyMonitor-Setup | Evaluar pruebas de extremo a extremo con navegador                      |
@@ -693,6 +768,8 @@ El servicio central cuenta con una suite amplia y rápida: 835 pruebas ejecutada
 Versión 1.1: la verificación del servicio central quedó cerrada con la suite completa (1131 pruebas, 0 fallos) contra MySQL, en local y en GitHub Actions. Se cumplieron las recomendaciones (1), (2) y (3), y la integración continua de la (6) ya existe con *checks* obligatorios en `dev` y `main`. Siguen pendientes Testcontainers (4), las pruebas de la aplicación móvil (5), JaCoCo (6) y el requisito de administración en la especificación (7).
 
 Versión 1.2: con la arquitectura de servicios, la verificación se reparte entre los repositorios y todas las suites están en verde (backend 481, mediciones 151, dispositivos 130, gateway 57 y seguridad 660), con `ModularityTests` en verde y las dos pruebas de punta a punta de `energy-monitor-infra` aprobadas (21/21 y 25/25) sobre la pila local. Siguen pendientes las mismas recomendaciones (4) a (7), ahora en cada servicio Java; JaCoCo no está en ninguno de los `pom.xml`. Rehacer el inventario por clase y la trazabilidad por repositorio queda pendiente.
+
+Versión 1.3: con la migración completa, las ocho suites Java y la web están en verde (773, 260, 234, 151, 129, 119, 71, 69 y 228 pruebas) y las cinco pruebas de punta a punta aprobadas. La trazabilidad incorpora la aceptación de términos (RF-SEC-13) y las reglas de las cuentas de Google. La brecha mayor sigue siendo la aplicación móvil: tiene 78 pruebas unitarias, pero ninguna de componentes o pantallas, y su protocolo manual está sin ejecutar. Recomendaciones: ejecutar ese protocolo en un dispositivo, agregar pruebas de componentes a la aplicación móvil (React Native Testing Library), rehacer el inventario por clase de los servicios y volver a ejecutar `recommendation-flow.sh`.
 
 ## Referencias
 
