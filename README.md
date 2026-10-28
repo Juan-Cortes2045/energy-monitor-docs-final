@@ -30,7 +30,7 @@ El antiguo backend modular `energy-monitor-backend` está retirado. Los enlaces 
 | `03-analisis-software` | Mapas de navegación web y móvil, mockups HTML/CSS y recursos gráficos |
 | `04-propuesta-tecnica` | Propuesta técnica |
 | `05-diseno-software` | Modelo arquitectónico, de datos y de clases, patrones e interfaces (fuentes PlantUML en `assets/diagramas`) |
-| `06-base-datos` | [Diccionario de datos](06-base-datos/diccionario-datos/ES/diccionario-datos.md) ([EN](06-base-datos/diccionario-datos/EN/data-dictionary.md)), [script SQL](06-base-datos/script-DB/energy_monitor.sql), [MER](06-base-datos/modelo-ER/MER.wsd) y [diagrama de clases](06-base-datos/modelo-ER/Diagrama_clases.wsd) |
+| `06-base-datos` | [Diccionario de datos](06-base-datos/diccionario-datos/ES/diccionario-datos.md) ([EN](06-base-datos/diccionario-datos/EN/data-dictionary.md)), [script SQL](06-base-datos/script-DB/energy_monitor.sql), [MER](06-base-datos/modelo-ER/MER.wsd) y [diagrama de clases](06-base-datos/modelo-ER/Diagrama_clases.wsd) (los comentarios de estos dos diagramas están en español; la versión en inglés está en `05-diseno-software/EN/assets/diagramas`) |
 | `07-pruebas` | Plan de pruebas y evidencias |
 | `08-calidad-mejoras` | Calidad, deuda técnica y mejoras |
 | `09-implementacion` | Manual de implementación y despliegue |
