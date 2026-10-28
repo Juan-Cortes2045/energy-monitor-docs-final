@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 
-Versión 2.2, 28 de octubre de 2026
+Versión 2.3, 28 de octubre de 2026
 
 16 de octubre de 2026 (actualizado el 28 de octubre de 2026)
 
@@ -15,10 +15,11 @@ Versión 2.2, 28 de octubre de 2026
 - Versión 2.0 (10/10/2026): requisitos funcionales por módulo, requisitos no funcionales, 15 historias de usuario y 2 casos de uso.
 - Versión 2.1 (20/10/2026): Módulo de Administración de la Plataforma (RF-ADM-01 a RF-ADM-10), requisito de seguridad de las funciones de administración (RNF-SEG-11), integración y despliegue continuos (RNF-MAN-05), notificaciones push en la aplicación móvil, historia de usuario HU-16 y renumeración de las tablas 12 a 23.
 - Versión 2.2 (28/10/2026): registro con verificación previa del correo (la cuenta no existe hasta verificarlo) y rechazo de dominios con error de escritura (RF-SEC-01, RF-SEC-02), aceptación obligatoria de los términos (RF-SEC-13), reglas de las cuentas creadas con Google (RF-SEC-05, RF-SEC-07, RF-SEC-11), edición independiente del nombre y el apellido (RF-SEC-08), límite de intentos del código de eliminación (RNF-SEG-06) y criterios de aceptación CA-39 a CA-42.
+- Versión 2.3 (28/10/2026): alerta de consumo inusual de un dispositivo (RF-ALE-07), fotos de los miembros de un hogar (RF-HOM-12), ayuda en Ajustes con documentación por rol, soporte solo para usuarios y novedades automáticas (RF-CLI-07), foto de perfil ampliable en la página (RF-CLI-08), historia de usuario HU-17 y criterios de aceptación CA-43 a CA-47.
 
 ## Resumen
 
-Este documento especifica lo que debe hacer EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, recibir alertas y obtener recomendaciones de ahorro. Se redacta desde la perspectiva del usuario y del negocio, sin definir cómo se construirá la solución. Presenta los requisitos funcionales, agrupados por módulo del sistema, los requisitos no funcionales (seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad) y 16 historias de usuario y 2 casos de uso con criterios de aceptación verificables. Los requisitos se identifican con códigos estables que son idénticos en las versiones en español e inglés. Los datos que no pudieron confirmarse en las fuentes se marcan como [POR CONFIRMAR].
+Este documento especifica lo que debe hacer EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, recibir alertas y obtener recomendaciones de ahorro. Se redacta desde la perspectiva del usuario y del negocio, sin definir cómo se construirá la solución. Presenta los requisitos funcionales, agrupados por módulo del sistema, los requisitos no funcionales (seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad) y 17 historias de usuario y 2 casos de uso con criterios de aceptación verificables. Los requisitos se identifican con códigos estables que son idénticos en las versiones en español e inglés. Los datos que no pudieron confirmarse en las fuentes se marcan como [POR CONFIRMAR].
 
 *Palabras clave:* especificación de requisitos, consumo eléctrico, alertas, recomendaciones de ahorro, hogares
 
@@ -152,6 +153,7 @@ La Tabla 5 enumera los requisitos funcionales del Módulo de Gestión de Hogares
 | RF-HOM-09 | El propietario debe poder eliminar el hogar mediante eliminación lógica. Los dispositivos del hogar se desvinculan y quedan libres, se conserva el historial de mediciones, alertas y recomendaciones, y los miembros dejan de ver el hogar. Solo el propietario puede hacerlo. |
 | RF-HOM-10 | El propietario debe poder transferir la propiedad del hogar a otro miembro. Los roles se intercambian en un solo paso y el hogar siempre tiene un único propietario. La transferencia no cambia los umbrales, los dispositivos ni las mediciones. |
 | RF-HOM-11 | Pendiente: limitar el historial de un dispositivo al periodo de vinculación. |
+| RF-HOM-12 | El sistema debe mostrar a los miembros de un hogar la foto de perfil de cada uno, cuando la tienen, y permitir ampliarla. |
 
 ### Módulo de Gestión de Dispositivos
 
@@ -209,6 +211,7 @@ La Tabla 8 enumera los requisitos funcionales del Módulo de Alertas.
 | RF-ALE-04 | El sistema debe generar una alerta de límite diario o mensual cuando la energía del hogar desde el inicio del día o del mes alcanza el límite de sus umbrales. Día y mes se calculan en la zona horaria de Bogotá. Se resuelve sola al iniciar un nuevo periodo o al subir el límite por encima del consumo. |
 | RF-ALE-05 | El sistema debe permitir consultar las alertas, ver el detalle de una, marcarla como leída y eliminarla. Solo se pueden eliminar las alertas resueltas o leídas. |
 | RF-ALE-06 | El sistema debe generar las alertas de consumo a partir de cada nueva lectura y las de desconexión a partir de la pérdida de comunicación del dispositivo, y enviar cada alerta para su notificación. |
+| RF-ALE-07 | El sistema debe generar una alerta de consumo inusual cuando una lectura de un dispositivo es de al menos 200 W y de al menos 2,5 veces su potencia habitual (el promedio horario de los 7 días anteriores, sin la última hora), siempre que haya al menos 24 horas de historial y un promedio de 5 W o más. Habrá una alerta pendiente por dispositivo y se resuelve sola cuando la lectura vuelve a lo normal. |
 
 ### Módulo de Recomendaciones de Ahorro
 
@@ -264,6 +267,8 @@ La Tabla 11 recoge los requisitos funcionales de las aplicaciones web y móvil.
 | RF-CLI-04 | La aplicación móvil debe estar disponible solo para Android y permitir el acceso a la cuenta, los hogares, las alertas, las recomendaciones y las preferencias de notificación, y recibir notificaciones push en el teléfono. La eliminación de hogares y la transferencia de propiedad aún no están disponibles en la aplicación móvil. |
 | RF-CLI-05 | Ambas aplicaciones deben permitir elegir el idioma entre español, inglés, francés y portugués. |
 | RF-CLI-06 | Las aplicaciones deben permitir elegir una paleta de colores con modo oscuro. |
+| RF-CLI-07 | La aplicación web debe ofrecer en Ajustes la ayuda en ventanas modales: la documentación según el rol (usuario o administrador), el soporte técnico —solo para usuarios, que generan el ticket como un correo a un administrador— y las novedades, que se actualizan solas con cada versión.  |
+| RF-CLI-08 | La aplicación web debe permitir ver la foto de perfil ampliada dentro de la propia página, sin abrir otra pestaña. |
 
 ### Módulo de Administración de la Plataforma
 
@@ -586,6 +591,18 @@ Requisitos relacionados: RF-ADM-01 a RF-ADM-09, RNF-SEG-11.
 - CA-36. Dada una cuenta activa con sesiones abiertas, cuando un administrador la bloquea, entonces la cuenta ya no puede iniciar sesión y sus sesiones se cierran.
 - CA-37. Dado un administrador, cuando intenta cambiar el estado o los roles de su propia cuenta, entonces el sistema lo rechaza con un mensaje legible y no modifica nada.
 - CA-38. Dados dos administradores, cuando uno de ellos concede el rol de administrador a otra cuenta, entonces el otro administrador recibe un aviso dentro de la aplicación y quien hizo el cambio no lo recibe.
+
+#### HU-17 Consultar la ayuda desde Ajustes
+
+Como persona que usa EnergyMonitor, quiero consultar la documentación, pedir soporte y ver las novedades sin salir de la aplicación, para resolver mis dudas rápido.
+
+Requisitos relacionados: RF-CLI-07, RF-CLI-08, RF-HOM-12, RF-ALE-07.
+
+- CA-43. Dada una lectura de 300 W de un aparato que suele consumir 100 W, cuando el sistema la procesa, entonces genera una alerta de consumo inusual; con una lectura de 240 W o con menos de 24 horas de historial no genera nada, y la alerta pendiente se resuelve sola al volver a lo normal.
+- CA-44. Dado un usuario o un administrador, cuando abre la documentación en Ajustes, entonces ve solo la guía de su rol.
+- CA-45. Dado un usuario, cuando abre el soporte técnico en Ajustes, entonces ve una explicación breve y puede crear el ticket como un correo a un administrador; un administrador no ve el soporte, porque es quien lo atiende.
+- CA-46. Dada una versión nueva de la web desplegada, cuando abro las novedades, entonces veo los cambios de esa versión sin que nadie los haya escrito a mano.
+- CA-47. Dada una cuenta con foto, cuando elijo «Ver foto», entonces se amplía dentro de la página, y en un hogar veo la foto de cada miembro que la tiene.
 
 ### Casos de uso
 

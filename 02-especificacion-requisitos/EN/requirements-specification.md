@@ -6,7 +6,7 @@ Servicio Nacional de Aprendizaje (SENA)
 
 Technologist in Software Analysis and Development (ADSO), group (ficha) 3145556
 
-Version 2.2, October 28, 2026
+Version 2.3, October 28, 2026
 
 October 16, 2026 (updated October 28, 2026)
 
@@ -15,10 +15,11 @@ October 16, 2026 (updated October 28, 2026)
 - Version 2.0 (10/10/2026): functional requirements per module, non-functional requirements, 15 user stories and 2 use cases.
 - Version 2.1 (10/20/2026): Platform Administration Module (RF-ADM-01 to RF-ADM-10), security requirement for the administration functions (RNF-SEG-11), continuous integration and deployment (RNF-MAN-05), push notifications in the mobile application, user story HU-16 and renumbering of tables 12 to 23.
 - Version 2.2 (10/28/2026): registration with prior email verification (the account does not exist until it is verified) and rejection of domains with a typing error (RF-SEC-01, RF-SEC-02), mandatory acceptance of the terms (RF-SEC-13), rules for accounts created with Google (RF-SEC-05, RF-SEC-07, RF-SEC-11), independent editing of the first and last name (RF-SEC-08), attempt limit for the deletion code (RNF-SEG-06) and acceptance criteria CA-39 to CA-42.
+- Version 2.3 (10/28/2026): unusual consumption alert of a device (RF-ALE-07), photos of the members of a home (RF-HOM-12), help in Settings with documentation by role, support only for users and automatic news (RF-CLI-07), profile photo that can be enlarged in the page (RF-CLI-08), user story HU-17 and acceptance criteria CA-43 to CA-47.
 
 ## Abstract
 
-This document specifies what EnergyMonitor must do, a system that lets households see the electrical consumption of each appliance, receive alerts and get saving recommendations. It is written from the perspective of the user and the business, without defining how the solution will be built. It presents the functional requirements, grouped by system module, the non-functional requirements (security, performance, availability, compatibility, maintainability, internationalization, scalability, usability and interoperability) and 16 user stories and 2 use cases with verifiable acceptance criteria. Requirements are identified with stable codes that are identical in the Spanish and English versions. Data that could not be confirmed in the sources are marked as [TO BE CONFIRMED].
+This document specifies what EnergyMonitor must do, a system that lets households see the electrical consumption of each appliance, receive alerts and get saving recommendations. It is written from the perspective of the user and the business, without defining how the solution will be built. It presents the functional requirements, grouped by system module, the non-functional requirements (security, performance, availability, compatibility, maintainability, internationalization, scalability, usability and interoperability) and 17 user stories and 2 use cases with verifiable acceptance criteria. Requirements are identified with stable codes that are identical in the Spanish and English versions. Data that could not be confirmed in the sources are marked as [TO BE CONFIRMED].
 
 *Keywords:* requirements specification, electrical consumption, alerts, saving recommendations, households
 
@@ -152,6 +153,7 @@ Table 5 lists the functional requirements of the Home Management Module.
 | RF-HOM-09 | The owner must be able to delete the home by soft delete. The home's devices are unlinked and become free, the history of measurements, alerts and recommendations is kept, and members stop seeing the home. Only the owner can do it. |
 | RF-HOM-10 | The owner must be able to transfer home ownership to another member. Roles are swapped in a single step and the home always has a single owner. The transfer does not change thresholds, devices or measurements. |
 | RF-HOM-11 | Pending: limit a device's history to the linking period. |
+| RF-HOM-12 | The system must show the members of a home the profile photo of each one, when they have it, and allow enlarging it. |
 
 ### Device Management Module
 
@@ -209,6 +211,7 @@ Table 8 lists the functional requirements of the Alerts Module.
 | RF-ALE-04 | The system must raise a daily or monthly limit alert when the home's energy since the start of the day or month reaches the limit in its thresholds. Day and month are computed in the Bogotá time zone. It resolves itself when a new period starts or when the limit is raised above the consumption. |
 | RF-ALE-05 | The system must allow listing alerts, viewing the detail of one, marking it as read and deleting it. Only resolved or read alerts can be deleted. |
 | RF-ALE-06 | The system must raise consumption alerts from each new reading and disconnection alerts from the loss of communication with the device, and send each alert for notification. |
+| RF-ALE-07 | The system must raise an unusual consumption alert when a reading of a device is at least 200 W and at least 2.5 times its usual power (the hourly average of the previous 7 days, leaving out the last hour), as long as there are at least 24 hours of history and an average of 5 W or more. There will be one pending alert per device and it resolves itself when the reading is back to normal. |
 
 ### Savings Recommendations Module
 
@@ -264,6 +267,8 @@ Table 11 gathers the functional requirements of the web and mobile applications.
 | RF-CLI-04 | The mobile application must be available for Android only and allow access to the account, homes, alerts, recommendations and notification preferences, and receive push notifications on the phone. Home deletion and ownership transfer are not yet available in the mobile application. |
 | RF-CLI-05 | Both applications must allow choosing the language among Spanish, English, French and Portuguese. |
 | RF-CLI-06 | The applications must allow choosing a color palette with dark mode.  |
+| RF-CLI-07 | The web application must offer help in Settings in modal windows: the documentation according to the role (user or administrator), technical support —only for users, who create the ticket as an email to an administrator— and the news, which update themselves with every version.  |
+| RF-CLI-08 | The web application must allow viewing the profile photo enlarged inside the page itself, without opening another tab. |
 
 ### Platform Administration Module
 
@@ -586,6 +591,18 @@ Related requirements: RF-ADM-01 to RF-ADM-09, RNF-SEG-11.
 - CA-36. Given an active account with open sessions, when an administrator blocks it, then the account can no longer sign in and its sessions are closed.
 - CA-37. Given an administrator, when they try to change the status or the roles of their own account, then the system rejects it with a readable message and changes nothing.
 - CA-38. Given two administrators, when one of them grants the administrator role to another account, then the other administrator receives a notice inside the application and whoever made the change does not.
+
+#### HU-17 Consult the Help from Settings
+
+As a person who uses EnergyMonitor, I want to read the documentation, ask for support and see the news without leaving the application, so that I can solve my doubts quickly.
+
+Related requirements: RF-CLI-07, RF-CLI-08, RF-HOM-12, RF-ALE-07.
+
+- CA-43. Given a 300 W reading of an appliance that usually uses 100 W, when the system processes it, then it raises an unusual consumption alert; with a 240 W reading or with less than 24 hours of history it raises nothing, and the pending alert resolves itself when it is back to normal.
+- CA-44. Given a user or an administrator, when they open the documentation in Settings, then they see only the guide of their role.
+- CA-45. Given a user, when they open technical support in Settings, then they see a short explanation and can create the ticket as an email to an administrator; an administrator does not see the support, because they are the one who attends it.
+- CA-46. Given a new version of the web application deployed, when I open the news, then I see the changes of that version without anybody having written them by hand.
+- CA-47. Given an account with a photo, when I choose "View photo", then it is enlarged inside the page, and in a home I see the photo of every member that has one.
 
 ### Use Cases
 
