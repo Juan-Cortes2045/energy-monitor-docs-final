@@ -27,6 +27,14 @@ Miguel Ángel García Artunduaga extrae home, notification, alert y recommendati
 
 Hallazgo posterior: el despliegue de la web reconstruyó la versión anterior (`e59bece`) porque su PR a `main` no estaba fusionado; con la seguridad nueva el registro respondía 428 hasta publicar la web nueva. La fusión dejó `main` en `698d4c9`.
 
+## 28 de octubre de 2026, después de la migración
+
+Con el sistema ya en producción se agregaron cinco cambios, cada uno en su rama y con su PR a `dev` y luego a `main`:
+
+- Seguridad y hogares: la foto de perfil viaja en el perfil interno y los miembros de un hogar la muestran.
+- Alertas y notificaciones: alerta de consumo inusual de un dispositivo y su texto en correo y push.
+- Web: modales de ayuda en Ajustes (documentación por rol, soporte para usuarios y novedades armadas con el historial de git), visor de fotos dentro de la página, lista de hogares que se cierra al hacer clic fuera y explicación del push en Brave.
+
 ## Integración continua y secretos
 
 El mismo día se revisó el CI de todos los repositorios: nueve ya tenían `ci-cd.yml` con despliegue, y al servicio de notificaciones, el único desplegable sin pipeline, se le escribió el suyo. Después se crearon el environment `production` y sus cuatro secretos en los repositorios que no los tenían; dos fallos del job de despliegue (`remote username contains invalid characters` y `hostname contains invalid characters`) se debieron a un salto de línea o un espacio al final de `DEPLOY_USER` y `DEPLOY_HOST`.

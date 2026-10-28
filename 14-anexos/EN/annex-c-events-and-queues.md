@@ -9,7 +9,7 @@ Version 1.0 · October 28, 2026. The services notify each other through events o
 | `measurement.recorded` | measurements | `alert-service.measurement.recorded` | alerts |
 | `device.connectivity-lost`, `device.connectivity-restored` | devices | `alert-service.device.events` | alerts |
 | `device.linked`, `device.unlinked` | devices | `alert-service.device.events` and `notification-service.notification.activity` | alerts and notifications; measurements use them for their cache |
-| `alert.raised` | alerts | `notification-service.notification.alert-raised` | notifications |
+| `alert.raised` | alerts | `notification-service.notification.alert-raised` | notifications (also the unusual consumption alert, key `alert.anomaly.device`) |
 | `recommendation.created` | recommendations | `notification-service.notification.recommendation-created` | notifications |
 | `account.registered`, `account.administered` | security | `notification-service.notification.account-events` | notifications |
 | `account.deleted` | security | `home-service.home.account-deleted` and `notification-service.notification.account-events` | homes and notifications (cleanup) |

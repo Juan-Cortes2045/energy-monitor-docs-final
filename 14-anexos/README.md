@@ -9,5 +9,6 @@ Material de apoyo de la documentación final de EnergyMonitor, en español (`ES/
 | C | Eventos, productores, colas y consumidores de RabbitMQ | [anexo-c-eventos-y-colas.md](ES/anexo-c-eventos-y-colas.md) | [annex-c-events-and-queues.md](EN/annex-c-events-and-queues.md) |
 | D | Cronología de la migración a microservicios y del despliegue del 28 de octubre | [anexo-d-cronologia-de-la-migracion.md](ES/anexo-d-cronologia-de-la-migracion.md) | [annex-d-migration-timeline.md](EN/annex-d-migration-timeline.md) |
 | E | Códigos de respuesta de la API y cómo diagnosticarlos | [anexo-e-codigos-de-respuesta.md](ES/anexo-e-codigos-de-respuesta.md) | [annex-e-response-codes.md](EN/annex-e-response-codes.md) |
+| F | Diagramas: arquitectura, recorrido de una lectura, regla de consumo inusual, despliegue continuo y tablas por servicio | [anexo-f-diagramas.md](ES/anexo-f-diagramas.md) | [annex-f-diagrams.md](EN/annex-f-diagrams.md) |
 
 Ningún anexo contiene secretos, claves ni direcciones del servidor.
