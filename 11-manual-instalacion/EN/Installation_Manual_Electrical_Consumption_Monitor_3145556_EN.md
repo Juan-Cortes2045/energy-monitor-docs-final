@@ -22,8 +22,8 @@ Group (Ficha): 3145556
 | Program              | Technology in Software Analysis and Development (ADSO)                          |
 | Group (Ficha)        | 3145556                                                                         |
 | Document type        | Installation manual                                                             |
-| Version              | 1.3                                                                             |
-| Date prepared        | October 7, 2026 (update: October 27, 2026)                                      |
+| Version              | 1.4                                                                             |
+| Date prepared        | October 7, 2026 (update: October 28, 2026)                                      |
 
 Year 2026
 
@@ -37,6 +37,7 @@ The change history of this manual is recorded in the following table. Every modi
 | 1.1         | 10/13/2026 | Update to the final state: five system parts, complete environment variables, MQTT broker, firmware, linking the first device, production, mobile application integrated with the API, and expanded verifications and troubleshooting.         | Development team     |
 | 1.2         | 10/24/2026 | Services architecture: cloning of all repositories (including `en-monitor-measurement-service`), infrastructure in `energy-monitor-infra` (full stack and development mode with MySQL, RabbitMQ and Mosquitto), ports 8080, 8082, 8083, 8084 and 8085, per-service variables (`MQTT_DEVICE_SERVICE_*`, `MQTT_MEASUREMENT_SERVICE_*` instead of `MQTT_BACKEND_*`, `INTERNAL_API_TOKEN`, `RABBITMQ_*`, `MEASUREMENT_CONTEXT`), broker authenticated by the device service, firmware in `energy-monitor-backend/firmware/`, updated verifications and troubleshooting. | Development team     |
 | 1.3         | 10/27/2026 | Migration finished: seven microservices (security 8082, device 8084, measurement 8085, home 8086, notification 8087, alert 8088 and recommendation 8089) behind the gateway and backend retired; cloning, `.env` per service, start-up order, consumer and relay switches, first administrator with `make-admin.sh`, new end-to-end tests, updated checks and solutions. | Development team |
+| 1.4         | 10/28/2026 | Unusual consumption alert in the alert service (no new variables or installation steps), profile and member photos, and the Settings help center; the final version is unified at 1.4. | Development team |
 
 # 3. Table of contents
 

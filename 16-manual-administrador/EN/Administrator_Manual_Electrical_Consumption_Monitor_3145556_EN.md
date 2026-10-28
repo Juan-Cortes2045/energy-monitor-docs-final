@@ -21,8 +21,8 @@ Group (Ficha): 3145556
 | Program              | Technology in Software Analysis and Development (ADSO)                          |
 | Group (Ficha)        | 3145556                                                                         |
 | Document type        | Administrator manual                                                            |
-| Version              | 1.3                                                                             |
-| Date prepared        | October 7, 2026 (updated October 27, 2026)                                      |
+| Version              | 1.4                                                                             |
+| Date prepared        | October 7, 2026 (updated October 28, 2026)                                      |
 
 Year 2026
 
@@ -36,6 +36,7 @@ The change history of this manual is recorded in the following table. Any new ad
 | 1.1         | 10/20/2026 | Administration from the web application (user directory, statuses, administrator role and administration notices), designation of the first administrator with `make-admin.sh --prod`, production environment at `https://energy-monitor.tech`, backups and updates on the server, administration incidents and corrected SQL queries. | Development team     |
 | 1.2         | 10/24/2026 | Operation with the services architecture: containers of the API gateway, the security, device and measurement services, the backend and RabbitMQ; health checks inside the containers, logs per service, `deploy.sh` components, new secrets (`RABBITMQ_PASSWORD`, `INTERNAL_API_TOKEN`, `MQTT_DEVICE_SERVICE_PASS`, `MQTT_MEASUREMENT_SERVICE_PASS`) and new incidents. | Development team     |
 | 1.3         | 10/27/2026 | Backend retired: operation of the seven microservices (security, device, measurement, home, notification, alert and recommendation) and of the gateway; administration notices served by the notification service; queues and outboxes the administrator must watch; deployment order; `EMAIL_NOT_VERIFIED`; tables per service; updated commands and checklist. | Development team     |
+| 1.4         | 10/28/2026 | Documents the unusual consumption alert of an appliance (what triggers it, when it resolves and what the user sees), the Settings help center with support handled by the administrators, and profile photos; the final version is unified at 1.4. | Development team |
 
 # 3. Table of contents
 
@@ -309,6 +310,12 @@ The following features do not exist in this version and are planned:
 - Editing of the help documentation from **Settings**.
 - Delivery of administration notices by email or push notification.
 - Global roles other than `ADMIN`.
+
+## 10.8 Support and unusual consumption alert
+
+**Technical support.** In Settings \> Help, the user finds the **Technical support** card: they choose one of the available administrators and **Create ticket** opens their email with the subject already written. That is why support is handled by the administrators, who answer by email, and the card does not appear for them. Keeping the emails of the administrator accounts up to date (section 10.2) is what guarantees there is someone to write to.
+
+**Unusual consumption alert.** The alert service notifies the members of the home when an appliance consumes at least 200 W and at least 2.5 times its hourly average of the last 7 days, as long as it has 24 hours of history and an average of at least 5 W. The alert resolves by itself when consumption returns to normal and arrives by email and push according to each person's preferences. If a user reports not receiving the notice, check in this order: that the module has enough history, that the home has members with notifications turned on, and that the alert service is running (section 16). The thresholds are fixed in the code and cannot be changed from the application.
 
 # 11. Password policy and security configuration
 

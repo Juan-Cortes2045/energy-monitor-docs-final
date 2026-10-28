@@ -13,8 +13,8 @@ _Home electricity consumption monitoring system — web application and mobile a
 | **Instructor**            | Karol Dayana Correa                                                                                          |
 | **Group (Ficha)**         | 3145556                                                                                                      |
 | **Training center**       | SENA Industria – Neiva                                                                                       |
-| **Date**                  | October 27, 2026                                                                                             |
-| **Document version**      | 3.0                                                                                                          |
+| **Date**                  | October 28, 2026                                                                                             |
+| **Document version**      | 3.1                                                                                                          |
 
 # **Version control**
 
@@ -23,6 +23,7 @@ _Home electricity consumption monitoring system — web application and mobile a
 | 1.0         | 07/09/2026 | Initial version of the EnergyMonitor user manual.                                                                                                                                                                                                                                                       | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga         |
 | 2.0         | 07/23/2026 | Separate manuals for the web application and the mobile application, with homes, roles, consumption, history, devices, thresholds, favorites and notifications.                                                                                                                                       | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga         |
 | 3.0         | 10/27/2026 | Single manual for web and mobile, with the differences of each platform marked. Adds the administrator role and its web screens, the acceptance of the terms and the privacy policy, activity notifications, ownership transfer, changing the Wi-Fi network of a device, account deletion with a code for Google accounts and the changes of the mobile app (secure session, accessibility, page titles). Removes inviting members by email, which does not exist: joining a home is done with the access code. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga         |
+| 3.1         | 10/28/2026 | The Settings help center (documentation by role, support and news), member photos and the photo viewer, the unusual consumption alert and the Brave notifications notice are documented. Pending screenshots are marked. |
 
 # **Table of contents**
 
@@ -114,11 +115,11 @@ The same person can be the owner of one home and a member of another. The admini
 
 Both applications are available in **Spanish, English, French and Portuguese**, have **four themes** (two light and two dark) and work with screen readers.
 
-![Web side menu](../../assets/Web/menu-lateral-web.png)
+<!-- SCREENSHOT PENDING: menu-lateral-web.png — Web side menu -->
 
 _Side menu (web)_
 
-![App side menu](../../assets/Mobile/menu-lateral-movil.png)
+<!-- SCREENSHOT PENDING: menu-lateral-movil.png — App side menu -->
 
 _Side menu (mobile)_
 
@@ -211,7 +212,7 @@ _Support (web)_
 
 _Registration (web)_
 
-![Terms and privacy policy window](../../assets/Web/registro-terminos-modal.png)
+<!-- SCREENSHOT PENDING: registro-terminos-modal.png — Terms and privacy policy window -->
 
 _Terms of use and Privacy policy window (web)_
 
@@ -219,7 +220,7 @@ _Terms of use and Privacy policy window (web)_
 
 _Registration (mobile)_
 
-![Terms window in the app](../../assets/Mobile/registro-terminos-modal.png)
+<!-- SCREENSHOT PENDING: registro-terminos-modal.png — Terms window in the app -->
 
 _Terms of use and Privacy policy window (mobile)_
 
@@ -516,7 +517,7 @@ _History (mobile)_
 
 **Expected result:** The owner keeps the list of members up to date; after a transfer, the new owner manages the home and whoever transferred it stays as a member.
 
-**Notes:** If the home only has its owner, the screen invites you to share the access code. Devices, thresholds and history do not change with the transfer. Whoever is removed and the other members receive an activity notification.
+**Notes:** If the home only has its owner, the screen invites you to share the access code. Devices, thresholds and history do not change with the transfer. Whoever is removed and the other members receive an activity notification. **Web:** each member is shown with their profile photo (if they have one) and clicking it opens it in a viewer inside the page, with initials as fallback. **Mobile:** only initials are shown for now.
 
 ![alt text](../../assets/Web/image-16.png)
 
@@ -526,7 +527,7 @@ _Users, owner view (web)_
 
 _Users, member view (web)_
 
-![Ownership transfer confirmation](../../assets/Web/usuarios-transferir-propiedad.png)
+<!-- SCREENSHOT PENDING: usuarios-transferir-propiedad.png — Ownership transfer confirmation -->
 
 _Ownership transfer confirmation (web)_
 
@@ -581,7 +582,7 @@ _Devices, owner view (web)_
 
 _Devices, member view (web)_
 
-![Web linking wizard](../../assets/Web/vincular-dispositivo-bluetooth.png)
+<!-- SCREENSHOT PENDING: vincular-dispositivo-bluetooth.png — Web linking wizard -->
 
 _"Link device" wizard, Find your module step (web)_
 
@@ -593,7 +594,7 @@ _Devices, owner view (mobile)_
 
 _Devices, member view (mobile)_
 
-![Bluetooth module search in the app](../../assets/Mobile/vincular-dispositivo-bluetooth.png)
+<!-- SCREENSHOT PENDING: vincular-dispositivo-bluetooth.png — Bluetooth module search in the app -->
 
 _Bluetooth search and list of found modules (mobile)_
 
@@ -669,7 +670,7 @@ _Home, owner view (web)_
 
 _Home, member view (web)_
 
-![Delete home confirmation](../../assets/Web/hogar-eliminar-confirmacion.png)
+<!-- SCREENSHOT PENDING: hogar-eliminar-confirmacion.png — Delete home confirmation -->
 
 _"Delete home" confirmation with the typed name (web)_
 
@@ -739,13 +740,13 @@ _Favorites (mobile)_
 
 **Expected result:** The user learns in time what happens in their homes and acts on it.
 
-**Notes:** Alerts and recommendations can also arrive by email and as push notifications, according to the settings (section 12). Activity always appears in the inbox.
+**Notes:** Alerts and recommendations can also arrive by email and as push notifications, according to the settings (section 12). Activity always appears in the inbox. **Unusual consumption:** if an appliance consumes far more than usual (at least 200 W and 2.5 times its hourly average of the last 7 days, with at least 24 hours of history), the home receives a threshold alert that resolves by itself when consumption returns to normal. **Mobile:** the alert arrives, but with the generic threshold text; the specific text is pending.
 
 ![alt text](../../assets/Web/image-28.png)
 
 _Notifications (web)_
 
-![Activity tab with home filter](../../assets/Web/notificaciones-actividad.png)
+<!-- SCREENSHOT PENDING: notificaciones-actividad.png — Activity tab with home filter -->
 
 _Activity tab with home filter (web)_
 
@@ -753,7 +754,7 @@ _Activity tab with home filter (web)_
 
 _Notifications (mobile)_
 
-![Activity tab in the app](../../assets/Mobile/notificaciones-actividad.png)
+<!-- SCREENSHOT PENDING: notificaciones-actividad.png — Activity tab in the app -->
 
 _Activity tab with home filter (mobile)_
 
@@ -783,7 +784,8 @@ _Activity tab with home filter (mobile)_
 
 - **Web:** the theme is stored in that browser; push reaches that browser even with the tab closed. If the browser blocked notifications, turn them on from the padlock of the address bar. On iPhone, install the web on the home screen.
 - **Mobile:** push reaches the phone and the subscribed browsers of the same account; if Android lacks the permission, the app says so.
-- When the server has no push configured, the option shows as unavailable.
+- If the server does not have push configured, the option appears as unavailable.
+- **Brave (web):** this browser ships with the Google service that delivers push turned off. If turning it on does not work, the screen says to go to brave://settings/privacy, turn on «Use Google services for push messaging», restart Brave and turn push on again.
 
 ![alt text](../../assets/Web/image-25.png)
 
@@ -792,6 +794,20 @@ _Settings (web)_
 ![alt text](../../assets/Mobile/image-21.png)
 
 _Settings (mobile)_
+
+### **12.1 Help center**
+
+**[Web only]** On mobile the cards are shown but they do not open any window yet.
+
+Below the preferences, Settings has three cards. Each opens a window that is closed with **Close**:
+
+| **Card** | **What it shows** | **Who sees it** |
+| --- | --- | --- |
+| **Documentation** | Usage guides and feature reference according to the role of the account: user or administrator. | User and administrator |
+| **Technical support** | The available administrators. You choose whom to write to and **Create ticket** opens the email with the subject already written; the team answers by email. | Only the user: the administrator handles support and does not see the card |
+| **News** | Improvements, new features and fixes grouped by date, with the version and the commit that is online. They are generated automatically on every deployment. | User and administrator |
+
+**Note:** the news titles come in the language of the commits (English) even if the interface is in another language.
 
 ## **13. My account**
 
@@ -823,12 +839,13 @@ _Settings (mobile)_
 - If the email changes, the new address must be verified with the code it receives before signing in again.
 - The account cannot be deleted while it is the only owner of a home with other members: first transfer the ownership or remove the members. Homes without other members are deleted with the account.
 - **Mobile:** to choose a photo, the app asks for access to the gallery.
+- With **View photo** the image opens in a viewer inside the application (on the web, inside the page without leaving it).
 
 ![alt text](../../assets/Web/image-24.png)
 
 _My account (web)_
 
-![Delete a Google account with a code](../../assets/Web/cuenta-eliminar-google-codigo.png)
+<!-- SCREENSHOT PENDING: cuenta-eliminar-google-codigo.png — Delete a Google account with a code -->
 
 _Deleting a Google account with a code (web)_
 
@@ -872,7 +889,7 @@ _Sign out (mobile)_
 
 An account with the administrator role that signs in on the web goes straight to **Administration**. Its side menu shows only **Administration**, **Notifications** and **Settings**, plus My account and Sign out. The home screens (dashboard, home detail and favorites) are not available to this account: if it tries to open them, the application sends it back to the administration. An account without permission that tries to open the administration goes back to its homes dashboard.
 
-![Administrator side menu](../../assets/Web/admin-menu.png)
+<!-- SCREENSHOT PENDING: admin-menu.png — Administrator side menu -->
 
 _Side menu of an administrator account (web)_
 
@@ -896,7 +913,7 @@ _Side menu of an administrator account (web)_
 
 **Expected result:** The administrator finds any account and sees its status and roles.
 
-![User directory](../../assets/Web/admin-usuarios.png)
+<!-- SCREENSHOT PENDING: admin-usuarios.png — User directory -->
 
 _Platform users (web)_
 
@@ -920,7 +937,7 @@ _Platform users (web)_
 
 **Notes:** The session the account already had open may last up to 15 minutes, but it is not renewed.
 
-![Status change confirmation](../../assets/Web/admin-confirmar-estado.png)
+<!-- SCREENSHOT PENDING: admin-confirmar-estado.png — Status change confirmation -->
 
 _"Change the account status" confirmation (web)_
 
@@ -942,7 +959,7 @@ _"Change the account status" confirmation (web)_
 
 **Expected result:** The role appears or disappears in the Global roles column. The account must sign out and in again to see the change in its menu.
 
-![Administrator role confirmation](../../assets/Web/admin-confirmar-rol.png)
+<!-- SCREENSHOT PENDING: admin-confirmar-rol.png — Administrator role confirmation -->
 
 _"Grant the administrator role" confirmation (web)_
 
@@ -968,7 +985,7 @@ _"Grant the administrator role" confirmation (web)_
 
 **Notes:** The 50 most recent notices are shown. Whoever makes a change gets no notice of their own change. These notices are only seen on the web; they do not arrive by email or push.
 
-![Administration notifications](../../assets/Web/admin-notificaciones.png)
+<!-- SCREENSHOT PENDING: admin-notificaciones.png — Administration notifications -->
 
 _Administration notifications (web)_
 
@@ -980,7 +997,7 @@ In **Settings**, the administrator sees the language, the theme and the help cen
 - An action without the matching permission is not shown.
 - The administrator role gives no access to the homes.
 
-![Administrator settings](../../assets/Web/admin-ajustes.png)
+<!-- SCREENSHOT PENDING: admin-ajustes.png — Administrator settings -->
 
 _Settings of an administrator account, without the notifications section (web)_
 

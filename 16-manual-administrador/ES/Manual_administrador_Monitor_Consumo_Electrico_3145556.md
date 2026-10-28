@@ -21,8 +21,8 @@ Ficha: 3145556
 | Programa             | Tecnología en Análisis y Desarrollo de Software (ADSO)                          |
 | Ficha                | 3145556                                                                         |
 | Tipo de documento    | Manual de administrador                                                         |
-| Versión              | 1.3                                                                             |
-| Fecha de elaboración | 07 de octubre de 2026 (actualizado el 27 de octubre de 2026)                    |
+| Versión              | 1.4                                                                             |
+| Fecha de elaboración | 07 de octubre de 2026 (actualizado el 28 de octubre de 2026)                    |
 
 Año 2026
 
@@ -36,6 +36,7 @@ El historial de cambios del presente manual se registra en la siguiente tabla. C
 | 1.1         | 20/10/2026 | Administración desde la aplicación web (directorio de usuarios, estados, rol de administrador y avisos de administración), designación del primer administrador con `make-admin.sh --prod`, entorno de producción en `https://energy-monitor.tech`, respaldos y actualización en el servidor, incidentes de administración y corrección de consultas SQL. | Equipo desarrollador |
 | 1.2         | 24/10/2026 | Operación con la arquitectura de servicios: contenedores del API gateway, de los servicios de seguridad, dispositivos y mediciones, del backend y de RabbitMQ; comprobación de salud dentro de los contenedores, logs por servicio, componentes de `deploy.sh`, secretos nuevos (`RABBITMQ_PASSWORD`, `INTERNAL_API_TOKEN`, `MQTT_DEVICE_SERVICE_PASS`, `MQTT_MEASUREMENT_SERVICE_PASS`) e incidentes nuevos. | Equipo desarrollador |
 | 1.3         | 27/10/2026 | Backend retirado: operación de los siete microservicios (seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones) y del gateway; avisos de administración servidos por el servicio de notificaciones; colas y outbox que debe vigilar el administrador; orden de despliegue; `EMAIL_NOT_VERIFIED`; tablas por servicio; comandos y checklist actualizados. | Equipo desarrollador |
+| 1.4         | 28/10/2026 | Se documenta la alerta de consumo inusual de un aparato (qué la dispara, cuándo se resuelve y qué ve el usuario), el centro de ayuda de Ajustes con el soporte atendido por los administradores y las fotos de perfil; la versión final se unifica en 1.4. | Equipo desarrollador |
 
 # 3. Tabla de contenido
 
@@ -309,6 +310,12 @@ Las siguientes funciones no existen en esta versión y quedan planificadas:
 - Edición de la documentación de ayuda desde **Ajustes**.
 - Entrega de los avisos de administración por correo o por notificación push.
 - Otros roles globales además de `ADMIN`.
+
+## 10.8 Soporte y alerta de consumo inusual
+
+**Soporte técnico.** En Ajustes \> Ayuda, el usuario encuentra la tarjeta **Soporte técnico**: elige a uno de los administradores disponibles y **Crear ticket** abre su correo con el asunto ya escrito. Por eso el soporte lo atienden los administradores, que responden por correo, y la tarjeta no aparece para ellos. Mantener actualizados los correos de las cuentas administradoras (sección 10.2) es lo que garantiza que haya a quién escribir.
+
+**Alerta de consumo inusual.** El servicio de alertas avisa a los miembros del hogar cuando un aparato consume al menos 200 W y al menos 2,5 veces su promedio por hora de los últimos 7 días, siempre que tenga 24 horas de historial y un promedio de al menos 5 W. La alerta se resuelve sola cuando el consumo se normaliza y llega por correo y push según las preferencias de cada persona. Si un usuario reporta que no recibe el aviso, revisar en este orden: que el módulo tenga historial suficiente, que el hogar tenga miembros con las notificaciones activas y que el servicio de alertas esté operando (sección 16). Los umbrales son fijos en el código y no se pueden cambiar desde la aplicación.
 
 # 11. Política de contraseñas y configuración de seguridad
 
