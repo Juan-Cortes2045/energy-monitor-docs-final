@@ -1,6 +1,19 @@
 # Evidencias de pruebas
 
-## Versión 1.3 (estado actual)
+## Versión 1.4 (estado actual)
+
+Fecha: 28 de octubre de 2026. Cambian los repositorios que recibieron las últimas funciones; el resto sigue como en la versión 1.3. Commits de `main` y totales:
+
+| Repositorio | Rama | Commit | Nota |
+|---|---|---|---|
+| en-monitor-security-service | main | `de52c95` | 774 pruebas |
+| en-monitor-home-service | main | `6a4e396` | 260 pruebas |
+| en-monitor-notification-service | main | `ecdbc0a` | 235 pruebas |
+| en-monitor-alert-service | main | `0e65430` | 128 pruebas |
+| energy-monitor-web | main | `27ad9f0` | 44 archivos y 253 pruebas |
+| energy-monitor-mobile | dev | `8b5edc0` | 78 pruebas unitarias |
+
+## Versión 1.3
 
 Fecha: 28 de octubre de 2026. Con la migración completa el servicio central se retiró y cada servicio tiene su repositorio y su suite. Commits de `main` (los desplegados en producción ese día) y totales de cada suite, todas en verde:
 
