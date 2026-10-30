@@ -11,7 +11,7 @@ Tecnólogo en Análisis y Desarrollo de Software (ADSO), ficha 3145556
 ---
 ## Resumen
 
-Este artículo describe EnergyMonitor, un sistema para saber cuánto consume cada electrodoméstico de un hogar. Avisa cuando se pasa de un límite razonable y ofrece recomendaciones de ahorro calculadas con las lecturas del propio usuario, no con promedios ajenos. En el extremo físico hay un dispositivo con un microcontrolador ESP32 y el sensor PZEM-004T V3 que publica telemetría cada 60 segundos por MQTT 3.1.1 sobre TLS. En el servidor, un API gateway y siete microservicios en Java 21 y Spring Boot se reparten el trabajo, hablan entre sí por eventos con patrón de salida transaccional sobre RabbitMQ y guardan todo en MySQL. El usuario entra por una web hecha en React 19 o por una aplicación para Android construida con Expo. Todo corre en https://energy-monitor.tech y se actualiza con integración y despliegue continuos. Al 28 de octubre de 2026 las suites automatizadas estaban en verde: 1.806 pruebas de backend, 228 de la web, 78 de la móvil y cinco recorridos de punta a punta. La trazabilidad cubría 71 de los 108 requisitos del sistema. La cobertura de código, en cambio, no se había medido. El artículo no se queda en lo que salió bien: también reporta los indicadores que no se cumplieron y las limitaciones del trabajo, para que el lector separe lo medido de lo pendiente.
+Este artículo describe EnergyMonitor, un sistema para saber cuánto consume cada electrodoméstico de un hogar. Avisa cuando se pasa de un límite razonable y ofrece recomendaciones de ahorro calculadas con las lecturas del propio usuario, no con promedios ajenos. En el extremo físico hay un dispositivo con un microcontrolador ESP32 y el sensor PZEM-004T V3 que publica telemetría cada 60 segundos por MQTT 3.1.1 sobre TLS. En el servidor, un API gateway y siete microservicios en Java 21 y Spring Boot se reparten el trabajo, hablan entre sí por eventos con patrón de salida transaccional sobre RabbitMQ y guardan todo en MySQL. El usuario entra por una web hecha en React 19 o por una aplicación para Android construida con Expo. Todo corre en https://energy-monitor.tech y se actualiza con integración y despliegue continuos. Al 28 de octubre de 2026 las suites automatizadas estaban en verde: 1.817 pruebas de backend, 253 de la web, 78 de la móvil y cinco recorridos de punta a punta. La trazabilidad cubría 71 de los 108 requisitos del sistema. La cobertura de código, en cambio, no se había medido. El artículo no se queda en lo que salió bien: también reporta los indicadores que no se cumplieron y las limitaciones del trabajo, para que el lector separe lo medido de lo pendiente.
 
 **Palabras clave:** monitoreo del consumo eléctrico, hogares, Internet de las cosas, microservicios, alertas, integración continua
 
@@ -129,7 +129,7 @@ La aplicación web está construida en React 19 (React, s. f.) con Vite como emp
 
 ### Despliegue e infraestructura
 
-El sistema corre en un VPS Hostinger KVM 2 con Ubuntu, orquestado con Docker Compose (Docker, s. f.): un contenedor por servicio, Nginx como servidor web y punto de entrada, el broker Mosquitto, RabbitMQ y MySQL. Los dominios energy-monitor.tech y mqtt.energy-monitor.tech apuntan al servidor —179.236.83.68 en las mediciones del 28 de octubre de 2026—. Cada repositorio tiene un flujo de GitHub Actions (GitHub, s. f.) que ejecuta la suite de pruebas en cada solicitud de fusión y, desde la rama principal y con aprobación del entorno de producción, despliega su componente mediante un script por SSH. La Tabla 4 recoge la pila tecnológica tal como quedó desplegada.
+El sistema corre en un VPS Hostinger KVM 2 con Ubuntu, orquestado con Docker Compose (Docker, s. f.): un contenedor por servicio, Nginx como servidor web y punto de entrada, el broker Mosquitto, RabbitMQ y MySQL. Los dominios energy-monitor.tech y mqtt.energy-monitor.tech apuntan al servidor. Cada repositorio tiene un flujo de GitHub Actions (GitHub, s. f.) que ejecuta la suite de pruebas en cada solicitud de fusión y, desde la rama principal y con aprobación del entorno de producción, despliega su componente mediante un script por SSH. La Tabla 4 recoge la pila tecnológica tal como quedó desplegada.
 
 **Tabla 4**
 
@@ -162,13 +162,13 @@ El criterio de aceptación de cada cambio fue simple y estricto: no aceptábamos
 
 | Nivel | Herramienta | Pruebas | Resultado |
 |---|---|---|---|
-| Integración del backend (gateway y siete servicios) | JUnit Jupiter 6.0.3, Maven Surefire | 1.806 en total: 773 de seguridad, 260 de hogares, 234 de notificaciones, 151 de mediciones, 129 de dispositivos, 119 de alertas, 71 de recomendaciones y 69 del gateway | En verde |
-| Unidad de la aplicación web | Vitest 5.0.3 (jsdom) | 228 pruebas en 38 archivos | En verde |
+| Integración del backend (gateway y siete servicios) | JUnit Jupiter 6.0.3, Maven Surefire | 1.817 en total: 774 de seguridad, 260 de hogares, 235 de notificaciones, 151 de mediciones, 129 de dispositivos, 128 de alertas, 71 de recomendaciones y 69 del gateway | En verde |
+| Unidad de la aplicación web | Vitest 5.0.3 (jsdom) | 253 pruebas en 44 archivos | En verde |
 | Unidad de la aplicación móvil | Jest (jest-expo) | 78 pruebas en 8 suites | En verde |
 | Integración de punta a punta | Bash, curl, jq, openssl y mosquitto_pub sobre Docker Compose local | 160 aserciones en 5 flujos: dispositivo (24), medición (28), alerta (36), actividad (60) y eliminación de cuenta (12) | En verde; el flujo de recomendaciones no se volvió a ejecutar en la versión 1.3 |
 | Análisis estático y de tipos | ESLint 9.39.4 (web); expo lint y tsc --noEmit (móvil) | Sin conteo de pruebas | 0 hallazgos |
 
-La distribución de esas 1.806 pruebas no es casual. Seguridad concentra 773, casi la mitad del total, porque ahí vive el registro con verificación de correo, la aceptación de términos, los refresh tokens de un solo uso, el control de acceso por roles y la administración de usuarios: precisamente el frente que la OWASP (2023) ubica como el más atacado en interfaces de programación. Hogares y notificaciones, con 260 y 234 pruebas, reflejan que las reglas de membresía y las preferencias de entrega son de las partes más enredadas del dominio.
+La distribución de esas 1.817 pruebas no es casual. Seguridad concentra 774, cerca del 43 % del total, porque ahí vive el registro con verificación de correo, la aceptación de términos, los refresh tokens de un solo uso, el control de acceso por roles y la administración de usuarios: precisamente el frente que la OWASP (2023) ubica como el más atacado en interfaces de programación. Hogares y notificaciones, con 260 y 235 pruebas, reflejan que las reglas de membresía y las preferencias de entrega son de las partes más enredadas del dominio.
 
 El resultado del análisis estático pide una aclaración. Cero hallazgos de ESLint en dos aplicaciones habla de disciplina de equipo, no de ausencia de defectos: ESLint detecta patrones prohibidos y errores tipados, no lógica equivocada. La métrica que habría cerrado este capítulo es la cobertura de código, y no la tenemos. JaCoCo nunca se configuró; quedó registrado como deuda de calidad con prioridad alta (DT-11) y se asume aquí como limitación.
 
@@ -200,8 +200,8 @@ Agrupamos los resultados en dos bloques: el cumplimiento de las metas cuantitati
 | Latencia de consultas | Menos de 2 s con datos autenticados (RNF-REN-01) | 0,37 s en rechazos sin sesión; sin medición con datos | Parcial; medición pendiente |
 | Latencia de la página de inicio | Sin meta cuantitativa | 0,36 s hasta el primer byte (10 peticiones, 28/10/2026) | Medido puntualmente |
 | Disponibilidad del servicio | Sin meta (RNF-DIS-01 marcado [POR CONFIRMAR]) | Sin medición continua (DT-20) | Pendiente |
-| Pruebas del backend | Suites en verde antes de cada fusión | 1.806 pruebas en verde (28/10/2026) | **Cumple** |
-| Pruebas de la web y la móvil | Sin cifra meta; existencia de suites automatizadas | 228 (web) y 78 (móvil) en verde | **Cumple**; sin pruebas de componentes |
+| Pruebas del backend | Suites en verde antes de cada fusión | 1.817 pruebas en verde (28/10/2026) | **Cumple** |
+| Pruebas de la web y la móvil | Sin cifra meta; existencia de suites automatizadas | 253 (web) y 78 (móvil) en verde | **Cumple**; sin pruebas de componentes |
 | Pruebas de punta a punta | Cinco flujos automatizados sobre la pila local | 160 aserciones en verde | Parcial; un flujo sin re-ejecutar |
 | Análisis estático | ESLint sin hallazgos | 0 hallazgos en web y móvil | **Cumple**; aún no corre en CI |
 | Trazabilidad requisito–prueba | Sin cifra meta documentada | 71 de 108 requisitos (65,7 %) | 37 requisitos sin cobertura |
@@ -215,7 +215,7 @@ Lo que más nos convence no es una cifra aislada, sino la continuidad. Entre el 
 
 Los datos permiten afirmar algo concreto: el ciclo completo del producto funciona. Un medidor de COP 173.997 toma lecturas cada minuto, las transporta cifradas por MQTT, las guarda en MySQL, las cruza con cinco reglas horarias, publica recomendaciones y dispara alertas de desconexión dentro del umbral de 150 segundos. Ese recorrido fue demostrado en vivo ante el comité evaluador el 23 de octubre y queda reproducible con los scripts de integración de punta a punta. Lo que los datos no permiten afirmar es que el sistema ahorre energía a sus usuarios: no hay estudio con usuarios reales, ni mediciones de consumo antes y después, ni encuestas de percepción. La literatura de retroalimentación doméstica (Fischer, 2008) avisa que medir por sí solo no garantiza ahorro. Este proyecto entrega la medición; el estudio de su efecto queda como trabajo futuro.
 
-La arquitectura hexagonal tuvo una consecuencia práctica que no calculamos al principio: la testabilidad. Los 1.806 pruebas del backend corren en una máquina local sin depender de servicios en la nube, porque cada servicio expone sus casos de uso por puertos que las pruebas sustituyen a voluntad (Fowler, 2002; Richardson, 2018). Cuando llegó la descomposición en microservicios, ese ahorro se cobró: partir ocho componentes en dos semanas sin caídas habría sido impensable si cada servicio hubiera nacido acoplado a su base de datos o a las credenciales de un entorno remoto. El mismo diseño sostiene el patrón de salida transaccional con RabbitMQ, que garantiza que una medición persistida termine publicada sin duplicados aunque el bus se caiga por el camino (Richardson, s. f.).
+La arquitectura hexagonal tuvo una consecuencia práctica que no calculamos al principio: la testabilidad. Las 1.817 pruebas del backend corren en una máquina local sin depender de servicios en la nube, porque cada servicio expone sus casos de uso por puertos que las pruebas sustituyen a voluntad (Fowler, 2002; Richardson, 2018). Cuando llegó la descomposición en microservicios, ese ahorro se cobró: partir ocho componentes en dos semanas sin caídas habría sido impensable si cada servicio hubiera nacido acoplado a su base de datos o a las credenciales de un entorno remoto. El mismo diseño sostiene el patrón de salida transaccional con RabbitMQ, que garantiza que una medición persistida termine publicada sin duplicados aunque el bus se caiga por el camino (Richardson, s. f.).
 
 La deuda técnica es el otro hilo de la discusión. El proyecto documenta 25 hallazgos con su gravedad y su costo de corrección, y cuatro siguen abiertos con prioridad alta: las pruebas no herméticas (DT-07), la ausencia de cobertura medida (DT-11), los respaldos que viven en el mismo servidor que la operación (DT-19) y la falta de monitoreo de latencia y disponibilidad (DT-20). Ninguno de los cuatro impide usar el sistema; los cuatro lo limitan en un escenario adverso. Asumirlos en voz alta, con código y fecha, forma parte del mismo criterio de honestidad que lleva a escribir en este artículo que la disponibilidad no se mide y que la exactitud del sensor no se validó contra un patrón de referencia.
 
@@ -231,7 +231,7 @@ El último punto es el equipo. Dos aprendices sostuvieron doce repositorios, una
 
 2. El sistema lleva desplegado en energy-monitor.tech desde agosto de 2026. El 28 de octubre pasó a funcionar como un gateway y siete microservicios sin apagar el servicio ni un minuto.
 
-3. La cifra que resume el trabajo de verificación es 2.112 pruebas automatizadas —1.806 del backend, 228 de la web y 78 de la móvil— más 160 aserciones de cinco flujos de punta a punta. Todas estaban en verde al cierre, junto con un análisis estático sin hallazgos.
+3. La cifra que resume el trabajo de verificación es 2.148 pruebas automatizadas —1.817 del backend, 253 de la web y 78 de la móvil— más 160 aserciones de cinco flujos de punta a punta. Todas estaban en verde al cierre, junto con un análisis estático sin hallazgos.
 
 4. No todo está cubierto. La trazabilidad alcanza 71 de los 108 requisitos; los 37 restantes se concentran en la aplicación móvil, el firmware, Bluetooth y notificaciones push, y están documentados.
 
@@ -244,6 +244,8 @@ El último punto es el equipo. Dos aprendices sostuvieron doce repositorios, una
 El sensor PZEM-004T V3 nunca se validó contra un medidor de referencia, y es la limitación más gorda del trabajo. La exactitud de 0,5 % que se invoca es la del fabricante, no una medida de laboratorio: el sistema informa con precisión de catálogo, no de patrón. La calidad del software, por su parte, está medida solo donde hay instrumentos. Hay conteo de pruebas y hallazgos de ESLint, pero no hay cobertura de código (DT-11), no hay análisis en SonarQube y no se ejecutaron pruebas de rendimiento ni de accesibilidad; estas últimas quedaron marcadas como pendientes en la propia especificación.
 
 En lo operativo, el sistema corre en un solo servidor sin etapa de pruebas previa a producción, los respaldos se guardan en la misma máquina que sirve el servicio (DT-19) y la disponibilidad no se monitorea (DT-20). Las pruebas locales tampoco son herméticas: los perfiles de Maven descargan dependencias de repositorios externos y los flujos de punta a punta necesitan la pila completa de contenedores levantada a mano (DT-07). El transporte de telemetría usa QoS 0, nivel sin garantía de entrega, decisión funcional hasta hoy pero insuficiente si la red del hogar resulta hostil. Y el dispositivo no admite actualización por aire: corregir su firmware exige intervención física.
+
+Las últimas funciones tampoco llegaron por igual a las dos aplicaciones. La web ya tiene el centro de ayuda de Ajustes (documentación por rol, soporte para usuarios y novedades), las fotos de los miembros con su visor y el aviso para activar el push en Brave; la móvil todavía no abre esos modales, muestra solo iniciales en los miembros y pinta la alerta de consumo inusual con el texto genérico de umbral. Además, los umbrales de esa alerta están fijos en el código (DT-27) y los títulos de las novedades salen en inglés (DT-26).
 
 Falta, por último, evidencia de uso real. No hay usuarios en producción, ni encuestas, ni estudios de consumo antes y después de adoptar el sistema, así que ninguna afirmación de ahorro energético puede sostenerse. El protocolo manual de la aplicación móvil (MOV-01 a MOV-12) quedó sin ejecutar, las pruebas de componentes de React Native no existen todavía y el flujo de recomendaciones de punta a punta no se volvió a ejecutar tras la descomposición en servicios. El canal de integración y despliegue se midió con 23 minutos sobre el monolito de 1.131 pruebas; después de separar los servicios no se volvió a cronometrar.
 
@@ -266,25 +268,25 @@ En producto, la hoja de ruta ya incluye la actualización del firmware por aire,
 
 ### Reproducibilidad
 
-El sistema se reproduce desde los repositorios públicos del proyecto. Cada componente tiene una rama main de producción y una rama dev de integración; las solicitudes de fusión van primero a dev y de dev a main. La Tabla A1 lista los repositorios vigentes y el commit desplegado el 28 de octubre de 2026, día de la migración completa a microservicios. Los repositorios retirados, energy-monitor-backend (que conserva el firmware del ESP32 en su carpeta firmware/) y energy-monitor-devices, se mantienen como historial.
+El sistema se reproduce desde los repositorios públicos del proyecto. Cada componente tiene una rama main de producción y una rama dev de integración; las solicitudes de fusión van primero a dev y de dev a main. La Tabla A1 lista los repositorios vigentes y el commit de main al 28 de octubre de 2026, día de la migración completa a microservicios; los marcados «despliegue por confirmar» ya están en main pero su despliegue en el servidor no se había confirmado al cierre. Los repositorios retirados, energy-monitor-backend (que conserva el firmware del ESP32 en su carpeta firmware/) y energy-monitor-devices, se mantienen como historial.
 
 **Tabla A1**
 
-*Repositorios vigentes y commits desplegados el 28 de octubre de 2026*
+*Repositorios vigentes y commit de main al 28 de octubre de 2026*
 
 | Componente y repositorio | Commit | Estado en producción |
 |---|---|---|
 | API gateway (en-monitor-api-gateway) | `0b2c164` | Desplegado |
-| Servicio de seguridad (en-monitor-security-service) | `f57c76b` | Desplegado |
+| Servicio de seguridad (en-monitor-security-service) | `de52c95` | En main; despliegue por confirmar |
 | Servicio de dispositivos (en-monitor-device-service) | `06c1bdc` | Desplegado |
 | Servicio de mediciones (en-monitor-measurement-service) | `8a9b544` | Desplegado |
-| Servicio de hogares (en-monitor-home-service) | `f424083` | Desplegado |
-| Servicio de notificaciones (en-monitor-notification-service) | `7b10398` | Desplegado |
-| Servicio de alertas (en-monitor-alert-service) | `f050b56` | Desplegado |
+| Servicio de hogares (en-monitor-home-service) | `6a4e396` | En main; despliegue por confirmar |
+| Servicio de notificaciones (en-monitor-notification-service) | `ecdbc0a` | En main; despliegue por confirmar |
+| Servicio de alertas (en-monitor-alert-service) | `0e65430` | En main; despliegue por confirmar |
 | Servicio de recomendaciones (en-monitor-recommendation-service) | `aeeeec5` | Desplegado |
-| Aplicación web (Energy-Monitor-application) | `698d4c9` | Desplegado |
+| Aplicación web (Energy-Monitor-application) | `27ad9f0` | En main; despliegue por confirmar |
 | Infraestructura (energy-monitor-infra) | `ceb1543` | Desplegado |
-| Aplicación móvil (Energy-Monitor-Mobile) | `894b65a` en main; `1e4109b` en dev | No aplica; no se despliega en el servidor |
+| Aplicación móvil (Energy-Monitor-Mobile) | `894b65a` en main; `8b5edc0` en dev | No aplica; no se despliega en el servidor |
 
 Para repetir la verificación, cada repositorio del backend ejecuta sus pruebas con mvn test dentro de su propio job del integrador; la web corre npm test con Vitest y la móvil npx jest. Los flujos de punta a punta viven en el directorio e2e/ de energy-monitor-infra y se lanzan con Bash contra una pila levantada con Docker Compose. Para repetir las mediciones de producción bastan dos herramientas de línea de comandos: curl con las opciones de temporización para la página de inicio y la API, y openssl s_client contra mqtt.energy-monitor.tech:8883 para comprobar el apretón TLS. Los valores reportados aquí corresponden al entorno público de energy-monitor.tech en la fecha ya indicada.
 

@@ -11,7 +11,7 @@ October 28, 2026
 ---
 ## Abstract
 
-EnergyMonitor is a system for finding out how much electricity each appliance in a home actually uses. It warns when a reasonable limit is crossed and offers energy-saving tips built from the household’s own readings rather than from averages borrowed elsewhere. At the physical end sits a device built around an ESP32 microcontroller and a PZEM-004T V3 sensor, which publishes telemetry every 60 seconds over MQTT 3.1.1 with TLS. On the server side, an API gateway and seven microservices written in Java 21 and Spring Boot share the workload, talk to each other through events using the transactional outbox pattern over RabbitMQ, and keep everything in MySQL. Users reach the system through a React 19 web application or an Android app built with Expo. Everything runs at https://energy-monitor.tech and is updated through continuous integration and delivery. On October 28, 2026 the automated suites were green: 1,806 backend tests, 228 web tests, 78 mobile tests, and five end-to-end journeys. Traceability covered 71 of the system’s 108 requirements. Code coverage, on the other hand, had never been measured. The article does not stop at what went well: it also reports the indicators that were missed and the limitations of the work, so that readers can separate what was measured from what is still pending.
+EnergyMonitor is a system for finding out how much electricity each appliance in a home actually uses. It warns when a reasonable limit is crossed and offers energy-saving tips built from the household’s own readings rather than from averages borrowed elsewhere. At the physical end sits a device built around an ESP32 microcontroller and a PZEM-004T V3 sensor, which publishes telemetry every 60 seconds over MQTT 3.1.1 with TLS. On the server side, an API gateway and seven microservices written in Java 21 and Spring Boot share the workload, talk to each other through events using the transactional outbox pattern over RabbitMQ, and keep everything in MySQL. Users reach the system through a React 19 web application or an Android app built with Expo. Everything runs at https://energy-monitor.tech and is updated through continuous integration and delivery. On October 28, 2026 the automated suites were green: 1,817 backend tests, 253 web tests, 78 mobile tests, and five end-to-end journeys. Traceability covered 71 of the system’s 108 requirements. Code coverage, on the other hand, had never been measured. The article does not stop at what went well: it also reports the indicators that were missed and the limitations of the work, so that readers can separate what was measured from what is still pending.
 
 **Keywords:** electricity consumption monitoring, households, Internet of Things, microservices, alerts, continuous integration
 
@@ -129,7 +129,7 @@ The web application is built in React 19 (React, s. f.) with Vite as the bundler
 
 ### Deployment and infrastructure
 
-The system runs on a Hostinger KVM 2 VPS with Ubuntu, orchestrated with Docker Compose (Docker, s. f.): one container per service, Nginx as the web server and entry point, the Mosquitto broker, RabbitMQ, and MySQL. The domains energy-monitor.tech and mqtt.energy-monitor.tech point at the server —179.236.83.68 in the October 28, 2026 measurements—. Every repository has a GitHub Actions workflow (GitHub, s. f.) that runs the test suite on each pull request and, from the main branch and with production-environment approval, deploys its component through an SSH script. Table 4 records the technology stack as deployed.
+The system runs on a Hostinger KVM 2 VPS with Ubuntu, orchestrated with Docker Compose (Docker, s. f.): one container per service, Nginx as the web server and entry point, the Mosquitto broker, RabbitMQ, and MySQL. The domains energy-monitor.tech and mqtt.energy-monitor.tech point at the server. Every repository has a GitHub Actions workflow (GitHub, s. f.) that runs the test suite on each pull request and, from the main branch and with production-environment approval, deploys its component through an SSH script. Table 4 records the technology stack as deployed.
 
 **Table 4**
 
@@ -162,13 +162,13 @@ The acceptance criterion for every change was simple and strict: we did not acce
 
 | Level | Tool | Tests | Result |
 |---|---|---|---|
-| Backend integration (gateway and seven services) | JUnit Jupiter 6.0.3, Maven Surefire | 1,806 in total: 773 security, 260 homes, 234 notifications, 151 measurements, 129 devices, 119 alerts, 71 recommendations, and 69 gateway | Green |
-| Web unit tests | Vitest 5.0.3 (jsdom) | 228 tests in 38 files | Green |
+| Backend integration (gateway and seven services) | JUnit Jupiter 6.0.3, Maven Surefire | 1,817 in total: 774 security, 260 homes, 235 notifications, 151 measurements, 129 devices, 128 alerts, 71 recommendations, and 69 gateway | Green |
+| Web unit tests | Vitest 5.0.3 (jsdom) | 253 tests in 44 files | Green |
 | Mobile unit tests | Jest (jest-expo) | 78 tests in 8 suites | Green |
 | End-to-end integration | Bash, curl, jq, openssl, and mosquitto_pub on a local Docker Compose stack | 160 assertions across 5 journeys: device (24), measurement (28), alert (36), activity (60), and account deletion (12) | Green; the recommendation journey was not re-run in version 1.3 |
 | Static analysis and types | ESLint 9.39.4 (web); expo lint and tsc --noEmit (mobile) | Not applicable | 0 findings |
 
-The distribution of those 1,806 backend tests is no accident. Security holds 773, almost half the total, because that is where email-verified registration, terms acceptance, single-use refresh tokens, role-based access control, and user administration live: precisely the front that OWASP (2023) ranks as the most attacked in application programming interfaces. Homes and notifications, with 260 and 234 tests, reflect that membership rules and delivery preferences are among the messiest parts of the domain.
+The distribution of those 1,817 backend tests is no accident. Security holds 774, about 43% of the total, because that is where email-verified registration, terms acceptance, single-use refresh tokens, role-based access control, and user administration live: precisely the front that OWASP (2023) ranks as the most attacked in application programming interfaces. Homes and notifications, with 260 and 235 tests, reflect that membership rules and delivery preferences are among the messiest parts of the domain.
 
 The static analysis result deserves a clarification. Zero ESLint findings across two applications speaks about team discipline, not about the absence of defects: ESLint catches forbidden patterns and typed errors, not wrong logic. The metric that would have closed this chapter was code coverage, and we do not have it. JaCoCo was never configured; it was logged as high-priority technical debt (DT-11) and is acknowledged here as a limitation.
 
@@ -200,8 +200,8 @@ We grouped the results into two blocks: how the quantitative targets set in the 
 | Query latency | Under 2 s with authenticated data (RNF-REN-01) | 0.37 s on unauthenticated rejections; no measurement with data | Partial; measurement pending |
 | Landing page latency | No quantitative target | 0.36 s to first byte (10 requests, 10/28/2026) | Measured at a point in time |
 | Service availability | No target (RNF-DIS-01 marked [TO BE CONFIRMED]) | No continuous measurement (DT-20) | Pending |
-| Backend tests | Green suites before every merge | 1,806 tests green (10/28/2026) | **Met** |
-| Web and mobile tests | No numeric target; existence of automated suites | 228 (web) and 78 (mobile) green | **Met**; no component tests |
+| Backend tests | Green suites before every merge | 1,817 tests green (10/28/2026) | **Met** |
+| Web and mobile tests | No numeric target; existence of automated suites | 253 (web) and 78 (mobile) green | **Met**; no component tests |
 | End-to-end tests | Five automated journeys on the local stack | 160 assertions green | Partial; one journey not re-run |
 | Static analysis | No ESLint findings | 0 findings on web and mobile | **Met**; not yet in CI |
 | Requirement–test traceability | No documented numeric target | 71 of 108 requirements (65.7%) | 37 requirements uncovered |
@@ -215,7 +215,7 @@ What convinces us most is not a single figure but continuity. Between October 24
 
 The data allow one concrete claim: the product’s full cycle works. A COP 173,997 meter takes readings every minute, carries them encrypted over MQTT, stores them in MySQL, crosses them against five hourly rules, publishes recommendations, and raises disconnection alerts within the 150-second threshold. That journey was demonstrated live before the evaluation committee on October 23 and is reproducible with the end-to-end scripts. What the data do not allow is claiming that the system saves its users energy: there is no study with real users, nor before-and-after consumption measurements, nor perception surveys. The domestic feedback literature (Fischer, 2008) warns that measuring by itself does not guarantee savings. This project delivers the measurement; studying its effect remains future work.
 
-Hexagonal architecture had a practical consequence we did not budget for: testability. The 1,806 backend tests run on a local machine without depending on cloud services, because each service exposes its use cases through ports that tests substitute at will (Fowler, 2002; Richardson, 2018). When the microservices split arrived, that saving came due: breaking eight components apart in two weeks without outages would have been unthinkable if every service had been born tied to its database or to remote-environment credentials. The same design underpins the transactional outbox pattern on RabbitMQ, which guarantees that a stored measurement ends up published without duplicates even if the bus goes down halfway (Richardson, s. f.).
+Hexagonal architecture had a practical consequence we did not budget for: testability. The 1,817 backend tests run on a local machine without depending on cloud services, because each service exposes its use cases through ports that tests substitute at will (Fowler, 2002; Richardson, 2018). When the microservices split arrived, that saving came due: breaking eight components apart in two weeks without outages would have been unthinkable if every service had been born tied to its database or to remote-environment credentials. The same design underpins the transactional outbox pattern on RabbitMQ, which guarantees that a stored measurement ends up published without duplicates even if the bus goes down halfway (Richardson, s. f.).
 
 Technical debt is the other thread of the discussion. The project documents 25 findings with their severity and fix cost, and four remain open at high priority: non-hermetic tests (DT-07), unmeasured coverage (DT-11), backups living on the same server as production (DT-19), and the lack of latency and availability monitoring (DT-20). None of the four prevents using the system; all four limit it in an adverse scenario. Owning them out loud, with codes and dates, is part of the same honesty that leads this article to state that availability is not measured and that sensor accuracy was never validated against a reference pattern.
 
@@ -231,7 +231,7 @@ The last point is the team. Two apprentices sustained twelve repositories, a 37-
 
 2. The system has been deployed and running at energy-monitor.tech since August 2026. On October 28 it moved to running as a gateway and seven microservices without switching the service off for a single minute.
 
-3. The figure that sums up the verification work is 2,112 automated tests —1,806 backend, 228 web, 78 mobile— plus 160 assertions across five end-to-end journeys. All were green at the close, along with a static analysis run with no findings.
+3. The figure that sums up the verification work is 2,148 automated tests —1,817 backend, 253 web, 78 mobile— plus 160 assertions across five end-to-end journeys. All were green at the close, along with a static analysis run with no findings.
 
 4. Not everything is covered. Traceability reaches 71 of the 108 requirements; the remaining 37 concentrate in the mobile application, firmware, Bluetooth, and push notifications, and they are documented.
 
@@ -244,6 +244,8 @@ The last point is the team. Two apprentices sustained twelve repositories, a 37-
 The PZEM-004T V3 sensor was never validated against a reference meter, and that is the biggest limitation of the work. The 0.5% accuracy invoked here is the manufacturer’s, not a laboratory measurement: the system reports with catalog precision, not instrument precision. Software quality, for its part, is measured only where instruments exist. Test counts and ESLint findings exist, but there is no code coverage (DT-11), no SonarQube analysis, and no performance or accessibility testing; the latter were marked as pending in the specification itself.
 
 Operationally, the system runs on a single server with no staging environment, backups sit on the same machine that serves the product (DT-19), and availability is not monitored (DT-20). Local tests are not hermetic either: Maven profiles download dependencies from external repositories and the end-to-end flows need the full container stack raised by hand (DT-07). Telemetry transport uses QoS 0, a level with no delivery guarantee — a decision that works so far but would be insufficient if the home network turned hostile. And the device has no over-the-air updates: fixing its firmware requires physical intervention.
+
+The latest features did not reach both applications equally either. The web already has the Settings help center (documentation by role, support for users and news), member photos with their viewer and the notice to enable push in Brave; mobile does not yet open those modals, shows only initials for members and renders the unusual consumption alert with the generic threshold text. In addition, the thresholds of that alert are fixed in the code (DT-27) and the news titles come out in English (DT-26).
 
 Finally, real-usage evidence is missing. There are no production users, no surveys, and no before-and-after consumption studies after adopting the system, so no energy-saving claim can hold. The mobile application’s manual protocol (MOV-01 to MOV-12) went unexecuted, React Native component tests do not exist yet, and the end-to-end recommendation flow was not re-run after the services split. The integration and delivery pipeline was measured at 23 minutes against the monolith’s 1,131 tests; after separating the services it was never timed again.
 
@@ -265,24 +267,25 @@ On the product side, the roadmap already includes over-the-air firmware updates,
 
 ### Reproducibility
 
-The system is reproducible from the project’s public repositories. Every component has a main production branch and a dev integration branch; pull requests go first to dev and from dev to main. Table A1 lists the active repositories and the commit deployed on October 28, 2026, the day of the complete migration to microservices. The retired repositories, energy-monitor-backend (which keeps the ESP32 firmware in its firmware/ folder) and energy-monitor-devices, are kept as history.
+The system is reproducible from the project’s public repositories. Every component has a main production branch and a dev integration branch; pull requests go first to dev and from dev to main. Table A1 lists the active repositories and the main commit as of October 28, 2026, the day of the complete migration to microservices; those marked “deployment to be confirmed” are already in main but their deployment on the server had not been confirmed at the close. The retired repositories, energy-monitor-backend (which keeps the ESP32 firmware in its firmware/ folder) and energy-monitor-devices, are kept as history.
 
 **Table A1**
 
-*Active repositories and production commit*
+*Active repositories and main commit as of October 28, 2026*
 
 | Component and repository | Commit | Production status |
 |---|---|---|
 | API gateway (en-monitor-api-gateway) | `0b2c164` | Deployed |
-| Device service (energy-monitor-devices-service) | `f1d5026` | Deployed |
-| Measurement service (energy-monitor-measurements-service) | `f9d401a` | Deployed |
-| Alert service (energy-monitor-alerts-service) | `3df0c90` | Deployed |
-| Home service (energy-monitor-homes-service) | `a5c7e23` | Deployed |
-| Notification service (energy-monitor-notifications-service) | `5070d3c` | Deployed |
-| Recommendation service (energy-monitor-recommendations-service) | `0616204` | Deployed |
-| Web application (energy-monitor-web) | `2052230` | Deployed |
-| Infrastructure (energy-monitor-infra) | `3f4f7f8` | Deployed |
-| Mobile application (Energy-Monitor-Mobile) | `894b65a` on main; `1e4109b` on dev | Not applicable; not deployed on the server |
+| Security service (en-monitor-security-service) | `de52c95` | In main; deployment to be confirmed |
+| Device service (en-monitor-device-service) | `06c1bdc` | Deployed |
+| Measurement service (en-monitor-measurement-service) | `8a9b544` | Deployed |
+| Home service (en-monitor-home-service) | `6a4e396` | In main; deployment to be confirmed |
+| Notification service (en-monitor-notification-service) | `ecdbc0a` | In main; deployment to be confirmed |
+| Alert service (en-monitor-alert-service) | `0e65430` | In main; deployment to be confirmed |
+| Recommendation service (en-monitor-recommendation-service) | `aeeeec5` | Deployed |
+| Web application (Energy-Monitor-application) | `27ad9f0` | In main; deployment to be confirmed |
+| Infrastructure (energy-monitor-infra) | `ceb1543` | Deployed |
+| Mobile application (Energy-Monitor-Mobile) | `894b65a` on main; `8b5edc0` on dev | Not applicable; not deployed on the server |
 
 To repeat the verification, each backend repository runs its tests with mvn test inside its own pipeline job; the web runs npm test with Vitest and the mobile npx jest. The end-to-end flows live in the e2e/ directory of energy-monitor-infra and are launched with Bash against a stack raised with Docker Compose. Repeating the production measurements requires just two command-line tools: curl with timing options for the landing page and the API, and openssl s_client against mqtt.energy-monitor.tech:8883 to check the TLS handshake. The values reported here correspond to the public environment at energy-monitor.tech on the date indicated above.
 

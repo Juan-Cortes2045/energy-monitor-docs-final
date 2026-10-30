@@ -13,8 +13,8 @@ _Sistema de monitoreo de consumo eléctrico para el hogar — aplicación web y 
 | **Instructor**            | Karol Dayana Correa                                                                                             |
 | **Ficha**                 | 3145556                                                                                                         |
 | **Centro de formación**   | SENA Industria – Neiva                                                                                          |
-| **Fecha**                 | 27 de octubre de 2026                                                                                           |
-| **Versión del documento** | 3.0                                                                                                             |
+| **Fecha**                 | 29 de octubre de 2026                                                                                           |
+| **Versión del documento** | 3.2                                                                                                             |
 
 # **Control de versiones**
 
@@ -23,6 +23,8 @@ _Sistema de monitoreo de consumo eléctrico para el hogar — aplicación web y 
 | 1.0         | 09/07/2026 | Creación inicial del manual de usuario de EnergyMonitor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 | 2.0         | 23/07/2026 | Manuales separados de la aplicación web y de la aplicación móvil, con hogares, roles, consumo, historial, dispositivos, umbrales, favoritos y notificaciones.                                                                                                                                                                                                                                                                                                                                                                                                    | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 | 3.0         | 27/10/2026 | Manual único para web y móvil, con las diferencias de cada plataforma marcadas. Se agregan el rol de administrador y sus pantallas web, la aceptación de los términos y la política de privacidad, las notificaciones de actividad, la transferencia de propiedad, el cambio de red Wi-Fi de un dispositivo, el borrado de cuenta con código para cuentas de Google y los cambios de la app móvil (sesión segura, accesibilidad, títulos de página). Se retira la invitación de miembros por correo, que no existe: la unión a un hogar es por código de acceso. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
+| 3.1         | 28/10/2026 | Se documentan el centro de ayuda de Ajustes (documentación por rol, soporte y novedades), las fotos de los miembros y el visor de fotos, la alerta de consumo inusual y el aviso de notificaciones en Brave. Se marcan las capturas pendientes. |
+| 3.2         | 29/10/2026 | Se reemplazan las capturas pendientes por las capturas actuales de ambas aplicaciones (web: image-29 a image-41; móvil: jpeg) y se sincronizan las referencias entre los dos idiomas. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 
 # **Tabla de contenido**
 
@@ -516,7 +518,7 @@ _Historial (móvil)_
 
 **Resultado esperado:** El responsable mantiene la lista de miembros al día; tras una transferencia, el nuevo responsable gestiona el hogar y quien transfirió queda como miembro («Ahora "nombre" es el responsable del hogar.»).
 
-**Observaciones:** Si el hogar solo tiene al responsable, la pantalla invita a compartir el código de acceso. Los dispositivos, los umbrales y el historial no cambian con la transferencia. Quien es quitado y los demás miembros reciben una notificación de actividad.
+**Observaciones:** Si el hogar solo tiene al responsable, la pantalla invita a compartir el código de acceso. Los dispositivos, los umbrales y el historial no cambian con la transferencia. Quien es quitado y los demás miembros reciben una notificación de actividad. **Web:** cada miembro se muestra con su foto de perfil (si la tiene) y al tocarla se abre en un visor dentro de la página, con las iniciales como respaldo. **Móvil:** por ahora se muestran solo las iniciales.
 
 ![alt text](../../assets/Web/image-16.png)
 
@@ -739,7 +741,7 @@ _Favoritos (móvil)_
 
 **Resultado esperado:** El usuario se entera a tiempo de lo que pasa en sus hogares y lo atiende.
 
-**Observaciones:** Las alertas y recomendaciones también pueden llegar por correo y como notificación push, según la configuración (sección 12). La actividad siempre aparece en la bandeja.
+**Observaciones:** Las alertas y recomendaciones también pueden llegar por correo y como notificación push, según la configuración (sección 12). La actividad siempre aparece en la bandeja. **Consumo inusual:** si un aparato consume mucho más de lo habitual (al menos 200 W y 2,5 veces su promedio por hora de los últimos 7 días, con al menos 24 horas de historial), el hogar recibe una alerta de tipo umbral que se resuelve sola cuando el consumo se normaliza. **Móvil:** la alerta llega, pero con el texto genérico de umbral; el texto específico está pendiente.
 
 ![alt text](../../assets/Web/image-28.png)
 
@@ -782,6 +784,7 @@ _Pestaña Actividad con filtro por hogar (móvil)_
 - **Web:** el tema se guarda en ese navegador; el push llega a ese navegador aunque la pestaña esté cerrada. Si el navegador bloqueó las notificaciones, se activan desde el candado de la barra de direcciones. En iPhone hay que instalar la web en la pantalla de inicio.
 - **Móvil:** el push llega al teléfono y a los navegadores suscritos de la misma cuenta; si Android no tiene el permiso, la app lo indica.
 - Si el servidor no tiene configurado el push, la opción aparece como no disponible.
+- **Brave (web):** este navegador trae apagado el servicio de Google que entrega el push. Si al activarlo no funciona, la pantalla indica que hay que ir a brave://settings/privacy, activar «Usar servicios de Google para la mensajería push», reiniciar Brave y volver a activar el push.
 
 ![alt text](../../assets/Web/image-25.png)
 
@@ -790,6 +793,20 @@ _Configuración (web)_
 ![alt text](../../assets/Mobile/image-21.png)
 
 _Configuración (móvil)_
+
+### **12.1 Centro de ayuda**
+
+**[Solo web]** En la móvil las tarjetas se muestran, pero todavía no abren ninguna ventana.
+
+Debajo de las preferencias, Ajustes tiene tres tarjetas. Cada una abre una ventana que se cierra con **Cerrar**:
+
+| **Tarjeta**         | **Qué muestra**                                                                                                                                       | **Quién la ve**                                                         |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Documentación**   | Guías de uso y referencia de funciones según el rol de la cuenta: usuario o administrador.                                                            | Usuario y administrador                                                 |
+| **Soporte técnico** | Los administradores disponibles. Se elige a quién escribir y **Crear ticket** abre el correo con el asunto ya escrito; el equipo responde por correo. | Solo el usuario: el administrador atiende el soporte y no ve la tarjeta |
+| **Novedades**       | Las mejoras, nuevas funciones y correcciones agrupadas por fecha, con la versión y el commit que está en línea. Se generan solas en cada despliegue.  | Usuario y administrador                                                 |
+
+**Observación:** los títulos de las novedades salen en el idioma de los commits (inglés) aunque la interfaz esté en otro idioma.
 
 ## **13. Mi cuenta**
 
@@ -821,6 +838,7 @@ _Configuración (móvil)_
 - Si se cambia el correo, hay que verificar la nueva dirección con el código que llega a ella antes de volver a iniciar sesión.
 - No se puede eliminar la cuenta si se es el único responsable de un hogar que tiene otros miembros: primero hay que transferir la propiedad o quitar a los miembros. Los hogares sin otros miembros se eliminan con la cuenta.
 - **Móvil:** para elegir una foto, la app pide permiso a la galería.
+- Con **Ver foto** la imagen se abre en un visor dentro de la aplicación (en la web, dentro de la página y sin salir de ella).
 
 ![alt text](../../assets/Web/image-24.png)
 

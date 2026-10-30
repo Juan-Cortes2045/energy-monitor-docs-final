@@ -22,8 +22,8 @@ Ficha: 3145556
 | Programa             | Tecnología en Análisis y Desarrollo de Software (ADSO)                          |
 | Ficha                | 3145556                                                                         |
 | Tipo de documento    | Manual de instalación                                                           |
-| Versión              | 1.3                                                                             |
-| Fecha de elaboración | 07 de octubre de 2026 (actualización: 27 de octubre de 2026)                    |
+| Versión              | 1.4                                                                             |
+| Fecha de elaboración | 07 de octubre de 2026 (actualización: 28 de octubre de 2026)                    |
 
 Año 2026
 
@@ -37,7 +37,7 @@ El historial de cambios del presente manual se registra en la siguiente tabla. C
 | 1.1         | 13/10/2026 | Actualización al estado final: cinco piezas del sistema, variables de entorno completas, broker MQTT, firmware, vinculación del primer dispositivo, producción, aplicación móvil integrada con la API y verificaciones y soluciones ampliadas.   | Equipo desarrollador |
 | 1.2         | 24/10/2026 | Arquitectura de servicios: clonado de todos los repositorios (incluido `en-monitor-measurement-service`), infraestructura en `energy-monitor-infra` (pila completa y modo desarrollo con MySQL, RabbitMQ y Mosquitto), puertos 8080, 8082, 8083, 8084 y 8085, variables por servicio (`MQTT_DEVICE_SERVICE_*`, `MQTT_MEASUREMENT_SERVICE_*` en lugar de `MQTT_BACKEND_*`, `INTERNAL_API_TOKEN`, `RABBITMQ_*`, `MEASUREMENT_CONTEXT`), broker autenticado por el servicio de dispositivos, firmware en `energy-monitor-backend/firmware/`, verificaciones y soluciones actualizadas. | Equipo desarrollador |
 | 1.3         | 27/10/2026 | Migración terminada: siete microservicios (seguridad 8082, dispositivos 8084, mediciones 8085, hogares 8086, notificaciones 8087, alertas 8088 y recomendaciones 8089) detrás del gateway y backend retirado; clonado, `.env` por servicio, orden de arranque, interruptores de consumidores y relays, primer administrador con `make-admin.sh`, nuevas pruebas de punta a punta, verificaciones y soluciones actualizadas. | Equipo desarrollador |
-| 1.3         | 27/10/2026 | Migración terminada: siete microservicios (seguridad 8082, dispositivos 8084, mediciones 8085, hogares 8086, notificaciones 8087, alertas 8088 y recomendaciones 8089) detrás del gateway y backend retirado; clonado, `.env` por servicio, orden de arranque, interruptores de consumidores y relays, primer administrador con `make-admin.sh`, nuevas pruebas de punta a punta, verificaciones y soluciones actualizadas. | Equipo desarrollador |
+| 1.4         | 28/10/2026 | Alerta de consumo inusual en el servicio de alertas (sin variables ni pasos de instalación nuevos), fotos de perfil y de miembros, y centro de ayuda de Ajustes; la versión final se unifica en 1.4. | Equipo desarrollador |
 
 # 3. Tabla de contenido
 
