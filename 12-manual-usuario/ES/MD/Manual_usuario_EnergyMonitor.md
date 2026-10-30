@@ -4,25 +4,25 @@
 
 _Sistema de monitoreo de consumo eléctrico para el hogar — aplicación web y aplicación móvil_
 
-| **Campo**                 | **Detalle**                                                                                                  |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Proyecto**              | EnergyMonitor – Monitor de Consumo Eléctrico                                                                 |
-| **Tipo de documento**     | Manual de Usuario (web y móvil, documento único)                                                             |
+| **Campo**                 | **Detalle**                                                                                                     |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Proyecto**              | EnergyMonitor – Monitor de Consumo Eléctrico                                                                    |
+| **Tipo de documento**     | Manual de Usuario (web y móvil, documento único)                                                                |
 | **Integrantes**           | Juan Esteban Cortés Parra (Líder de proyecto / Gestor de BD); Miguel Ángel García Artunduaga (Analista / UX-UI) |
-| **Programa de formación** | Tecnólogo en Análisis y Desarrollo de Software (ADSO)                                                        |
-| **Instructor**            | Karol Dayana Correa                                                                                          |
-| **Ficha**                 | 3145556                                                                                                      |
-| **Centro de formación**   | SENA Industria – Neiva                                                                                       |
-| **Fecha**                 | 27 de octubre de 2026                                                                                        |
-| **Versión del documento** | 3.0                                                                                                          |
+| **Programa de formación** | Tecnólogo en Análisis y Desarrollo de Software (ADSO)                                                           |
+| **Instructor**            | Karol Dayana Correa                                                                                             |
+| **Ficha**                 | 3145556                                                                                                         |
+| **Centro de formación**   | SENA Industria – Neiva                                                                                          |
+| **Fecha**                 | 27 de octubre de 2026                                                                                           |
+| **Versión del documento** | 3.0                                                                                                             |
 
 # **Control de versiones**
 
-| **Versión** | **Fecha**  | **Descripción del cambio**                                                                                                                                                                                                                                                                              | **Responsable**                                                  |
-| ----------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| 1.0         | 09/07/2026 | Creación inicial del manual de usuario de EnergyMonitor.                                                                                                                                                                                                                                                | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga         |
-| 2.0         | 23/07/2026 | Manuales separados de la aplicación web y de la aplicación móvil, con hogares, roles, consumo, historial, dispositivos, umbrales, favoritos y notificaciones.                                                                                                                                           | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga         |
-| 3.0         | 27/10/2026 | Manual único para web y móvil, con las diferencias de cada plataforma marcadas. Se agregan el rol de administrador y sus pantallas web, la aceptación de los términos y la política de privacidad, las notificaciones de actividad, la transferencia de propiedad, el cambio de red Wi-Fi de un dispositivo, el borrado de cuenta con código para cuentas de Google y los cambios de la app móvil (sesión segura, accesibilidad, títulos de página). Se retira la invitación de miembros por correo, que no existe: la unión a un hogar es por código de acceso. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga         |
+| **Versión** | **Fecha**  | **Descripción del cambio**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | **Responsable**                                           |
+| ----------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 1.0         | 09/07/2026 | Creación inicial del manual de usuario de EnergyMonitor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
+| 2.0         | 23/07/2026 | Manuales separados de la aplicación web y de la aplicación móvil, con hogares, roles, consumo, historial, dispositivos, umbrales, favoritos y notificaciones.                                                                                                                                                                                                                                                                                                                                                                                                    | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
+| 3.0         | 27/10/2026 | Manual único para web y móvil, con las diferencias de cada plataforma marcadas. Se agregan el rol de administrador y sus pantallas web, la aceptación de los términos y la política de privacidad, las notificaciones de actividad, la transferencia de propiedad, el cambio de red Wi-Fi de un dispositivo, el borrado de cuenta con código para cuentas de Google y los cambios de la app móvil (sesión segura, accesibilidad, títulos de página). Se retira la invitación de miembros por correo, que no existe: la unión a un hogar es por código de acceso. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 
 # **Tabla de contenido**
 
@@ -71,13 +71,13 @@ No cubre la arquitectura interna, el código fuente ni la base de datos (están 
 
 # **Requisitos para usar el sistema**
 
-| **Requisito**              | **Aplicación web**                                                                                                      | **Aplicación móvil**                                                                 |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Equipo                     | Computador o celular con un navegador actualizado (Chrome, Edge, Firefox o Safari).                                     | Teléfono Android actualizado (la app no está disponible para iPhone).                |
-| Conexión                   | Internet estable.                                                                                                       | Internet estable.                                                                    |
-| Cuenta                     | Un correo electrónico válido o una cuenta de Google.                                                                    | La misma cuenta de la web.                                                           |
-| Vincular dispositivos      | Chrome o Edge en computador, o Chrome en Android, con Bluetooth y la web abierta por HTTPS. En otros navegadores se usa el portal Wi-Fi del módulo. | Bluetooth encendido y el permiso de Bluetooth concedido a la app.                    |
-| Notificaciones push        | Permiso de notificaciones del navegador (en iPhone, instalar la web en la pantalla de inicio).                          | Permiso de notificaciones de Android.                                                |
+| **Requisito**         | **Aplicación web**                                                                                                                                  | **Aplicación móvil**                                                  |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Equipo                | Computador o celular con un navegador actualizado (Chrome, Edge, Firefox o Safari).                                                                 | Teléfono Android actualizado (la app no está disponible para iPhone). |
+| Conexión              | Internet estable.                                                                                                                                   | Internet estable.                                                     |
+| Cuenta                | Un correo electrónico válido o una cuenta de Google.                                                                                                | La misma cuenta de la web.                                            |
+| Vincular dispositivos | Chrome o Edge en computador, o Chrome en Android, con Bluetooth y la web abierta por HTTPS. En otros navegadores se usa el portal Wi-Fi del módulo. | Bluetooth encendido y el permiso de Bluetooth concedido a la app.     |
+| Notificaciones push   | Permiso de notificaciones del navegador (en iPhone, instalar la web en la pantalla de inicio).                                                      | Permiso de notificaciones de Android.                                 |
 
 El módulo de medición (ESP32 + PZEM-004T V3) se instala aparte siguiendo el manual de instalación; aquí solo se explica cómo vincularlo a un hogar.
 
@@ -85,24 +85,24 @@ El módulo de medición (ESP32 + PZEM-004T V3) se instala aparte siguiendo el ma
 
 Cada pantalla se describe con la misma estructura: descripción, tabla con el rol que puede acceder, la ruta de acceso y los componentes, pasos para utilizarla, resultado esperado, observaciones y la imagen de referencia. Cada sección indica en qué plataforma está disponible:
 
-| **Etiqueta**            | **Significado**                                                              |
-| ----------------------- | ---------------------------------------------------------------------------- |
-| **[Web y móvil]**       | La pantalla existe en las dos aplicaciones y funciona igual.                 |
-| **[Solo web]**          | Solo existe en la aplicación web (por ejemplo, la landing page y la administración). |
-| **[Solo móvil]**        | Solo existe en la aplicación móvil (por ejemplo, el permiso de Bluetooth del teléfono). |
-| **Web:** / **Móvil:**   | Dentro de una sección común, señala una diferencia de presentación o de pasos. |
+| **Etiqueta**          | **Significado**                                                                         |
+| --------------------- | --------------------------------------------------------------------------------------- |
+| **[Web y móvil]**     | La pantalla existe en las dos aplicaciones y funciona igual.                            |
+| **[Solo web]**        | Solo existe en la aplicación web (por ejemplo, la landing page y la administración).    |
+| **[Solo móvil]**      | Solo existe en la aplicación móvil (por ejemplo, el permiso de Bluetooth del teléfono). |
+| **Web:** / **Móvil:** | Dentro de una sección común, señala una diferencia de presentación o de pasos.          |
 
-Las imágenes llevan el sufijo *(web)* o *(móvil)* según la aplicación de la que se tomaron.
+Las imágenes llevan el sufijo _(web)_ o _(móvil)_ según la aplicación de la que se tomaron.
 
 # **Roles del sistema**
 
-| **Rol**                     | **Quién es**                                                                                     | **Qué puede hacer**                                                                                                                                  |
-| --------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visitante                   | Persona sin sesión.                                                                              | Ver la landing page (web), registrarse, iniciar sesión y recuperar la contraseña.                                                                    |
-| Usuario                     | Cualquier cuenta verificada.                                                                     | Crear hogares, unirse a hogares con un código, marcar favoritos, ver sus notificaciones, configurar la app y gestionar su cuenta.                    |
-| Responsable del hogar (propietario) | Quien creó el hogar o recibió su propiedad. Cada hogar tiene uno solo.                    | Todo lo del miembro, más: ver y compartir el código de acceso, vincular, editar y eliminar dispositivos, cambiar los umbrales, quitar miembros, transferir la propiedad y eliminar el hogar. |
-| Miembro del hogar           | Quien se unió con el código de acceso.                                                           | Consultar el consumo, el historial, los miembros, los dispositivos, los umbrales y la información del hogar; recibir sus notificaciones; salirse del hogar. |
-| Administrador               | Cuenta con el rol global de administrador. **[Solo web]**                                        | Consultar el directorio de cuentas, cambiar su estado, dar o quitar el rol de administrador y revisar los avisos de administración. No ve hogares.   |
+| **Rol**                             | **Quién es**                                                           | **Qué puede hacer**                                                                                                                                                                          |
+| ----------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Visitante                           | Persona sin sesión.                                                    | Ver la landing page (web), registrarse, iniciar sesión y recuperar la contraseña.                                                                                                            |
+| Usuario                             | Cualquier cuenta verificada.                                           | Crear hogares, unirse a hogares con un código, marcar favoritos, ver sus notificaciones, configurar la app y gestionar su cuenta.                                                            |
+| Responsable del hogar (propietario) | Quien creó el hogar o recibió su propiedad. Cada hogar tiene uno solo. | Todo lo del miembro, más: ver y compartir el código de acceso, vincular, editar y eliminar dispositivos, cambiar los umbrales, quitar miembros, transferir la propiedad y eliminar el hogar. |
+| Miembro del hogar                   | Quien se unió con el código de acceso.                                 | Consultar el consumo, el historial, los miembros, los dispositivos, los umbrales y la información del hogar; recibir sus notificaciones; salirse del hogar.                                  |
+| Administrador                       | Cuenta con el rol global de administrador. **[Solo web]**              | Consultar el directorio de cuentas, cambiar su estado, dar o quitar el rol de administrador y revisar los avisos de administración. No ve hogares.                                           |
 
 Una misma persona puede ser responsable de un hogar y miembro de otro. El rol de administrador no da acceso a ningún hogar.
 
@@ -114,11 +114,11 @@ Una misma persona puede ser responsable de un hogar y miembro de otro. El rol de
 
 Las dos aplicaciones están en **español, inglés, francés y portugués**, tienen **cuatro temas** (dos claros y dos oscuros) y son compatibles con lectores de pantalla.
 
-![Menú lateral de la web](../../assets/Web/menu-lateral-web.png)
+![Menú lateral de la web](../../assets/Web/image-30.png)
 
 _Menú lateral (web)_
 
-![Menú lateral de la app](../../assets/Mobile/menu-lateral-movil.png)
+![Menú lateral de la app](../../assets/Mobile/image-26.jpeg)
 
 _Menú lateral (móvil)_
 
@@ -128,11 +128,11 @@ _Menú lateral (móvil)_
 
 **Descripción:** Es la puerta de entrada al sistema: la pantalla pública que cualquier persona puede ver sin tener una cuenta. Presenta de qué se trata EnergyMonitor y da acceso a Iniciar sesión o Registrarse.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Visitante (no requiere cuenta).                                                                                                                                                                                                                     |
-| **Ruta de acceso**             | URL principal del sistema (`/home`).                                                                                                                                                                                                                |
-| **Componentes de la pantalla** | Barra de navegación con los enlaces Inicio, Sobre nosotros y Soporte; selector de idioma; botón para cambiar a modo claro u oscuro; botones Iniciar sesión y Regístrate; secciones de bienvenida, Cómo funciona y Beneficios; pie de página.         |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Visitante (no requiere cuenta).                                                                                                                                                                                                              |
+| **Ruta de acceso**             | URL principal del sistema (`/home`).                                                                                                                                                                                                         |
+| **Componentes de la pantalla** | Barra de navegación con los enlaces Inicio, Sobre nosotros y Soporte; selector de idioma; botón para cambiar a modo claro u oscuro; botones Iniciar sesión y Regístrate; secciones de bienvenida, Cómo funciona y Beneficios; pie de página. |
 
 **Pasos para utilizarla:**
 
@@ -182,10 +182,10 @@ _Soporte (web)_
 
 **Descripción:** Formulario donde una persona nueva crea su cuenta con nombre, apellido, correo y contraseña, o con su cuenta de Google. La cuenta solo se crea cuando se verifica el correo (sección 3).
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                                               |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Visitante.                                                                                                                                                                                                                                                                                                |
-| **Ruta de acceso**             | **Web:** Landing page \> Regístrate (`/register`). **Móvil:** pantalla de inicio de sesión \> Regístrate.                                                                                                                                                                                                  |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Visitante.                                                                                                                                                                                                                                                                                                                                                                |
+| **Ruta de acceso**             | **Web:** Landing page \> Regístrate (`/register`). **Móvil:** pantalla de inicio de sesión \> Regístrate.                                                                                                                                                                                                                                                                 |
 | **Componentes de la pantalla** | Campos Nombre, Apellido (opcional), Correo electrónico, Contraseña y Repetir contraseña; ayuda permanente con las reglas de la contraseña; casilla «Estoy de acuerdo con los Términos de uso y la Política de privacidad», con enlaces que abren los textos en una ventana; botón Registrarse; botón Registrarse con Google; enlace ¿Ya tienes una cuenta? Inicia sesión. |
 
 **Pasos para utilizarla:**
@@ -211,7 +211,7 @@ _Soporte (web)_
 
 _Registro (web)_
 
-![Ventana de términos y política de privacidad](../../assets/Web/registro-terminos-modal.png)
+![Ventana de términos y política de privacidad](../../assets/Web/image-29.png)
 
 _Ventana de Términos de uso y Política de privacidad (web)_
 
@@ -219,7 +219,7 @@ _Ventana de Términos de uso y Política de privacidad (web)_
 
 _Registro (móvil)_
 
-![Ventana de términos en la app](../../assets/Mobile/registro-terminos-modal.png)
+![Ventana de términos en la app](../../assets/Mobile/image-25.jpeg)
 
 _Ventana de Términos de uso y Política de privacidad (móvil)_
 
@@ -229,10 +229,10 @@ _Ventana de Términos de uso y Política de privacidad (móvil)_
 
 **Descripción:** Pantalla que confirma que el correo usado en el registro es real. Al escribir el código de 6 dígitos se crea la cuenta.
 
-| **Campo**                      | **Detalle**                                                                                                                         |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Persona que acaba de registrarse (o que inició sesión sin haber verificado su correo).                                              |
-| **Ruta de acceso**             | Se abre automáticamente al terminar el registro.                                                                                    |
+| **Campo**                      | **Detalle**                                                                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Rol que puede acceder**      | Persona que acaba de registrarse (o que inició sesión sin haber verificado su correo).                                               |
+| **Ruta de acceso**             | Se abre automáticamente al terminar el registro.                                                                                     |
 | **Componentes de la pantalla** | Seis casillas para el código; enlace ¿No te llegó el código? para reenviarlo (con una espera entre envíos); enlace a Iniciar sesión. |
 
 **Pasos para utilizarla:**
@@ -261,10 +261,10 @@ _Verificación de cuenta (móvil)_
 
 **Descripción:** Formulario para entrar con una cuenta verificada, con correo y contraseña o con Google.
 
-| **Campo**                      | **Detalle**                                                                                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Visitante con una cuenta.                                                                                                                           |
-| **Ruta de acceso**             | **Web:** Landing page \> Iniciar sesión (`/login`). **Móvil:** primera pantalla de la app.                                                          |
+| **Campo**                      | **Detalle**                                                                                                                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Visitante con una cuenta.                                                                                                                                                                         |
+| **Ruta de acceso**             | **Web:** Landing page \> Iniciar sesión (`/login`). **Móvil:** primera pantalla de la app.                                                                                                        |
 | **Componentes de la pantalla** | Campos Correo electrónico y Contraseña (con botón para mostrarla u ocultarla); enlace ¿Olvidaste tu contraseña?; botón Iniciar sesión; botón de Google; enlace ¿No tienes una cuenta? Regístrate. |
 
 **Pasos para utilizarla:**
@@ -296,10 +296,10 @@ _Inicio de sesión (móvil)_
 
 **Descripción:** Permite definir una contraseña nueva cuando se olvidó la actual, con un código de 6 dígitos enviado por correo.
 
-| **Campo**                      | **Detalle**                                                                                                                      |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Visitante con una cuenta.                                                                                                        |
-| **Ruta de acceso**             | Inicio de sesión \> ¿Olvidaste tu contraseña?                                                                                    |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Visitante con una cuenta.                                                                                                                                                                                                     |
+| **Ruta de acceso**             | Inicio de sesión \> ¿Olvidaste tu contraseña?                                                                                                                                                                                 |
 | **Componentes de la pantalla** | Paso 1: campo Correo y botón para enviar el código. Paso 2: casillas del código. Paso 3: Nueva contraseña y Repetir contraseña, con la ayuda de las reglas. **Móvil:** el paso 3 es una pantalla propia («Nueva contraseña»). |
 
 **Pasos para utilizarla:**
@@ -336,10 +336,10 @@ _Verificación para recuperación (móvil)_
 
 **Descripción:** Es la pantalla principal tras iniciar sesión. Muestra las tarjetas de los hogares del usuario, o una invitación a crear o unirse al primero.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                       |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Usuario (no administrador).                                                                                                                                                                       |
-| **Ruta de acceso**             | Se abre tras el inicio de sesión; también desde **Inicio** en el menú lateral.                                                                                                                    |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Usuario (no administrador).                                                                                                                                                                                                                       |
+| **Ruta de acceso**             | Se abre tras el inicio de sesión; también desde **Inicio** en el menú lateral.                                                                                                                                                                    |
 | **Componentes de la pantalla** | Tarjetas de hogar con el nombre, el tipo, el rol del usuario (Responsable o Miembro) y el botón de corazón para marcarlo como favorito; botón **+** para Crear hogar o Unirse a hogar; estado vacío con los mismos botones cuando no hay hogares. |
 
 **Pasos para utilizarla:**
@@ -376,10 +376,10 @@ _Panel con hogares (móvil)_
 
 **Descripción:** Formulario para registrar un hogar nuevo. Quien lo crea queda como su responsable.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                                         |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Usuario.                                                                                                                                                                                                                            |
-| **Ruta de acceso**             | Panel de hogares \> botón **+** \> Crear hogar, o el botón del estado vacío.                                                                                                                                                       |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                            |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Usuario.                                                                                                                                                                                                                                                                               |
+| **Ruta de acceso**             | Panel de hogares \> botón **+** \> Crear hogar, o el botón del estado vacío.                                                                                                                                                                                                           |
 | **Componentes de la pantalla** | Campos Nombre del hogar (máximo 50 caracteres), Tipo de hogar (Casa, Apartamento, Aparta estudio, Casa de campo, Cabaña u Otro; con Otro se pide «¿Cuál?»), Dirección (máximo 200 caracteres, por ejemplo «Cra. 15 # 93-47») y Descripción (opcional); botones Cancelar y Crear hogar. |
 
 **Pasos para utilizarla:**
@@ -408,10 +408,10 @@ _Crear hogar (móvil)_
 
 **Descripción:** Permite entrar como miembro a un hogar existente con el código de acceso que comparte su responsable. **Es la única forma de agregar personas a un hogar:** el sistema no envía invitaciones por correo.
 
-| **Campo**                      | **Detalle**                                                                                                         |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Usuario.                                                                                                            |
-| **Ruta de acceso**             | Panel de hogares \> botón **+** \> Unirse a hogar, o el botón del estado vacío.                                    |
+| **Campo**                      | **Detalle**                                                                                                                 |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Usuario.                                                                                                                    |
+| **Ruta de acceso**             | Panel de hogares \> botón **+** \> Unirse a hogar, o el botón del estado vacío.                                             |
 | **Componentes de la pantalla** | Campo Código de acceso (8 caracteres entre letras mayúsculas y números, por ejemplo `AB12CD34`); botones Cancelar y Unirme. |
 
 **Pasos para utilizarla:**
@@ -440,10 +440,10 @@ _Unirse a un hogar (móvil)_
 
 **Descripción:** Pestaña que se abre por defecto. Muestra el consumo casi en tiempo real.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                                             |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Responsable y miembros del hogar.                                                                                                                                                                                                       |
-| **Ruta de acceso**             | Panel \> tarjeta del hogar \> Consumo.                                                                                                                                                                                                  |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Responsable y miembros del hogar.                                                                                                                                                                                                                                                |
+| **Ruta de acceso**             | Panel \> tarjeta del hogar \> Consumo.                                                                                                                                                                                                                                           |
 | **Componentes de la pantalla** | Indicadores de potencia actual, consumo de hoy, dispositivos (todos operativos o cuántos desconectados) y nivel de consumo (Bajo, Medio, Alto o Crítico); límite actual; gráfica de las últimas 24 horas (potencia activa en kW); distribución actual y consumo por dispositivo. |
 
 **Pasos para utilizarla:**
@@ -468,10 +468,10 @@ _Consumo (móvil)_
 
 **Descripción:** Muestra el consumo del hogar a lo largo del tiempo.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                                                     |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Responsable y miembros del hogar.                                                                                                                                                                                                               |
-| **Ruta de acceso**             | Detalle del hogar \> Historial.                                                                                                                                                                                                                 |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Responsable y miembros del hogar.                                                                                                                                                                                                                                                                                                                   |
+| **Ruta de acceso**             | Detalle del hogar \> Historial.                                                                                                                                                                                                                                                                                                                     |
 | **Componentes de la pantalla** | Selector de periodo (Día, Semana, Mes, Año); intervalo dentro del periodo (franjas de 6 horas en Día, semanas en Mes, trimestres en Año, o Todo); gráfica de consumo por hora, día o mes por tipo de dispositivo; resumen del periodo (consumo total, mayor consumidor y variación frente al periodo anterior); ranking de consumo por dispositivo. |
 
 **Pasos para utilizarla:**
@@ -490,7 +490,7 @@ _Consumo (móvil)_
 
 _Historial (web)_
 
-![alt text](../../assets/Mobile/image-11.png)
+![alt text](../../assets/Mobile/image-11.jpeg)
 
 _Historial (móvil)_
 
@@ -498,10 +498,10 @@ _Historial (móvil)_
 
 **Descripción:** Lista quién pertenece al hogar y su rol.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Responsable y miembros (las acciones solo para el responsable).                                                                                                            |
-| **Ruta de acceso**             | Detalle del hogar \> Usuarios.                                                                                                                                             |
+| **Campo**                      | **Detalle**                                                                                                                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Rol que puede acceder**      | Responsable y miembros (las acciones solo para el responsable).                                                                                                                                  |
+| **Ruta de acceso**             | Detalle del hogar \> Usuarios.                                                                                                                                                                   |
 | **Componentes de la pantalla** | Número de miembros; lista con nombre, correo y rol (Responsable o Miembro), con la marca «Tú» en la cuenta propia. **Responsable:** botones para quitar a un miembro y para hacerlo responsable. |
 
 **Pasos para utilizarla (responsable):**
@@ -526,11 +526,11 @@ _Usuarios, vista del responsable (web)_
 
 _Usuarios, vista del miembro (web)_
 
-![Confirmación de transferencia de propiedad](../../assets/Web/usuarios-transferir-propiedad.png)
+![Confirmación de transferencia de propiedad](../../assets/Web/image-31.png)
 
 _Confirmación de la transferencia de propiedad (web)_
 
-![alt text](../../assets/Mobile/image-12.png)
+![alt text](../../assets/Mobile/image-12.jpeg)
 
 _Usuarios, vista del responsable (móvil)_
 
@@ -542,10 +542,10 @@ _Usuarios, vista del miembro (móvil)_
 
 **Descripción:** Lista los módulos de medición vinculados al hogar con su estado, y permite al responsable vincular, editar, cambiar la red Wi-Fi o eliminar un módulo.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                                              |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Responsable y miembros (las acciones solo para el responsable).                                                                                                                                                                          |
-| **Ruta de acceso**             | Detalle del hogar \> Dispositivos.                                                                                                                                                                                                       |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Rol que puede acceder**      | Responsable y miembros (las acciones solo para el responsable).                                                                                                                                                                                                    |
+| **Ruta de acceso**             | Detalle del hogar \> Dispositivos.                                                                                                                                                                                                                                 |
 | **Componentes de la pantalla** | Encabezado «X de Y dispositivos en línea»; tarjetas con el nombre, el electrodoméstico, la ubicación y el estado (En línea, Desconectado o Comprobando…). **Responsable:** botón Vincular dispositivo y, en cada tarjeta, Editar, Cambiar la red Wi-Fi y Eliminar. |
 
 **Vincular un dispositivo (responsable):**
@@ -581,19 +581,19 @@ _Dispositivos, vista del responsable (web)_
 
 _Dispositivos, vista del miembro (web)_
 
-![Asistente de vinculación en la web](../../assets/Web/vincular-dispositivo-bluetooth.png)
+![Asistente de vinculación en la web](../../assets/Web/image-32.png)
 
 _Asistente «Vincular dispositivo», paso Encuentra tu módulo (web)_
 
-![alt text](../../assets/Mobile/image-14.png)
+![alt text](../../assets/Mobile/image-14.jpeg)
 
 _Dispositivos, vista del responsable (móvil)_
 
-![alt text](../../assets/Mobile/image-15.png)
+![alt text](../../assets/Mobile/image-15.jpeg)
 
 _Dispositivos, vista del miembro (móvil)_
 
-![Búsqueda de módulos por Bluetooth en la app](../../assets/Mobile/vincular-dispositivo-bluetooth.png)
+![Búsqueda de módulos por Bluetooth en la app](../../assets/Mobile/image-27.jpeg)
 
 _Búsqueda del módulo por Bluetooth y lista de módulos encontrados (móvil)_
 
@@ -601,10 +601,10 @@ _Búsqueda del módulo por Bluetooth y lista de módulos encontrados (móvil)_
 
 **Descripción:** Define el límite de consumo del hogar con el que se generan las alertas de límite y algunas recomendaciones.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                       |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Responsable (edita) y miembros (solo consultan).                                                                                                                                                                  |
-| **Ruta de acceso**             | Detalle del hogar \> Umbrales.                                                                                                                                                                                    |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Rol que puede acceder**      | Responsable (edita) y miembros (solo consultan).                                                                                                                                                                                                       |
+| **Ruta de acceso**             | Detalle del hogar \> Umbrales.                                                                                                                                                                                                                         |
 | **Componentes de la pantalla** | Interruptor «Usar los umbrales por defecto del sistema» (6 kWh por día y 180 kWh por mes); selector «Configurar por» Diario o Mensual; campos Límite diario y Límite mensual (el que no se configura aparece como «Calculado»); botón Guardar cambios. |
 
 **Pasos para utilizarla (responsable):**
@@ -641,10 +641,10 @@ _Umbrales, vista del miembro (móvil)_
 
 **Descripción:** Reúne la información del hogar, el usuario responsable y, para el responsable, el código de acceso.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                 |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Responsable y miembros.                                                                                                                                                                                     |
-| **Ruta de acceso**             | Detalle del hogar \> Hogar.                                                                                                                                                                                 |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Responsable y miembros.                                                                                                                                                                                                                     |
+| **Ruta de acceso**             | Detalle del hogar \> Hogar.                                                                                                                                                                                                                 |
 | **Componentes de la pantalla** | Información del hogar (nombre, tipo, dirección, descripción y fecha de creación); usuario responsable con su correo. **Responsable:** código de acceso con el botón Copiar y el botón Eliminar hogar. **Miembro:** botón Salirse del hogar. |
 
 **Pasos para utilizarla:**
@@ -669,15 +669,15 @@ _Hogar, vista del responsable (web)_
 
 _Hogar, vista del miembro (web)_
 
-![Confirmación para eliminar el hogar](../../assets/Web/hogar-eliminar-confirmacion.png)
+![Confirmación para eliminar el hogar](../../assets/Web/image-33.png)
 
 _Confirmación «Eliminar hogar» con el nombre escrito (web)_
 
-![alt text](../../assets/Mobile/image-18.png)
+![alt text](../../assets/Mobile/image-18.jpeg)
 
 _Hogar, vista del responsable (móvil)_
 
-![alt text](../../assets/Mobile/image-19.png)
+![alt text](../../assets/Mobile/image-19.jpeg)
 
 _Hogar, vista del miembro (móvil)_
 
@@ -687,10 +687,10 @@ _Hogar, vista del miembro (móvil)_
 
 **Descripción:** Acceso rápido a los hogares que se consultan con más frecuencia.
 
-| **Campo**                      | **Detalle**                                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Usuario (no administrador).                                                                         |
-| **Ruta de acceso**             | Menú lateral \> Favoritos.                                                                          |
+| **Campo**                      | **Detalle**                                                                                                                                           |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Usuario (no administrador).                                                                                                                           |
+| **Ruta de acceso**             | Menú lateral \> Favoritos.                                                                                                                            |
 | **Componentes de la pantalla** | Tarjetas de los hogares marcados con el corazón, o un estado vacío si no hay ninguno; indicador de carga y mensaje de error con opción de reintentar. |
 
 **Pasos para utilizarla:**
@@ -715,19 +715,19 @@ _Favoritos (móvil)_
 
 **Descripción:** Reúne las alertas, las recomendaciones de ahorro y la actividad de la cuenta y de sus hogares.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                                     |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Usuario. (Para el administrador, esta opción muestra los avisos de administración: sección 15.5.)                                                                                                                                                                                              |
-| **Ruta de acceso**             | Menú lateral \> Notificaciones (muestra el número de pendientes).                                                                                                                                                                                                                              |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Rol que puede acceder**      | Usuario. (Para el administrador, esta opción muestra los avisos de administración: sección 15.5.)                                                                                                                                                                                                                                          |
+| **Ruta de acceso**             | Menú lateral \> Notificaciones (muestra el número de pendientes).                                                                                                                                                                                                                                                                          |
 | **Componentes de la pantalla** | Pestañas **Todas**, **Alertas**, **Recomendaciones** y **Actividad**, cada una con su contador; filtro por hogar (Todos, Mi cuenta o un hogar); Marcar todas como leídas; botón para eliminar las resueltas o leídas; tarjetas con icono, título, mensaje, hogar, dispositivo, fecha, estado (Nueva, Activa, Resuelta o Leída) y acciones. |
 
 **Qué llega a cada pestaña:**
 
-| **Pestaña**         | **Contenido**                                                                                                                                                                                                                                       |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Alertas             | Consumo alto o crítico de un dispositivo; límite diario o mensual alcanzado; dispositivo desconectado; nuevo dispositivo vinculado y enviando mediciones. Las de consumo y conexión se resuelven solas cuando la situación se normaliza.          |
-| Recomendaciones     | Consejos generados cada hora: concentrar menos consumo en la hora punta (18:00–22:00), apagar un equipo que consume de madrugada, consumo de la semana muy por encima de la anterior, ritmo que superará el límite del hogar y equipo que consume más que antes. El mismo consejo no se repite en 7 días. |
-| Actividad           | Bienvenida a la cuenta; hogar creado; alguien se unió, salió o fue quitado; umbrales cambiados; propiedad transferida; hogar eliminado; dispositivo vinculado o desvinculado. Se leen en el idioma elegido, aunque el hogar ya no exista.        |
+| **Pestaña**     | **Contenido**                                                                                                                                                                                                                                                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Alertas         | Consumo alto o crítico de un dispositivo; límite diario o mensual alcanzado; dispositivo desconectado; nuevo dispositivo vinculado y enviando mediciones. Las de consumo y conexión se resuelven solas cuando la situación se normaliza.                                                                  |
+| Recomendaciones | Consejos generados cada hora: concentrar menos consumo en la hora punta (18:00–22:00), apagar un equipo que consume de madrugada, consumo de la semana muy por encima de la anterior, ritmo que superará el límite del hogar y equipo que consume más que antes. El mismo consejo no se repite en 7 días. |
+| Actividad       | Bienvenida a la cuenta; hogar creado; alguien se unió, salió o fue quitado; umbrales cambiados; propiedad transferida; hogar eliminado; dispositivo vinculado o desvinculado. Se leen en el idioma elegido, aunque el hogar ya no exista.                                                                 |
 
 **Pasos para utilizarla:**
 
@@ -743,17 +743,15 @@ _Favoritos (móvil)_
 
 ![alt text](../../assets/Web/image-28.png)
 
-_Notificaciones (web)_
-
-![Pestaña Actividad con filtro por hogar](../../assets/Web/notificaciones-actividad.png)
+![Pestaña Actividad con filtro por hogar](../../assets/Web/image-34.png)
 
 _Pestaña Actividad con filtro por hogar (web)_
 
-![alt text](../../assets/Mobile/image-24.png)
+![alt text](../../assets/Mobile/image-24.jpeg)
 
 _Notificaciones (móvil)_
 
-![Pestaña Actividad en la app](../../assets/Mobile/notificaciones-actividad.png)
+![Pestaña Actividad en la app](../../assets/Mobile/image-28.jpeg)
 
 _Pestaña Actividad con filtro por hogar (móvil)_
 
@@ -763,10 +761,10 @@ _Pestaña Actividad con filtro por hogar (móvil)_
 
 **Descripción:** Preferencias de idioma, tema y notificaciones, y centro de ayuda.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                 |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Usuario y administrador (el administrador no ve la sección de notificaciones).                                                                                                                                                                                              |
-| **Ruta de acceso**             | Menú lateral \> Ajustes. **Móvil:** la pantalla tiene el título «Ajustes».                                                                                                                                                                                                 |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Usuario y administrador (el administrador no ve la sección de notificaciones).                                                                                                                                                                                                                                                                                |
+| **Ruta de acceso**             | Menú lateral \> Ajustes. **Móvil:** la pantalla tiene el título «Ajustes».                                                                                                                                                                                                                                                                                    |
 | **Componentes de la pantalla** | **Idioma del sistema:** Español, English, Português o Français. **Temas del sistema:** Claro · Predeterminado, Claro · Tema 2, Oscuro · Tema 1 y Oscuro · Tema 2. **Notificaciones:** Correo electrónico, Notificaciones push y Modo combinado (los dos a la vez). **Centro de ayuda:** Documentación, Soporte técnico y Novedades (marcados «Próximamente»). |
 
 **Pasos para utilizarla:**
@@ -799,10 +797,10 @@ _Configuración (móvil)_
 
 **Descripción:** Datos personales de la cuenta, foto, contraseña y eliminación de la cuenta.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                           |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Usuario y administrador.                                                                                                                                                                              |
-| **Ruta de acceso**             | **Web:** perfil (parte inferior del menú lateral) \> Mi cuenta (`/account`). **Móvil:** menú lateral \> Mi cuenta; la pantalla tiene el título «Mi cuenta».                                         |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Usuario y administrador.                                                                                                                                                                                          |
+| **Ruta de acceso**             | **Web:** perfil (parte inferior del menú lateral) \> Mi cuenta (`/account`). **Móvil:** menú lateral \> Mi cuenta; la pantalla tiene el título «Mi cuenta».                                                       |
 | **Componentes de la pantalla** | Foto de perfil con las opciones Agregar, Ver y Eliminar foto; campos Nombre, Apellido y Correo, cada uno con su botón Editar; Contraseña con Cambiar contraseña; ¿Deseas eliminar tu cuenta? con Eliminar cuenta. |
 
 **Pasos para utilizarla:**
@@ -828,11 +826,11 @@ _Configuración (móvil)_
 
 _Mi cuenta (web)_
 
-![Eliminar cuenta de Google con código](../../assets/Web/cuenta-eliminar-google-codigo.png)
+![Eliminar cuenta de Google con código](../../assets/Web/image-35.png)
 
 _Eliminar una cuenta de Google con código (web)_
 
-![alt text](../../assets/Mobile/image-20.png)
+![alt text](../../assets/Mobile/image-20.jpeg)
 
 _Mi cuenta (móvil)_
 
@@ -842,11 +840,11 @@ _Mi cuenta (móvil)_
 
 **Descripción:** Sale del sistema de forma segura.
 
-| **Campo**                      | **Detalle**                                                                                       |
-| ------------------------------ | ------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Usuario y administrador.                                                                          |
+| **Campo**                      | **Detalle**                                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Usuario y administrador.                                                                                          |
 | **Ruta de acceso**             | **Web:** perfil en la parte inferior del menú lateral \> Cerrar sesión. **Móvil:** menú lateral \> Cerrar sesión. |
-| **Componentes de la pantalla** | Opción Cerrar sesión.                                                                             |
+| **Componentes de la pantalla** | Opción Cerrar sesión.                                                                                             |
 
 **Pasos para utilizarla:**
 
@@ -860,7 +858,7 @@ _Mi cuenta (móvil)_
 
 _Cerrar sesión (web)_
 
-![alt text](../../assets/Mobile/image-22.png)
+![alt text](../../assets/Mobile/image-22.jpeg)
 
 _Cerrar sesión (móvil)_
 
@@ -872,7 +870,7 @@ _Cerrar sesión (móvil)_
 
 Una cuenta con el rol de administrador que inicia sesión en la web entra directamente a **Administración**. Su menú lateral muestra solo **Administración**, **Notificaciones** y **Ajustes**, más Mi cuenta y Cerrar sesión. Las pantallas de hogares (panel, detalle del hogar y favoritos) no están disponibles para esta cuenta: si intenta abrirlas, la aplicación la devuelve a la administración. Una cuenta sin permiso que intenta abrir la administración vuelve a su panel de hogares.
 
-![Menú lateral del administrador](../../assets/Web/admin-menu.png)
+![Menú lateral del administrador](../../assets/Web/image-36.png)
 
 _Menú lateral de una cuenta administradora (web)_
 
@@ -880,10 +878,10 @@ _Menú lateral de una cuenta administradora (web)_
 
 **Descripción:** Directorio de las cuentas de la plataforma.
 
-| **Campo**                      | **Detalle**                                                                                                                                                                                                                                     |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Administrador.                                                                                                                                                                                                                                  |
-| **Ruta de acceso**             | Menú lateral \> Administración (`/admin/users`).                                                                                                                                                                                                |
+| **Campo**                      | **Detalle**                                                                                                                                                                                                                                                                         |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Administrador.                                                                                                                                                                                                                                                                      |
+| **Ruta de acceso**             | Menú lateral \> Administración (`/admin/users`).                                                                                                                                                                                                                                    |
 | **Componentes de la pantalla** | Título «Usuarios de la plataforma»; buscador por nombre o correo con el botón Buscar; tabla con las columnas Usuario (nombre, correo y la marca «Tú»), Estado, Roles globales (o «Sin roles») con el botón de escudo, Registro y Último acceso (o «Nunca»); paginación de 20 en 20. |
 
 **Pasos para utilizarla:**
@@ -896,7 +894,7 @@ _Menú lateral de una cuenta administradora (web)_
 
 **Resultado esperado:** El administrador encuentra cualquier cuenta y ve su estado y roles.
 
-![Directorio de usuarios](../../assets/Web/admin-usuarios.png)
+![Directorio de usuarios](../../assets/Web/image-37.png)
 
 _Usuarios de la plataforma (web)_
 
@@ -904,11 +902,11 @@ _Usuarios de la plataforma (web)_
 
 **Descripción:** Activa, desactiva o bloquea una cuenta.
 
-| **Campo**                      | **Detalle**                                                                           |
-| ------------------------------ | ------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Administrador con el permiso de gestión de cuentas.                                   |
-| **Ruta de acceso**             | Usuarios de la plataforma \> columna Estado de la cuenta.                             |
-| **Componentes de la pantalla** | Selector con Activa, Inactiva y Bloqueada; ventana de confirmación.                  |
+| **Campo**                      | **Detalle**                                                         |
+| ------------------------------ | ------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Administrador con el permiso de gestión de cuentas.                 |
+| **Ruta de acceso**             | Usuarios de la plataforma \> columna Estado de la cuenta.           |
+| **Componentes de la pantalla** | Selector con Activa, Inactiva y Bloqueada; ventana de confirmación. |
 
 **Pasos para utilizarla:**
 
@@ -920,7 +918,7 @@ _Usuarios de la plataforma (web)_
 
 **Observaciones:** La sesión que la cuenta ya tenía abierta puede seguir hasta 15 minutos, pero no se renueva.
 
-![Confirmación de cambio de estado](../../assets/Web/admin-confirmar-estado.png)
+![Confirmación de cambio de estado](../../assets/Web/image-38.png)
 
 _Confirmación «Cambiar el estado de la cuenta» (web)_
 
@@ -928,11 +926,11 @@ _Confirmación «Cambiar el estado de la cuenta» (web)_
 
 **Descripción:** Convierte una cuenta en administradora o le retira el rol.
 
-| **Campo**                      | **Detalle**                                                                                             |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Administrador con el permiso de gestión de roles.                                                       |
-| **Ruta de acceso**             | Usuarios de la plataforma \> botón de escudo en la columna Roles globales.                               |
-| **Componentes de la pantalla** | Botón «Hacer administrador a …» o «Quitar el rol de administrador a …»; ventana de confirmación.        |
+| **Campo**                      | **Detalle**                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| **Rol que puede acceder**      | Administrador con el permiso de gestión de roles.                                                |
+| **Ruta de acceso**             | Usuarios de la plataforma \> botón de escudo en la columna Roles globales.                       |
+| **Componentes de la pantalla** | Botón «Hacer administrador a …» o «Quitar el rol de administrador a …»; ventana de confirmación. |
 
 **Pasos para utilizarla:**
 
@@ -942,7 +940,7 @@ _Confirmación «Cambiar el estado de la cuenta» (web)_
 
 **Resultado esperado:** El rol aparece o desaparece en la columna Roles globales. La cuenta debe cerrar sesión y volver a entrar para ver el cambio en su menú.
 
-![Confirmación de rol de administrador](../../assets/Web/admin-confirmar-rol.png)
+![Confirmación de rol de administrador](../../assets/Web/image-39.png)
 
 _Confirmación «Dar el rol de administrador» (web)_
 
@@ -950,10 +948,10 @@ _Confirmación «Dar el rol de administrador» (web)_
 
 **Descripción:** Avisos sobre la plataforma para los administradores.
 
-| **Campo**                      | **Detalle**                                                                                                                                                         |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rol que puede acceder**      | Administrador.                                                                                                                                                      |
-| **Ruta de acceso**             | Menú lateral \> Notificaciones.                                                                                                                                     |
+| **Campo**                      | **Detalle**                                                                                                                                                           |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol que puede acceder**      | Administrador.                                                                                                                                                        |
+| **Ruta de acceso**             | Menú lateral \> Notificaciones.                                                                                                                                       |
 | **Componentes de la pantalla** | Título «Notificaciones de administración»; Marcar todas como leídas; tarjetas con título, mensaje, estado (Nueva o Leída) y los botones Marcar como leída y Eliminar. |
 
 | **Aviso**                                    | **Cuándo llega**                                                         |
@@ -968,7 +966,7 @@ _Confirmación «Dar el rol de administrador» (web)_
 
 **Observaciones:** Se muestran los 50 avisos más recientes. Quien hace un cambio no recibe aviso de su propio cambio. Estos avisos solo se ven en la web; no llegan por correo ni por push.
 
-![Notificaciones de administración](../../assets/Web/admin-notificaciones.png)
+![Notificaciones de administración](../../assets/Web/image-40.png)
 
 _Notificaciones de administración (web)_
 
@@ -980,31 +978,31 @@ En **Ajustes**, el administrador ve el idioma, el tema y el centro de ayuda, per
 - Una acción sin el permiso correspondiente no se muestra.
 - El rol de administrador no da acceso a los hogares.
 
-![Ajustes del administrador](../../assets/Web/admin-ajustes.png)
+![Ajustes del administrador](../../assets/Web/image-41.png)
 
 _Ajustes de una cuenta administradora, sin la sección de notificaciones (web)_
 
 # **Mensajes del sistema**
 
-| **Mensaje del sistema**                                         | **Significado**                                                                 | **Acción del usuario**                                                       |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Campo obligatorio / formato no válido                           | Falta un dato o no tiene el formato esperado.                                   | Corregir el campo marcado.                                                   |
-| Usuario o contraseña inválidos                                  | Las credenciales no coinciden.                                                  | Revisar los datos o recuperar la contraseña.                                 |
-| Correo ya registrado                                            | El correo ya tiene una cuenta.                                                  | Iniciar sesión o recuperar la contraseña.                                    |
-| El dominio del correo parece mal escrito / no existe            | El correo tiene un error de escritura o un dominio sin correo.                  | Corregir el correo (el sistema sugiere el proveedor probable).               |
-| Debes aceptar los términos                                      | No se marcó la aceptación de los términos y la política de privacidad.          | Leerlos y marcar la casilla.                                                 |
-| Verifica tu correo para iniciar sesión                          | La cuenta existe pero el correo no se ha verificado.                            | Escribir el código que llega al correo.                                      |
-| Código de verificación inválido o expirado                      | El código no corresponde o ya venció.                                           | Pedir un código nuevo.                                                       |
-| Demasiados intentos                                             | Se superó el número de intentos permitido.                                      | Esperar unos minutos e intentar de nuevo.                                    |
-| Correo verificado. Ya puedes iniciar sesión.                    | La cuenta quedó creada.                                                         | Iniciar sesión.                                                              |
-| Contraseña actualizada                                          | La nueva contraseña quedó guardada.                                             | Iniciar sesión con la nueva contraseña.                                      |
-| El código debe tener 8 caracteres (letras y números)            | El código de acceso del hogar está incompleto.                                  | Escribir el código completo que compartió el responsable.                    |
-| La contraseña de la red no es correcta / El módulo no encuentra esa red | Falló la conexión Wi-Fi del módulo al vincularlo.                       | Revisar la contraseña o acercar el módulo al router.                         |
-| Se perdió la conexión Bluetooth con el módulo                   | El módulo se alejó o se apagó durante la vinculación.                          | Acercarse y reintentar.                                                      |
-| Este navegador no puede conectarse por Bluetooth                | El navegador no admite Web Bluetooth.                                           | Usar Chrome o Edge, la app móvil o el portal «EnergyMonitor-Setup».          |
-| Solo el responsable del hogar puede modificar estos umbrales    | Un miembro intenta editar los umbrales.                                         | Pedir el cambio al responsable.                                              |
-| El límite diario no puede superar al mensual                    | Valores de umbral incoherentes.                                                 | Corregir los valores.                                                        |
-| No se pudo completar la acción. Inténtalo de nuevo.             | Falló una acción por un problema temporal.                                      | Reintentar; si persiste, contactar a soporte.                                |
+| **Mensaje del sistema**                                                 | **Significado**                                                        | **Acción del usuario**                                              |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Campo obligatorio / formato no válido                                   | Falta un dato o no tiene el formato esperado.                          | Corregir el campo marcado.                                          |
+| Usuario o contraseña inválidos                                          | Las credenciales no coinciden.                                         | Revisar los datos o recuperar la contraseña.                        |
+| Correo ya registrado                                                    | El correo ya tiene una cuenta.                                         | Iniciar sesión o recuperar la contraseña.                           |
+| El dominio del correo parece mal escrito / no existe                    | El correo tiene un error de escritura o un dominio sin correo.         | Corregir el correo (el sistema sugiere el proveedor probable).      |
+| Debes aceptar los términos                                              | No se marcó la aceptación de los términos y la política de privacidad. | Leerlos y marcar la casilla.                                        |
+| Verifica tu correo para iniciar sesión                                  | La cuenta existe pero el correo no se ha verificado.                   | Escribir el código que llega al correo.                             |
+| Código de verificación inválido o expirado                              | El código no corresponde o ya venció.                                  | Pedir un código nuevo.                                              |
+| Demasiados intentos                                                     | Se superó el número de intentos permitido.                             | Esperar unos minutos e intentar de nuevo.                           |
+| Correo verificado. Ya puedes iniciar sesión.                            | La cuenta quedó creada.                                                | Iniciar sesión.                                                     |
+| Contraseña actualizada                                                  | La nueva contraseña quedó guardada.                                    | Iniciar sesión con la nueva contraseña.                             |
+| El código debe tener 8 caracteres (letras y números)                    | El código de acceso del hogar está incompleto.                         | Escribir el código completo que compartió el responsable.           |
+| La contraseña de la red no es correcta / El módulo no encuentra esa red | Falló la conexión Wi-Fi del módulo al vincularlo.                      | Revisar la contraseña o acercar el módulo al router.                |
+| Se perdió la conexión Bluetooth con el módulo                           | El módulo se alejó o se apagó durante la vinculación.                  | Acercarse y reintentar.                                             |
+| Este navegador no puede conectarse por Bluetooth                        | El navegador no admite Web Bluetooth.                                  | Usar Chrome o Edge, la app móvil o el portal «EnergyMonitor-Setup». |
+| Solo el responsable del hogar puede modificar estos umbrales            | Un miembro intenta editar los umbrales.                                | Pedir el cambio al responsable.                                     |
+| El límite diario no puede superar al mensual                            | Valores de umbral incoherentes.                                        | Corregir los valores.                                               |
+| No se pudo completar la acción. Inténtalo de nuevo.                     | Falló una acción por un problema temporal.                             | Reintentar; si persiste, contactar a soporte.                       |
 
 # **Preguntas frecuentes**
 
@@ -1054,23 +1052,23 @@ No. Las aplicaciones y los módulos necesitan conexión para enviar y mostrar lo
 
 # **Glosario**
 
-| **Término**                | **Descripción**                                                                                                         |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| ESP32                      | Microcontrolador del módulo de medición; envía las lecturas por Wi-Fi y se configura por Bluetooth.                     |
-| Sensor PZEM-004T V3        | Sensor que mide tensión, corriente, potencia y energía del electrodoméstico.                                           |
-| kWh                        | Kilovatio-hora, unidad de consumo de energía eléctrica.                                                                 |
-| Hogar                      | Casa, apartamento u otro lugar que se monitorea en EnergyMonitor.                                                       |
-| Responsable                | Propietario de un hogar; gestiona miembros, dispositivos y umbrales.                                                    |
-| Miembro                    | Persona que se unió a un hogar con el código de acceso; consulta su información.                                       |
-| Código de acceso           | Código de 8 caracteres con el que otras personas se unen a un hogar.                                                    |
-| Código de verificación     | Código de 6 dígitos que llega por correo para verificar la cuenta, recuperar la contraseña o eliminar una cuenta de Google. |
-| Umbral                     | Límite de consumo diario o mensual de un hogar que dispara alertas.                                                     |
-| Alerta                     | Aviso sobre algo que requiere atención (consumo alto, límite alcanzado, dispositivo desconectado).                      |
-| Recomendación              | Sugerencia de ahorro generada a partir del consumo.                                                                     |
-| Actividad                  | Aviso de lo que pasó en la cuenta, en sus hogares o en sus dispositivos.                                                |
-| Notificación push          | Aviso que llega al navegador o al teléfono aunque la aplicación esté cerrada.                                           |
-| Administrador              | Cuenta que gestiona las cuentas de la plataforma desde la web.                                                          |
-| Sesión                     | Periodo en que la cuenta permanece autenticada, desde que inicia sesión hasta que la cierra.                            |
+| **Término**            | **Descripción**                                                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| ESP32                  | Microcontrolador del módulo de medición; envía las lecturas por Wi-Fi y se configura por Bluetooth.                         |
+| Sensor PZEM-004T V3    | Sensor que mide tensión, corriente, potencia y energía del electrodoméstico.                                                |
+| kWh                    | Kilovatio-hora, unidad de consumo de energía eléctrica.                                                                     |
+| Hogar                  | Casa, apartamento u otro lugar que se monitorea en EnergyMonitor.                                                           |
+| Responsable            | Propietario de un hogar; gestiona miembros, dispositivos y umbrales.                                                        |
+| Miembro                | Persona que se unió a un hogar con el código de acceso; consulta su información.                                            |
+| Código de acceso       | Código de 8 caracteres con el que otras personas se unen a un hogar.                                                        |
+| Código de verificación | Código de 6 dígitos que llega por correo para verificar la cuenta, recuperar la contraseña o eliminar una cuenta de Google. |
+| Umbral                 | Límite de consumo diario o mensual de un hogar que dispara alertas.                                                         |
+| Alerta                 | Aviso sobre algo que requiere atención (consumo alto, límite alcanzado, dispositivo desconectado).                          |
+| Recomendación          | Sugerencia de ahorro generada a partir del consumo.                                                                         |
+| Actividad              | Aviso de lo que pasó en la cuenta, en sus hogares o en sus dispositivos.                                                    |
+| Notificación push      | Aviso que llega al navegador o al teléfono aunque la aplicación esté cerrada.                                               |
+| Administrador          | Cuenta que gestiona las cuentas de la plataforma desde la web.                                                              |
+| Sesión                 | Periodo en que la cuenta permanece autenticada, desde que inicia sesión hasta que la cierra.                                |
 
 # **Anexos**
 

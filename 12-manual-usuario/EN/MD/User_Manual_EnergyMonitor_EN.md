@@ -92,7 +92,7 @@ Each screen is described with the same structure: description, a table with the 
 | **[Mobile only]**       | It exists only in the mobile application (for example, the phone's Bluetooth permission). |
 | **Web:** / **Mobile:**  | Inside a common section, marks a difference in presentation or steps.       |
 
-Images carry the suffix *(web)* or *(mobile)* depending on the application they were taken from.
+Images carry the suffix _(web)_ or _(mobile)_ depending on the application they were taken from.
 
 # **System roles**
 
@@ -114,11 +114,11 @@ The same person can be the owner of one home and a member of another. The admini
 
 Both applications are available in **Spanish, English, French and Portuguese**, have **four themes** (two light and two dark) and work with screen readers.
 
-![Web side menu](../../assets/Web/menu-lateral-web.png)
+![Web side menu](../../assets/Web/image-30.png)
 
 _Side menu (web)_
 
-![App side menu](../../assets/Mobile/menu-lateral-movil.png)
+![App side menu](../../assets/Mobile/image-26.jpeg)
 
 _Side menu (mobile)_
 
@@ -211,7 +211,7 @@ _Support (web)_
 
 _Registration (web)_
 
-![Terms and privacy policy window](../../assets/Web/registro-terminos-modal.png)
+![Terms and privacy policy window](../../assets/Web/image-29.png)
 
 _Terms of use and Privacy policy window (web)_
 
@@ -219,7 +219,7 @@ _Terms of use and Privacy policy window (web)_
 
 _Registration (mobile)_
 
-![Terms window in the app](../../assets/Mobile/registro-terminos-modal.png)
+![Terms window in the app](../../assets/Mobile/image-25.jpeg)
 
 _Terms of use and Privacy policy window (mobile)_
 
@@ -490,7 +490,7 @@ _Consumption (mobile)_
 
 _History (web)_
 
-![alt text](../../assets/Mobile/image-11.png)
+![alt text](../../assets/Mobile/image-11.jpeg)
 
 _History (mobile)_
 
@@ -526,11 +526,11 @@ _Users, owner view (web)_
 
 _Users, member view (web)_
 
-![Ownership transfer confirmation](../../assets/Web/usuarios-transferir-propiedad.png)
+![Ownership transfer confirmation](../../assets/Web/image-31.png)
 
 _Ownership transfer confirmation (web)_
 
-![alt text](../../assets/Mobile/image-12.png)
+![alt text](../../assets/Mobile/image-12.jpeg)
 
 _Users, owner view (mobile)_
 
@@ -581,19 +581,19 @@ _Devices, owner view (web)_
 
 _Devices, member view (web)_
 
-![Web linking wizard](../../assets/Web/vincular-dispositivo-bluetooth.png)
+![Web linking wizard](../../assets/Web/image-32.png)
 
 _"Link device" wizard, Find your module step (web)_
 
-![alt text](../../assets/Mobile/image-14.png)
+![alt text](../../assets/Mobile/image-14.jpeg)
 
 _Devices, owner view (mobile)_
 
-![alt text](../../assets/Mobile/image-15.png)
+![alt text](../../assets/Mobile/image-15.jpeg)
 
 _Devices, member view (mobile)_
 
-![Bluetooth module search in the app](../../assets/Mobile/vincular-dispositivo-bluetooth.png)
+![Bluetooth module search in the app](../../assets/Mobile/image-27.jpeg)
 
 _Bluetooth search and list of found modules (mobile)_
 
@@ -669,15 +669,15 @@ _Home, owner view (web)_
 
 _Home, member view (web)_
 
-![Delete home confirmation](../../assets/Web/hogar-eliminar-confirmacion.png)
+![Delete home confirmation](../../assets/Web/image-33.png)
 
 _"Delete home" confirmation with the typed name (web)_
 
-![alt text](../../assets/Mobile/image-18.png)
+![alt text](../../assets/Mobile/image-18.jpeg)
 
 _Home, owner view (mobile)_
 
-![alt text](../../assets/Mobile/image-19.png)
+![alt text](../../assets/Mobile/image-19.jpeg)
 
 _Home, member view (mobile)_
 
@@ -743,17 +743,15 @@ _Favorites (mobile)_
 
 ![alt text](../../assets/Web/image-28.png)
 
-_Notifications (web)_
-
-![Activity tab with home filter](../../assets/Web/notificaciones-actividad.png)
+![Activity tab with home filter](../../assets/Web/image-34.png)
 
 _Activity tab with home filter (web)_
 
-![alt text](../../assets/Mobile/image-24.png)
+![alt text](../../assets/Mobile/image-24.jpeg)
 
 _Notifications (mobile)_
 
-![Activity tab in the app](../../assets/Mobile/notificaciones-actividad.png)
+![Activity tab in the app](../../assets/Mobile/image-28.jpeg)
 
 _Activity tab with home filter (mobile)_
 
@@ -828,11 +826,11 @@ _Settings (mobile)_
 
 _My account (web)_
 
-![Delete a Google account with a code](../../assets/Web/cuenta-eliminar-google-codigo.png)
+![Delete a Google account with a code](../../assets/Web/image-35.png)
 
 _Deleting a Google account with a code (web)_
 
-![alt text](../../assets/Mobile/image-20.png)
+![alt text](../../assets/Mobile/image-20.jpeg)
 
 _My account (mobile)_
 
@@ -860,7 +858,7 @@ _My account (mobile)_
 
 _Sign out (web)_
 
-![alt text](../../assets/Mobile/image-22.png)
+![alt text](../../assets/Mobile/image-22.jpeg)
 
 _Sign out (mobile)_
 
@@ -872,7 +870,7 @@ _Sign out (mobile)_
 
 An account with the administrator role that signs in on the web goes straight to **Administration**. Its side menu shows only **Administration**, **Notifications** and **Settings**, plus My account and Sign out. The home screens (dashboard, home detail and favorites) are not available to this account: if it tries to open them, the application sends it back to the administration. An account without permission that tries to open the administration goes back to its homes dashboard.
 
-![Administrator side menu](../../assets/Web/admin-menu.png)
+![Administrator side menu](../../assets/Web/image-36.png)
 
 _Side menu of an administrator account (web)_
 
@@ -896,7 +894,7 @@ _Side menu of an administrator account (web)_
 
 **Expected result:** The administrator finds any account and sees its status and roles.
 
-![User directory](../../assets/Web/admin-usuarios.png)
+![User directory](../../assets/Web/image-37.png)
 
 _Platform users (web)_
 
@@ -920,7 +918,7 @@ _Platform users (web)_
 
 **Notes:** The session the account already had open may last up to 15 minutes, but it is not renewed.
 
-![Status change confirmation](../../assets/Web/admin-confirmar-estado.png)
+![Status change confirmation](../../assets/Web/image-38.png)
 
 _"Change the account status" confirmation (web)_
 
@@ -942,7 +940,7 @@ _"Change the account status" confirmation (web)_
 
 **Expected result:** The role appears or disappears in the Global roles column. The account must sign out and in again to see the change in its menu.
 
-![Administrator role confirmation](../../assets/Web/admin-confirmar-rol.png)
+![Administrator role confirmation](../../assets/Web/image-39.png)
 
 _"Grant the administrator role" confirmation (web)_
 
@@ -968,7 +966,7 @@ _"Grant the administrator role" confirmation (web)_
 
 **Notes:** The 50 most recent notices are shown. Whoever makes a change gets no notice of their own change. These notices are only seen on the web; they do not arrive by email or push.
 
-![Administration notifications](../../assets/Web/admin-notificaciones.png)
+![Administration notifications](../../assets/Web/image-40.png)
 
 _Administration notifications (web)_
 
@@ -980,7 +978,7 @@ In **Settings**, the administrator sees the language, the theme and the help cen
 - An action without the matching permission is not shown.
 - The administrator role gives no access to the homes.
 
-![Administrator settings](../../assets/Web/admin-ajustes.png)
+![Administrator settings](../../assets/Web/image-41.png)
 
 _Settings of an administrator account, without the notifications section (web)_
 
