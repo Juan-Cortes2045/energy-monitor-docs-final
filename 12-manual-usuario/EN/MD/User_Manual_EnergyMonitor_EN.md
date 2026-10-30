@@ -13,8 +13,8 @@ _Home electricity consumption monitoring system — web application and mobile a
 | **Instructor**       | Karol Dayana Correa                                                                                     |
 | **Group (Ficha)**    | 3145556                                                                                                 |
 | **Training center**  | SENA Industria – Neiva                                                                                  |
-| **Date**             | October 29, 2026                                                                                        |
-| **Document version** | 3.2                                                                                                     |
+| **Date**             | October 30, 2026                                                                                        |
+| **Document version** | 3.3                                                                                                     |
 
 # **Version control**
 
@@ -25,6 +25,7 @@ _Home electricity consumption monitoring system — web application and mobile a
 | 3.0         | 10/27/2026 | Single manual for web and mobile, with the differences of each platform marked. Adds the administrator role and its web screens, the acceptance of the terms and the privacy policy, activity notifications, ownership transfer, changing the Wi-Fi network of a device, account deletion with a code for Google accounts and the changes of the mobile app (secure session, accessibility, page titles). Removes inviting members by email, which does not exist: joining a home is done with the access code. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 | 3.1         | 10/28/2026 | The Settings help center (documentation by role, support and news), member photos and the photo viewer, the unusual consumption alert and the Brave notifications notice are documented. Pending screenshots are marked.                                                                                                                                                                                                                                                                                        |
 | 3.2         | 10/29/2026 | Pending screenshots are replaced with the current captures of both applications (web: image-29 to image-41; mobile: jpeg files) and the references are synced across both languages. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
+| 3.3         | 10/30/2026 | Clarifies that administration and the administrator role are exclusive to the web application: the mobile app has no administration notices and does not distinguish the role in Settings. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 
 # **Table of contents**
 
@@ -719,7 +720,7 @@ _Favorites (mobile)_
 
 | **Field**                | **Detail**                                                                                                                                                                                                                                                                                                  |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Role that can access** | User. (For the administrator, this option shows the administration notices: section 15.5.)                                                                                                                                                                                                                  |
+| **Role that can access** | User. (On the web, for the administrator this option shows the administration notices: section 15.5; the mobile app has no administration notices: an administrator sees notifications like any other user.)                                                                                                                                                                                                                  |
 | **Access path**          | Side menu \> Notifications (shows the number pending).                                                                                                                                                                                                                                                      |
 | **Screen components**    | **All**, **Alerts**, **Recommendations** and **Activity** tabs, each with its counter; filter by home (All, My account or one home); Mark all as read; button to delete the resolved or read ones; cards with icon, title, message, home, device, date, status (New, Active, Resolved or Read) and actions. |
 
@@ -765,7 +766,7 @@ _Activity tab with home filter (mobile)_
 
 | **Field**                | **Detail**                                                                                                                                                                                                                                                                                                                    |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Role that can access** | User and administrator (the administrator does not see the notifications section).                                                                                                                                                                                                                                            |
+| **Role that can access** | User and administrator (on the web the administrator does not see the notifications section; in the mobile app the setting is shown as for a regular user, because the app does not distinguish the role).                                                                                                                                                                                                                                            |
 | **Access path**          | Side menu \> Settings. **Mobile:** the screen has the title "Settings".                                                                                                                                                                                                                                                       |
 | **Screen components**    | **System language:** Español, English, Português or Français. **System themes:** Light · Default, Light · Theme 2, Dark · Theme 1 and Dark · Theme 2. **Notifications:** Email, Push notifications and Combined mode (both at once). **Help center:** Documentation, Technical support and What's new (marked "Coming soon"). |
 
