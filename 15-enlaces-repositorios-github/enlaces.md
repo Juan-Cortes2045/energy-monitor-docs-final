@@ -1,6 +1,6 @@
 # Enlaces de Repositorios GitHub
 
-Actualizado el 28 de octubre de 2026.
+Actualizado el 2 de noviembre de 2026.
 
 ## Sistema en producción
 
@@ -30,7 +30,7 @@ En todos los repositorios los *pull requests* van a `dev` y de `dev` a `main`. O
 
 ## Integración y despliegue continuos
 
-El gateway, los siete servicios, la web y la infraestructura tienen el workflow `.github/workflows/ci-cd.yml` (GitHub Actions). Cada repositorio tiene su environment `production` con los secretos `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` y `DEPLOY_KNOWN_HOSTS`, y despliega su componente con `infra/deploy/deploy.sh`. La aplicación móvil no tiene pipeline ni se despliega en el servidor, y el firmware del medidor y los repositorios de documentación tampoco tienen pipeline porque no tienen build ni pruebas automáticas.
+El gateway, los siete servicios, la web y la infraestructura tienen el workflow `.github/workflows/ci-cd.yml` (GitHub Actions). Cada repositorio tiene su environment `production` con los secretos `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` y `DEPLOY_KNOWN_HOSTS`, y despliega su componente con `infra/deploy/deploy.sh`. La aplicación móvil tiene su propio workflow `.github/workflows/ci-cd.yml` (type check, lint y tests en cada push; el build de EAS de Android se encola al llegar a `main`), pero no se despliega en el servidor. El firmware del medidor y los repositorios de documentación no tienen pipeline porque no tienen build ni pruebas automáticas.
 
 | Repositorio | Jobs de CI | Componente de `deploy.sh` | Despliegue |
 |---|---|---|---|
@@ -44,10 +44,11 @@ El gateway, los siete servicios, la web y la infraestructura tienen el workflow 
 | en-monitor-recommendation-service | `Tests` y `Docker image` | `recommendation` | Desde `main`, con aprobación del environment `production` |
 | Energy-Monitor-application | `Tests and build` | `frontend` | Desde `main`, con aprobación del environment `production` |
 | energy-monitor-infra | `Validate compose and scripts` | `infra` | Desde `main`, con aprobación del environment `production` |
+| Energy-Monitor-Mobile | `Type check, lint and tests` y `EAS build (CD)` | — | No se despliega en el servidor; el build de EAS se encola en Expo desde `main` |
 
 ## Versión desplegada
 
-Commit en `main` de cada repositorio al cierre del 28 de octubre de 2026. El equipo confirmó ese día que todos los servicios y la web estaban en producción y que todos los repositorios, salvo el móvil, tienen CI/CD. Los cambios de la última jornada (consumo inusual, fotos de perfil, ayuda en Ajustes y novedades) ya están en `main` de seguridad, hogares, alertas, notificaciones y la web; su despliegue depende de la aprobación del *environment* `production` de cada repositorio.
+Commit en `main` de cada repositorio al cierre del 28 de octubre de 2026; el móvil se sincronizó el 2 de noviembre de 2026. El equipo confirmó ese día que todos los servicios y la web estaban en producción y que todos los repositorios, salvo el móvil, tenían CI/CD; el móvil incorporó el suyo (CI en cada push y build de EAS al llegar a `main`). Los cambios de la última jornada (consumo inusual, fotos de perfil, ayuda en Ajustes y novedades) ya están en `main` de seguridad, hogares, alertas, notificaciones, la web y el móvil; el despliegue de los servicios depende de la aprobación del *environment* `production` de cada repositorio.
 
 | Repositorio | Commit | Estado en producción |
 |---|---|---|
@@ -61,7 +62,7 @@ Commit en `main` de cada repositorio al cierre del 28 de octubre de 2026. El equ
 | en-monitor-recommendation-service | `aeeeec5` | Desplegado |
 | Energy-Monitor-application | `27ad9f0` | En `main` (modales de ayuda, visor de fotos y novedades); despliegue por confirmar |
 | energy-monitor-infra | `ceb1543` | Desplegado |
-| Energy-Monitor-Mobile (no se despliega en el servidor) | `894b65a` en `main`; `8b5edc0` en `dev` (188 commits por fusionar) | No aplica |
+| Energy-Monitor-Mobile (no se despliega en el servidor) | `58f9cbc` en `main`; `cf0fcf7` en `dev` (sincronizados el 2 de noviembre de 2026) | No aplica |
 
 ## Repositorios retirados
 
