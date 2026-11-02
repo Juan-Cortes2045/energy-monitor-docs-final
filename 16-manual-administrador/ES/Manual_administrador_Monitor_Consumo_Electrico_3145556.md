@@ -21,8 +21,8 @@ Ficha: 3145556
 | Programa             | Tecnología en Análisis y Desarrollo de Software (ADSO)                          |
 | Ficha                | 3145556                                                                         |
 | Tipo de documento    | Manual de administrador                                                         |
-| Versión              | 1.4                                                                             |
-| Fecha de elaboración | 07 de octubre de 2026 (actualizado el 28 de octubre de 2026)                    |
+| Versión              | 1.5                                                                             |
+| Fecha de elaboración | 07 de octubre de 2026 (actualizado el 30 de octubre de 2026)                    |
 
 Año 2026
 
@@ -37,6 +37,7 @@ El historial de cambios del presente manual se registra en la siguiente tabla. C
 | 1.2         | 24/10/2026 | Operación con la arquitectura de servicios: contenedores del API gateway, de los servicios de seguridad, dispositivos y mediciones, del backend y de RabbitMQ; comprobación de salud dentro de los contenedores, logs por servicio, componentes de `deploy.sh`, secretos nuevos (`RABBITMQ_PASSWORD`, `INTERNAL_API_TOKEN`, `MQTT_DEVICE_SERVICE_PASS`, `MQTT_MEASUREMENT_SERVICE_PASS`) e incidentes nuevos. | Equipo desarrollador |
 | 1.3         | 27/10/2026 | Backend retirado: operación de los siete microservicios (seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones) y del gateway; avisos de administración servidos por el servicio de notificaciones; colas y outbox que debe vigilar el administrador; orden de despliegue; `EMAIL_NOT_VERIFIED`; tablas por servicio; comandos y checklist actualizados. | Equipo desarrollador |
 | 1.4         | 28/10/2026 | Se documenta la alerta de consumo inusual de un aparato (qué la dispara, cuándo se resuelve y qué ve el usuario), el centro de ayuda de Ajustes con el soporte atendido por los administradores y las fotos de perfil; la versión final se unifica en 1.4. | Equipo desarrollador |
+| 1.5         | 30/10/2026 | La introducción aclara que las pantallas de administración y el rol de administrador son exclusivos de la aplicación web. | Equipo desarrollador |
 
 # 3. Tabla de contenido
 
@@ -65,6 +66,8 @@ El sistema tiene dos niveles de administración:
 
 - **Administración funcional, desde la aplicación web.** Una cuenta con el rol global de administrador (`ADMIN`) dispone de una pantalla propia en `https://energy-monitor.tech` para consultar las cuentas, cambiar su estado, conceder o revocar el rol de administrador y recibir avisos de administración (sección 10).
 - **Administración técnica, desde el servidor.** La designación del primer administrador, la política de contraseñas, los parámetros de seguridad, los respaldos y la actualización se hacen en el servidor, con los scripts del repositorio de infraestructura y consultas a la base de datos MySQL 8.4 (Spring, s. f.; Docker Inc., s. f.).
+
+La administración funcional y el rol de administrador son exclusivos de la aplicación web: la aplicación móvil no incluye pantallas de administración ni comprueba este rol.
 
 Las referencias académicas y técnicas citadas en el cuerpo del documento se formatearon según la 7.ª edición del manual APA (American Psychological Association \[APA\], 2020).
 

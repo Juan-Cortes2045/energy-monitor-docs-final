@@ -21,8 +21,8 @@ Group (Ficha): 3145556
 | Program              | Technology in Software Analysis and Development (ADSO)                          |
 | Group (Ficha)        | 3145556                                                                         |
 | Document type        | Administrator manual                                                            |
-| Version              | 1.4                                                                             |
-| Date prepared        | October 7, 2026 (updated October 28, 2026)                                      |
+| Version              | 1.5                                                                             |
+| Date prepared        | October 7, 2026 (updated October 30, 2026)                                      |
 
 Year 2026
 
@@ -37,6 +37,7 @@ The change history of this manual is recorded in the following table. Any new ad
 | 1.2         | 10/24/2026 | Operation with the services architecture: containers of the API gateway, the security, device and measurement services, the backend and RabbitMQ; health checks inside the containers, logs per service, `deploy.sh` components, new secrets (`RABBITMQ_PASSWORD`, `INTERNAL_API_TOKEN`, `MQTT_DEVICE_SERVICE_PASS`, `MQTT_MEASUREMENT_SERVICE_PASS`) and new incidents. | Development team     |
 | 1.3         | 10/27/2026 | Backend retired: operation of the seven microservices (security, device, measurement, home, notification, alert and recommendation) and of the gateway; administration notices served by the notification service; queues and outboxes the administrator must watch; deployment order; `EMAIL_NOT_VERIFIED`; tables per service; updated commands and checklist. | Development team     |
 | 1.4         | 10/28/2026 | Documents the unusual consumption alert of an appliance (what triggers it, when it resolves and what the user sees), the Settings help center with support handled by the administrators, and profile photos; the final version is unified at 1.4. | Development team |
+| 1.5         | 10/30/2026 | The introduction now states that the administration screens and the administrator role are exclusive to the web application. | Development team |
 
 # 3. Table of contents
 
@@ -65,6 +66,8 @@ The system has two levels of administration:
 
 - **Functional administration, from the web application.** An account with the global administrator role (`ADMIN`) has a dedicated screen at `https://energy-monitor.tech` to view the accounts, change their status, grant or revoke the administrator role and receive administration notices (section 10).
 - **Technical administration, from the server.** Designating the first administrator, the password policy, the security parameters, backups and updates are done on the server, with the scripts of the infrastructure repository and queries to the MySQL 8.4 database (Spring, n.d.; Docker Inc., n.d.).
+
+Functional administration and the administrator role are exclusive to the web application: the mobile app includes no administration screens and does not check this role.
 
 The academic and technical references cited in the body of the document were formatted according to the 7th edition of the APA manual (American Psychological Association \[APA\], 2020).
 
