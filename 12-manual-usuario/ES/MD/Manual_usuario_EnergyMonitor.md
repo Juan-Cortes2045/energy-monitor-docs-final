@@ -13,8 +13,8 @@ _Sistema de monitoreo de consumo eléctrico para el hogar — aplicación web y 
 | **Instructor**            | Karol Dayana Correa                                                                                             |
 | **Ficha**                 | 3145556                                                                                                         |
 | **Centro de formación**   | SENA Industria – Neiva                                                                                          |
-| **Fecha**                 | 30 de octubre de 2026                                                                                           |
-| **Versión del documento** | 3.3                                                                                                             |
+| **Fecha**                 | 2 de noviembre de 2026                                                                                           |
+| **Versión del documento** | 3.4                                                                                                             |
 
 # **Control de versiones**
 
@@ -26,6 +26,7 @@ _Sistema de monitoreo de consumo eléctrico para el hogar — aplicación web y 
 | 3.1         | 28/10/2026 | Se documentan el centro de ayuda de Ajustes (documentación por rol, soporte y novedades), las fotos de los miembros y el visor de fotos, la alerta de consumo inusual y el aviso de notificaciones en Brave. Se marcan las capturas pendientes. |
 | 3.2         | 29/10/2026 | Se reemplazan las capturas pendientes por las capturas actuales de ambas aplicaciones (web: image-29 a image-41; móvil: jpeg) y se sincronizan las referencias entre los dos idiomas. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 | 3.3         | 30/10/2026 | Se aclara que la administración y el rol de administrador son exclusivos de la aplicación web: la app móvil no tiene avisos de administración ni distingue el rol en Ajustes. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
+| 3.4         | 02/11/2026 | Se reescribe el Anexo A (imágenes): se indica dónde se guardan las capturas y su convención de nombres, se confirma que todas las referencias del texto están incluidas y se retira la mención al reporte interno de actualización. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 
 # **Tabla de contenido**
 
@@ -1091,6 +1092,6 @@ No. Las aplicaciones y los módulos necesitan conexión para enviar y mostrar lo
 
 # **Anexos**
 
-**Anexo A. Imágenes del manual.** Las capturas se guardan en `12-manual-usuario/assets/Web` (aplicación web) y `12-manual-usuario/assets/Mobile` (aplicación móvil). Las capturas `image*.png` provienen de los manuales 2.0 y algunas ya no muestran la versión actual (por ejemplo, el registro sin la ventana de términos o las notificaciones sin la pestaña Actividad). Las imágenes con nombre descriptivo (`admin-usuarios.png`, `registro-terminos-modal.png`, `notificaciones-actividad.png`, etc.) están referenciadas pero **pendientes de captura**; la lista completa está en el reporte de actualización de la documentación.
+**Anexo A. Imágenes del manual.** Las capturas se guardan en `12-manual-usuario/assets/Web` (aplicación web) y `12-manual-usuario/assets/Mobile` (aplicación móvil). Siguen la convención de nombres de la herramienta de exportación: `image*.png` en la web y `image*.png` o `image*.jpeg` en la móvil. Todas las imágenes referenciadas en el texto están incluidas en esas carpetas y corresponden a la versión actual de cada aplicación; el índice completo es el listado de archivos de ambas carpetas.
 
 **Anexo B. Fuentes.** Este manual se redactó a partir del código de la aplicación web (Energy-Monitor-application) y de la aplicación móvil (Energy-Monitor-Mobile) al 27 de octubre de 2026, de sus textos de interfaz en español y de la especificación de requisitos, siguiendo la guía para elaborar manuales de software del programa ADSO. Reemplaza a los manuales separados «Manual de usuario EnergyMonitor Web» y «Manual de usuario EnergyMonitor Móvil» (versión 2.0).

@@ -13,8 +13,8 @@ _Home electricity consumption monitoring system — web application and mobile a
 | **Instructor**       | Karol Dayana Correa                                                                                     |
 | **Group (Ficha)**    | 3145556                                                                                                 |
 | **Training center**  | SENA Industria – Neiva                                                                                  |
-| **Date**             | October 30, 2026                                                                                        |
-| **Document version** | 3.3                                                                                                     |
+| **Date**             | November 2, 2026                                                                                        |
+| **Document version** | 3.4                                                                                                     |
 
 # **Version control**
 
@@ -26,6 +26,7 @@ _Home electricity consumption monitoring system — web application and mobile a
 | 3.1         | 10/28/2026 | The Settings help center (documentation by role, support and news), member photos and the photo viewer, the unusual consumption alert and the Brave notifications notice are documented. Pending screenshots are marked.                                                                                                                                                                                                                                                                                        |
 | 3.2         | 10/29/2026 | Pending screenshots are replaced with the current captures of both applications (web: image-29 to image-41; mobile: jpeg files) and the references are synced across both languages. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 | 3.3         | 10/30/2026 | Clarifies that administration and the administrator role are exclusive to the web application: the mobile app has no administration notices and does not distinguish the role in Settings. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
+| 3.4         | 11/02/2026 | Annex A (images) is rewritten: it states where the screenshots are stored and their naming convention, confirms that every image referenced in the text is included, and removes the mention of the internal documentation update report. | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga |
 
 # **Table of contents**
 
@@ -1091,6 +1092,6 @@ No. The applications and the modules need a connection to send and show the data
 
 # **Annexes**
 
-**Annex A. Images of the manual.** The screenshots are stored in `12-manual-usuario/assets/Web` (web application) and `12-manual-usuario/assets/Mobile` (mobile application). The `image*.png` screenshots come from the 2.0 manuals and some no longer show the current version (for example, the registration without the terms window or the notifications without the Activity tab). The images with a descriptive name (`admin-usuarios.png`, `registro-terminos-modal.png`, `notificaciones-actividad.png`, etc.) are referenced but **still to be captured**; the full list is in the documentation update report.
+**Annex A. Images of the manual.** The screenshots are stored in `12-manual-usuario/assets/Web` (web application) and `12-manual-usuario/assets/Mobile` (mobile application). They follow the naming convention of the export tool: `image*.png` in the web folder and `image*.png` or `image*.jpeg` in the mobile folder. Every image referenced in the text is included in those folders and corresponds to the current version of each application; the full index is the file listing of both folders.
 
 **Annex B. Sources.** This manual was written from the code of the web application (Energy-Monitor-application) and of the mobile application (Energy-Monitor-Mobile) as of October 27, 2026, from their interface texts and from the requirements specification, following the guide for writing software manuals of the ADSO program. It replaces the separate "EnergyMonitor Web user manual" and "EnergyMonitor Mobile user manual" (version 2.0).
