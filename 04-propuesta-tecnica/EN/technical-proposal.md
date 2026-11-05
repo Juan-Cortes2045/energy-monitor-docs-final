@@ -30,8 +30,6 @@ EnergyMonitor is a formative project of the Technologist in Software Analysis an
 
 This proposal answers the question of whether the project is technically and economically viable with the team's resources. It is organized in three blocks: the justification of the technology stack, the software architecture, and the infrastructure with its costs. It then presents the schedule and the status by component, the technical risks and the differences with the project charter. The functional and non-functional requirements are detailed in the requirements specification (folder `02-especificacion-requisitos`); the objectives, scope and team, in the project charter (folder `01-documento-general-proyecto`); and the deployment procedure, in the implementation and deployment manual (folder `09-implementacion`).
 
-Data that the team has not yet defined is marked `[TO BE CONFIRMED]` and is not assumed.
-
 ## Technology Stack Justification
 
 ### Solution Overview
@@ -226,7 +224,7 @@ All software in the stack is free and generates no license cost. Table 6 separat
 | Hostinger VPS KVM 2, one-month contract | Paid | 48,000 |
 | **Total software and infrastructure** | | **48,000** |
 
-The plan's price depends on the contract term. The project contracted it for one month, enough for the demonstration and the final presentation. For continuous operation the yearly contract is better: COP 27,900 per month, equal to COP 334,800 per year, against COP 576,000 if it is renewed month by month. The free domain must be reviewed before it expires, because its renewal may have a cost `[TO BE CONFIRMED]`.
+The plan's price depends on the contract term. The project contracted it for one month, enough for the demonstration and the final presentation. For continuous operation the yearly contract is better: COP 27,900 per month, equal to COP 334,800 per year, against COP 576,000 if it is renewed month by month. The free domain must be reviewed before it expires, because its renewal may have a cost.
 
 ### Third-Party Services
 
@@ -292,13 +290,13 @@ Users pay no software licenses. They need an Android phone or a modern browser. 
 | HP 240 G9 laptop (Core i5, 8 GB, 512 GB SSD) | 2,500,000 to 2,900,000 |
 | Dell Inspiron 15 laptop (Core i5, 8 GB) | 1,800,000 to 2,500,000 |
 
-The cost of the measuring device for one home is that of its prototype, about COP 174,000 in components. A sale price or serial production cost is outside the scope `[TO BE CONFIRMED]`.
+The cost of the measuring device for one home is that of its prototype, about COP 174,000 in components. A sale price or serial production cost is outside the scope.
 
 ### Maintenance and Licensing
 
-The maintenance plan has three modes. Corrective maintenance handles communication, loading, notification and history failures; a failed deployment is rolled back automatically. Preventive maintenance includes updating dependencies (Spring Boot, React, Expo, firmware), the automatic MySQL backups (daily and before every deployment), automatic certificate renewal, server snapshots `[TO BE CONFIRMED]` and security tests. Evolutionary maintenance considers smart meters, over-the-air firmware updates (today done by USB cable), expanding the administration interface (support and content management) and adaptation to new versions of Android and browsers. Corrective support is provided during the first month after deployment.
+The maintenance plan has three modes. Corrective maintenance handles communication, loading, notification and history failures; a failed deployment is rolled back automatically. Preventive maintenance includes updating dependencies (Spring Boot, React, Expo, firmware), the automatic MySQL backups (daily and before every deployment), automatic certificate renewal and security tests. Evolutionary maintenance considers smart meters, over-the-air firmware updates (today done by USB cable), expanding the administration interface (support and content management) and adaptation to new versions of Android and browsers. Corrective support is provided during the first month after deployment.
 
-The software and hardware are licensed under a free-use modality with community recognition: they may be used, copied and modified for educational, research and social purposes, keeping the reference to the team and SENA. Commercial use requires a formal agreement between the developers and SENA, and may carry a license fee `[TO BE CONFIRMED]`.
+The software and hardware are licensed under a free-use modality with community recognition: they may be used, copied and modified for educational, research and social purposes, keeping the reference to the team and SENA. Commercial use requires a formal agreement between the developers and SENA, and may carry a license fee.
 
 ## Schedule and Current Status
 
@@ -374,7 +372,7 @@ Table 14 points out the differences between what other project documents say and
 | Code | Source of the difference | What it says | Verified state | Action |
 |---|---|---|---|---|
 | DD-01 | Web application README | Recommendations are simulated because the `recommendation` module of the core service does not exist | The recommendation service (formerly the `recommendation` module of the core service) exists and evaluates five saving rules | Correct the web application README. Still open as of October 20, 2026 |
-| DD-02 | Project charter | It said: investment of about COP 180,000 and total cost `[TO BE CONFIRMED]` | Total estimated budget of COP 57,021,997. The COP 180,000 is the direct spending on prototype components (COP 173,997) | Resolved: version 1.1 of the charter includes the total cost |
+| DD-02 | Project charter | It said: investment of about COP 180,000 with no total cost | Total estimated budget of COP 57,021,997. The COP 180,000 is the direct spending on prototype components (COP 173,997) | Resolved: version 1.1 of the charter includes the total cost |
 | DD-03 | Project charter | It said: hosting and paid services not contemplated | Paid Hostinger KVM 2 VPS (COP 48,000 for one month) and free domain | Resolved: version 1.1 of the charter reflects the paid infrastructure |
 
 ## References
