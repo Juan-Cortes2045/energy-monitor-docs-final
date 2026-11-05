@@ -640,7 +640,7 @@ Energy-Monitor-Mobile/
 
 ## 11.1 Entity-relationship diagram
 
-The diagram shows the entities of the system grouped by their owning service, with their attributes, keys and relationships. The dotted relationships between services represent application references (no SQL foreign key). The current source is [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd), generated from the changelogs; the figure published in the Drive folder predates the migration and must be replaced by its rendering (see the note in section 9.1).
+The diagram shows the entities of the system grouped by their owning service, with their attributes, keys and relationships. The dotted relationships between services represent application references (no SQL foreign key). The current source is [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd), generated from the changelogs, and Figure 3 is its rendering.
 
 > **Reading tip:** because of its size, the diagram is shown on a landscape page; in Word it can be enlarged with the zoom to read the attributes of each entity. Annex B includes the same model broken down by context, for better readability.
 >

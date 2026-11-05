@@ -640,7 +640,7 @@ Energy-Monitor-Mobile/
 
 ## 11.1 Diagrama entidad-relación
 
-El diagrama muestra las entidades del sistema agrupadas por el servicio dueño, con sus atributos, llaves y relaciones. Las relaciones punteadas entre servicios representan referencias de aplicación (sin foreign key en SQL). La fuente vigente es [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd), generada de los changelogs; la figura publicada en la carpeta de Drive es anterior a la migración y debe reemplazarse por su renderizado (ver la nota de la sección 9.1).
+El diagrama muestra las entidades del sistema agrupadas por el servicio dueño, con sus atributos, llaves y relaciones. Las relaciones punteadas entre servicios representan referencias de aplicación (sin foreign key en SQL). La fuente vigente es [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd), generada de los changelogs, y la Figura 3 es su renderizado.
 
 > **Recomendación de lectura:** por su tamaño, el diagrama se presenta en página horizontal; en Word puede ampliarse con el zoom para leer los atributos de cada entidad. En el Anexo B se incluye el mismo modelo desagregado por contexto, con mayor legibilidad.
 >
