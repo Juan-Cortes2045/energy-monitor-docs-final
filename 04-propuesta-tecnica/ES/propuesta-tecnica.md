@@ -30,8 +30,6 @@ EnergyMonitor es un proyecto formativo del programa Tecnólogo en Análisis y De
 
 Esta propuesta responde a la pregunta de si el proyecto es técnica y económicamente viable con los recursos del equipo. Se organiza en tres bloques: la justificación de la pila tecnológica, la arquitectura de software y la infraestructura con sus costos. Después presenta el cronograma y el estado por componente, los riesgos técnicos y las diferencias con el documento general del proyecto. Los requisitos funcionales y no funcionales se detallan en la especificación de requisitos (carpeta `02-especificacion-requisitos`); los objetivos, el alcance y el equipo, en el documento general del proyecto (carpeta `01-documento-general-proyecto`); y el procedimiento de despliegue, en el manual de implementación y despliegue (carpeta `09-implementacion`).
 
-Los datos que el equipo aún no ha definido se marcan con `[POR CONFIRMAR]` y no se suponen.
-
 ## Justificación de la Pila Tecnológica
 
 ### Visión general de la solución
@@ -226,7 +224,7 @@ Todo el software de la pila es libre y no genera costo de licencia. La Tabla 6 s
 | Hostinger VPS KVM 2, contrato de un mes | Pago | 48.000 |
 | **Total de software e infraestructura** | | **48.000** |
 
-El precio del plan depende del plazo de contratación. El proyecto lo contrató por un mes, suficiente para la demostración y la sustentación. Para una operación continua conviene el contrato anual: COP 27.900 mensuales, equivalentes a COP 334.800 por año, frente a COP 576.000 si se renueva mes a mes. El dominio gratuito debe revisarse antes de su vencimiento, porque la renovación puede tener costo `[POR CONFIRMAR]`.
+El precio del plan depende del plazo de contratación. El proyecto lo contrató por un mes, suficiente para la demostración y la sustentación. Para una operación continua conviene el contrato anual: COP 27.900 mensuales, equivalentes a COP 334.800 por año, frente a COP 576.000 si se renueva mes a mes. El dominio gratuito debe revisarse antes de su vencimiento, porque la renovación puede tener costo.
 
 ### Servicios de terceros
 
@@ -292,13 +290,13 @@ El usuario no paga licencias de software. Necesita un celular Android o un naveg
 | Portátil HP 240 G9 (Core i5, 8 GB, 512 GB SSD) | 2.500.000 a 2.900.000 |
 | Portátil Dell Inspiron 15 (Core i5, 8 GB) | 1.800.000 a 2.500.000 |
 
-El costo del dispositivo de medición para un hogar es el de su prototipo, cercano a COP 174.000 en componentes. Un precio de venta o producción en serie queda fuera del alcance `[POR CONFIRMAR]`.
+El costo del dispositivo de medición para un hogar es el de su prototipo, cercano a COP 174.000 en componentes. Un precio de venta o producción en serie queda fuera del alcance.
 
 ### Mantenimiento y licenciamiento
 
-El plan de mantenimiento contempla tres modalidades. El correctivo atiende fallos de comunicación, carga, notificaciones e historial; un despliegue fallido se revierte de forma automática. El preventivo incluye actualización de dependencias (Spring Boot, React, Expo, firmware), los respaldos automáticos de MySQL (diarios y antes de cada despliegue), la renovación automática de los certificados, snapshots del servidor `[POR CONFIRMAR]` y pruebas de seguridad. El evolutivo considera medidores inteligentes, actualización del firmware por aire (hoy se hace por cable USB), la ampliación de la interfaz de administración (gestión de soporte y de contenidos) y adaptación a nuevas versiones de Android y de los navegadores. Durante el primer mes posterior al despliegue se presta soporte correctivo.
+El plan de mantenimiento contempla tres modalidades. El correctivo atiende fallos de comunicación, carga, notificaciones e historial; un despliegue fallido se revierte de forma automática. El preventivo incluye actualización de dependencias (Spring Boot, React, Expo, firmware), los respaldos automáticos de MySQL (diarios y antes de cada despliegue), la renovación automática de los certificados y pruebas de seguridad. El evolutivo considera medidores inteligentes, actualización del firmware por aire (hoy se hace por cable USB), la ampliación de la interfaz de administración (gestión de soporte y de contenidos) y adaptación a nuevas versiones de Android y de los navegadores. Durante el primer mes posterior al despliegue se presta soporte correctivo.
 
-El software y el hardware se licencian bajo una modalidad de uso libre con reconocimiento comunitario: se pueden usar, copiar y modificar con fines educativos, investigativos y sociales, manteniendo la referencia al equipo y al SENA. El uso comercial requiere un acuerdo formal entre los desarrolladores y el SENA, y puede tener una tarifa de licencia `[POR CONFIRMAR]`.
+El software y el hardware se licencian bajo una modalidad de uso libre con reconocimiento comunitario: se pueden usar, copiar y modificar con fines educativos, investigativos y sociales, manteniendo la referencia al equipo y al SENA. El uso comercial requiere un acuerdo formal entre los desarrolladores y el SENA, y puede tener una tarifa de licencia.
 
 ## Cronograma y Estado Actual
 
@@ -374,7 +372,7 @@ La Tabla 14 señala las diferencias entre lo que dicen otros documentos del proy
 | Código | Fuente de la diferencia | Lo que dice | Estado verificado | Acción |
 |---|---|---|---|---|
 | DD-01 | README de la aplicación web | Las recomendaciones son simuladas porque el módulo `recommendation` del servicio central no existe | El servicio de recomendaciones (antes, módulo `recommendation` del servicio central) existe y evalúa cinco reglas de ahorro | Corregir el README de la aplicación web. Sigue abierta al 20 de octubre de 2026 |
-| DD-02 | Documento general del proyecto | Decía: inversión de unos COP 180.000 y costo total `[POR CONFIRMAR]` | Presupuesto total estimado de COP 57.021.997. Los COP 180.000 equivalen al gasto directo en componentes del prototipo (COP 173.997) | Resuelta: la versión 1.1 del documento general incluye el costo total |
+| DD-02 | Documento general del proyecto | Decía: inversión de unos COP 180.000 sin costo total | Presupuesto total estimado de COP 57.021.997. Los COP 180.000 equivalen al gasto directo en componentes del prototipo (COP 173.997) | Resuelta: la versión 1.1 del documento general incluye el costo total |
 | DD-03 | Documento general del proyecto | Decía: alojamiento y servicios de pago no contemplados | VPS Hostinger KVM 2 de pago (COP 48.000 por un mes) y dominio gratuito | Resuelta: la versión 1.1 del documento general refleja la infraestructura de pago |
 
 ## Referencias

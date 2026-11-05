@@ -44,7 +44,7 @@ To document the tests that already exist and run in EnergyMonitor, and show whic
 
 ### Scope
 
-The API gateway and the seven services (security, devices, measurements, homes, notifications, alerts and recommendations), the web application, MQTT ingestion and broker authorization are tested. Up to version 1.1 those contexts were the seven modules of the core service; since 1.2 they were split into services, the core service was retired on October 28, 2026 and each service is tested in its own repository, and the end-to-end tests of `energy-monitor-infra` verify the communication between them (gateway routes, internal API, broker and events on RabbitMQ). The device firmware, the Mosquitto broker, Bluetooth, push notifications and the Android mobile application are outside the automated tests and are declared as known gaps; for the mobile application, type checking and static analysis are also run and a manual test protocol is defined (version 1.3). Performance, load and accessibility (WCAG) are not tested; the specification leaves them as `[TO BE CONFIRMED]`.
+The API gateway and the seven services (security, devices, measurements, homes, notifications, alerts and recommendations), the web application, MQTT ingestion and broker authorization are tested. Up to version 1.1 those contexts were the seven modules of the core service; since 1.2 they were split into services, the core service was retired on October 28, 2026 and each service is tested in its own repository, and the end-to-end tests of `energy-monitor-infra` verify the communication between them (gateway routes, internal API, broker and events on RabbitMQ). The device firmware, the Mosquitto broker, Bluetooth, push notifications and the Android mobile application are outside the automated tests and are declared as known gaps; for the mobile application, type checking and static analysis are also run and a manual test protocol is defined (version 1.3). Performance, load and accessibility (WCAG) are not tested; the specification sets no target for them.
 
 ### Document references
 
@@ -108,7 +108,7 @@ White-box tests (domain and use cases with mocked ports) and black-box tests (HT
 |------------------------------------------------|----------------------------|----------------------------------------------------------------|
 | Spring Boot / spring-boot-starter-test         | 4.1.1                      | Context tests, MockMvc and @MockitoBean (never @MockBean)      |
 | JUnit Jupiter                                  | 6.0.3                      | Execution and parameterized tests                              |
-| Mockito                                        | 5.x [TO BE CONFIRMED]      | Mocked ports (5.20.0 and 5.23.0 in the local Maven repository) |
+| Mockito                                        | 5.x      | Mocked ports (5.20.0 and 5.23.0 in the local Maven repository) |
 | AssertJ                                        | 3.27.7                     | Assertions                                                     |
 | Spring Modulith (spring-modulith-starter-test) | 2.1.1                      | ModularityTests: module boundaries                             |
 | Vitest / Testing Library (React)               | 5.0.3 / 16.3.3             | Web application tests (jsdom)                                  |
@@ -532,7 +532,7 @@ The 107 requirements of the specification are crossed with the test classes. “
 
 | Requirement | Description                                                                                                 | Automated tests               | Coverage    |
 |-------------|-------------------------------------------------------------------------------------------------------------|-------------------------------|-------------|
-| RNF-DIS-01  | [TO BE CONFIRMED] target availability percentage                                                            | —                             | No coverage |
+| RNF-DIS-01  | No target availability percentage is set for this version                                                            | —                             | No coverage |
 | RNF-DIS-02  | The system must tolerate the occasional loss of readings                                                    | DeviceConnectivityServiceTest | Automated   |
 | RNF-DIS-03  | If the system is unavailable, the device must keep measuring and hold up to 30 samples (30 minutes)         | —                             | No coverage |
 | RNF-DIS-04  | The service that receives the devices' data must retry its connection to the system every 10 seconds while… | —                             | No coverage |
@@ -578,7 +578,7 @@ The 107 requirements of the specification are crossed with the test classes. “
 | Requirement | Description                                                                                          | Automated tests | Coverage    |
 |-------------|------------------------------------------------------------------------------------------------------|-----------------|-------------|
 | RNF-ESC-01  | The system must be able to grow in number of users and devices without affecting the user experience | —               | No coverage |
-| RNF-ESC-02  | The target numbers of concurrent users and devices are [TO BE CONFIRMED]                             | —               | No coverage |
+| RNF-ESC-02  | No target numbers of concurrent users and devices are set for this version                             | —               | No coverage |
 
 **Table 31**
 
@@ -600,7 +600,7 @@ The 107 requirements of the specification are crossed with the test classes. “
 | RNF-INT-04  | Browser notifications must only work on a secure connection and require the system to have that service…    | —                           | No coverage |
 | RNF-INT-05  | Device configuration over Bluetooth must be available for up to 10 minutes, must not interrupt measuring…   | —                           | No coverage |
 
-Requirements with no coverage are known gaps (see risks and limitations). Account administration has no requirement in the specification (DOC-01); adding it to the specification is in progress `[TO BE CONFIRMED]`.
+Requirements with no coverage are known gaps (see risks and limitations). Account administration has no requirement in the specification (DOC-01); the specification now covers it with the RF-ADM requirements.
 
 ## Results
 
@@ -675,7 +675,7 @@ No Surefire reports of version 1.2 are attached to the evidence.
 |--------|----------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
 | DEF-01 | Low      | SecuritySupportModelTest.refusesMissingNames                   | The test requires Person to reject a null last name, but the code made it optional on purpose (changeset security-023: a Google account may have no last name). The test is out of date; the code is correct. It was not changed. Version 1.1: the test was updated; it requires the first name and accepts a missing last name, and it passes. | Closed |
 | DEF-02 | Medium   | RecommendationControllerTest.listRequiresHomeId (prueba nueva) | A missing required parameter (for example homeId in GET /api/v1/recommendations or /api/v1/alerts) answers 500 instead of 400: SecurityExceptionHandler declares a globally scoped @ExceptionHandler(Exception.class) that catches MissingServletRequestParameterException. The test was left failing; it was not adjusted. Version 1.1: `handleUnexpected` keeps the 4xx status of framework exceptions (`ErrorResponse`) and `TypeMismatchException` answers 400; the test passes. | Closed |
-| DOC-01 | Low      | Documentación                                                  | Account administration (routes /api/v1/admin, permissions USER.READ, USER.MANAGE and ROLE.MANAGE, the /admin/users screen and administrator notifications) exists in the code but has no requirement in the requirements specification and is not described in the technical and administrator manuals. Version 1.1: the technical and administrator manuals now describe it; the requirement in the specification is still missing `[TO BE CONFIRMED]`. | Partial |
+| DOC-01 | Low      | Documentación                                                  | Account administration (routes /api/v1/admin, permissions USER.READ, USER.MANAGE and ROLE.MANAGE, the /admin/users screen and administrator notifications) exists in the code but has no requirement in the requirements specification and is not described in the technical and administrator manuals. Version 1.1: the technical and administrator manuals now describe it; the specification now includes the requirement (RF-ADM). | Resolved |
 
 ### Version 1.3 (10/28/2026)
 

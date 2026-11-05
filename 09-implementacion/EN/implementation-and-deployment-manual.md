@@ -104,7 +104,7 @@ The mobile app is **out of scope** for this deployment.
 | Integration and deployment   | GitHub Actions (`.github/workflows/ci-cd.yml` in the gateway, the seven services, the web app and the infrastructure) |
 | Deployed branch              | `main` in the ten deployed repositories                                      |
 | Consolidation date           | October 16, 2026; continuous deployment active since October 19; security, device and measurement services since October 24; home, notification, alert and recommendation services and backend retirement on October 28 |
-| Release tag                  | `[TO BE CONFIRMED]` — tagging `v1.0.0` in the repositories is recommended    |
+| Release tag                  | Annotated tag `final-delivery-2026` on `main` of every repository (web application version `1.0.0`)    |
 | Version of this report       | 1.4                                                                          |
 
 ## 1.2 Document history

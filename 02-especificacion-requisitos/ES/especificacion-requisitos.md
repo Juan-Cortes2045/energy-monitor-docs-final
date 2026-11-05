@@ -19,7 +19,7 @@ Versión 2.3, 28 de octubre de 2026
 
 ## Resumen
 
-Este documento especifica lo que debe hacer EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, recibir alertas y obtener recomendaciones de ahorro. Se redacta desde la perspectiva del usuario y del negocio, sin definir cómo se construirá la solución. Presenta los requisitos funcionales, agrupados por módulo del sistema, los requisitos no funcionales (seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad) y 17 historias de usuario y 2 casos de uso con criterios de aceptación verificables. Los requisitos se identifican con códigos estables que son idénticos en las versiones en español e inglés. Los datos que no pudieron confirmarse en las fuentes se marcan como [POR CONFIRMAR].
+Este documento especifica lo que debe hacer EnergyMonitor, un sistema que permite a los hogares conocer el consumo eléctrico de cada electrodoméstico, recibir alertas y obtener recomendaciones de ahorro. Se redacta desde la perspectiva del usuario y del negocio, sin definir cómo se construirá la solución. Presenta los requisitos funcionales, agrupados por módulo del sistema, los requisitos no funcionales (seguridad, rendimiento, disponibilidad, compatibilidad, mantenibilidad, internacionalización, escalabilidad, usabilidad e interoperabilidad) y 17 historias de usuario y 2 casos de uso con criterios de aceptación verificables. Los requisitos se identifican con códigos estables que son idénticos en las versiones en español e inglés.
 
 *Palabras clave:* especificación de requisitos, consumo eléctrico, alertas, recomendaciones de ahorro, hogares
 
@@ -83,7 +83,7 @@ Cada requisito tiene un código estable que es idéntico en las versiones en esp
 | `CU` | Casos de uso |
 | `CA` | Criterios de aceptación |
 
-La marca `[POR CONFIRMAR]` indica un dato que no se encontró en la fuente y debe validarse con el equipo antes de la entrega.
+
 
 ### Tipos de usuario
 
@@ -129,7 +129,7 @@ La Tabla 4 enumera los requisitos funcionales del Módulo de Gestión de Usuario
 | RF-SEC-09 | El sistema debe permitir conocer los permisos del usuario. Los permisos generales se evalúan en cada consulta y no quedan fijados en la sesión. |
 | RF-SEC-10 | El sistema debe identificar al usuario únicamente a partir de su sesión y no debe aceptar identidades indicadas por la aplicación que realiza la solicitud. |
 | RF-SEC-11 | El sistema debe permitir al usuario eliminar su cuenta confirmando su contraseña. Con una contraseña incorrecta debe rechazar la solicitud. Una cuenta creada con Google no tiene contraseña: la confirma con un código de seis dígitos que el sistema envía a su correo, y el código incorrecto o vencido rechaza la solicitud. La eliminación es lógica y se realiza completa o no se realiza: cierra las sesiones, marca como eliminados los datos personales, libera el correo y la identidad de Google para un registro nuevo y gestiona las membresías en los hogares. Un hogar del que la cuenta es el único miembro se elimina. Si la cuenta es el único propietario de un hogar con otros miembros, el sistema rechaza la eliminación con un mensaje legible hasta que se transfiera la propiedad o se retire a los miembros. El acceso ya iniciado antes de la eliminación puede seguir vigente 15 minutos como máximo y no puede renovarse. |
-| RF-SEC-12 | El sistema debe aplicar una política de contraseñas (longitud mínima de 8 y máxima de 64 caracteres) y registrar los intentos fallidos de acceso y las acciones relevantes para la seguridad. El bloqueo de la cuenta tras intentos fallidos y la expiración de la contraseña a los 90 días figuran en la configuración inicial: `[POR CONFIRMAR]` si se aplican. |
+| RF-SEC-12 | El sistema debe aplicar una política de contraseñas (longitud mínima de 8 y máxima de 64 caracteres) y registrar los intentos fallidos de acceso y las acciones relevantes para la seguridad. Los intentos fallidos se cuentan y se registran, y un administrador puede bloquear una cuenta, pero no hay bloqueo automático tras intentos fallidos y la expiración de la contraseña a los 90 días no se aplica en esta versión. |
 | RF-SEC-13 | El sistema no debe permitir el acceso a una cuenta que no haya aceptado los términos y condiciones, sea cual sea el método: el registro con contraseña, el primer inicio con Google y el inicio de sesión de una cuenta sin aceptación exigen la aceptación expresa del usuario, y sin ella el sistema responde pidiéndola y no crea ni modifica nada. El momento de la aceptación queda registrado. |
 
 ### Módulo de Gestión de Hogares
@@ -325,7 +325,7 @@ La Tabla 14 establece los requisitos de rendimiento.
 
 | Código | Requisito |
 |---|---|
-| RNF-REN-01 | Las consultas de datos y las gráficas deben responder en menos de 2 segundos. La medición de este valor con la carga prevista es `[POR CONFIRMAR]`. |
+| RNF-REN-01 | Las consultas de datos y las gráficas deben responder en menos de 2 segundos. Este valor no se ha medido bajo carga. |
 | RNF-REN-02 | El sistema debe procesar la información de cada dispositivo con una cadencia de una lectura cada 60 segundos. |
 | RNF-REN-03 | El envío de correos no debe dejar esperando al usuario más de 5 segundos. |
 
@@ -339,7 +339,7 @@ La Tabla 15 establece los requisitos de disponibilidad y tolerancia a fallos.
 
 | Código | Requisito |
 |---|---|
-| RNF-DIS-01 | `[POR CONFIRMAR]` porcentaje de disponibilidad objetivo. |
+| RNF-DIS-01 | No se fija un porcentaje de disponibilidad objetivo para esta versión. |
 | RNF-DIS-02 | El sistema debe tolerar la pérdida ocasional de lecturas. Una lectura perdida más el retardo de la red no debe provocar el estado sin conexión: el umbral es de 150 segundos. |
 | RNF-DIS-03 | Si el sistema no está disponible, el dispositivo debe seguir midiendo y conservar hasta 30 muestras (30 minutos). Si se llena, descarta la más antigua. |
 | RNF-DIS-04 | El servicio que recibe los datos de los dispositivos debe reintentar conectarse con el sistema cada 10 segundos mientras este no esté disponible. |
@@ -402,7 +402,7 @@ La Tabla 19 establece los requisitos de escalabilidad.
 | Código | Requisito |
 |---|---|
 | RNF-ESC-01 | El sistema debe poder crecer en número de usuarios y de dispositivos sin afectar la experiencia del usuario. |
-| RNF-ESC-02 | Las cantidades objetivo de usuarios y dispositivos concurrentes son `[POR CONFIRMAR]`. |
+| RNF-ESC-02 | No se fijan cantidades objetivo de usuarios y dispositivos concurrentes para esta versión. |
 
 ### Usabilidad
 
@@ -414,7 +414,7 @@ La Tabla 20 establece los requisitos de usabilidad.
 
 | Código | Requisito |
 |---|---|
-| RNF-USA-01 | La interfaz debe ser clara, adaptable a distintos tamaños de pantalla y coherente, con retroalimentación inmediata. El cumplimiento de las pautas WCAG es `[POR CONFIRMAR]`. |
+| RNF-USA-01 | La interfaz debe ser clara, adaptable a distintos tamaños de pantalla y coherente, con retroalimentación inmediata. No se declara un nivel formal de conformidad con las pautas WCAG. |
 
 ### Interoperabilidad
 

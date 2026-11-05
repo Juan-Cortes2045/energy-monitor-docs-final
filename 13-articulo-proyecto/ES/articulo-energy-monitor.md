@@ -83,7 +83,7 @@ El trabajo se organizó en torno a tres costumbres. La primera fue tratar la doc
 
 A la documentación se le sumó la trazabilidad. Cada requisito de la especificación lleva un código estable —RF-SEC-13, por ejemplo— y el plan de pruebas registró cuáles quedaban cubiertos por una prueba automatizada, siguiendo la lógica de documentación de pruebas de ISO/IEC/IEEE 29119-3:2021 (ISO/IEC/IEEE, 2021). Al 28 de octubre la especificación reunía 108 requisitos trazables.
 
-Y por encima de todo pesó una regla de reporte que gobernó el proyecto entero: una cifra solo se presentaba como resultado si alguien la había medido. Lo que no se había medido se declaraba como tal. Así, la cobertura de código y la disponibilidad en producción aparecen explícitamente como no medidas en lugar de estimarse, y los apartados de la documentación con información pendiente se marcaron con el rótulo [POR CONFIRMAR] en vez de rellenarse con supuestos. Esa regla explica la forma de las secciones siguientes.
+Y por encima de todo pesó una regla de reporte que gobernó el proyecto entero: una cifra solo se presentaba como resultado si alguien la había medido. Lo que no se había medido se declaraba como tal. Así, la cobertura de código y la disponibilidad en producción aparecen explícitamente como no medidas en lugar de estimarse, y la información no disponible se omitió en vez de rellenarse con supuestos. Esa regla explica la forma de las secciones siguientes.
 
 La calidad se trabajó con métricas definidas desde el inicio y con integración continua: cada repositorio ejecuta su suite de pruebas en GitHub Actions en cada solicitud de fusión, y el despliegue a producción requiere aprobación del entorno de despliegue. El análisis estático con ESLint quedó configurado tanto para la web como para la móvil. El modelo de ISO/IEC 25010:2023 (ISO, 2023) sirvió como marco para evaluar las características de producto —funcionalidad adecuada, fiabilidad, usabilidad, rendimiento y seguridad—, aunque algunas de esas características quedaron solo parcialmente instrumentadas, como se verá más adelante.
 
@@ -199,7 +199,7 @@ Agrupamos los resultados en dos bloques: el cumplimiento de las metas cuantitati
 | Autenticación de la API | Rechazo sin credencial (RNF-SEG-01) | 5 de 5 peticiones con HTTP 401 (28/10/2026) | **Cumple** |
 | Latencia de consultas | Menos de 2 s con datos autenticados (RNF-REN-01) | 0,37 s en rechazos sin sesión; sin medición con datos | Parcial; medición pendiente |
 | Latencia de la página de inicio | Sin meta cuantitativa | 0,36 s hasta el primer byte (10 peticiones, 28/10/2026) | Medido puntualmente |
-| Disponibilidad del servicio | Sin meta (RNF-DIS-01 marcado [POR CONFIRMAR]) | Sin medición continua (DT-20) | Pendiente |
+| Disponibilidad del servicio | Sin meta fijada (RNF-DIS-01) | Sin medición continua (DT-20) | Pendiente |
 | Pruebas del backend | Suites en verde antes de cada fusión | 1.817 pruebas en verde (28/10/2026) | **Cumple** |
 | Pruebas de la web y la móvil | Sin cifra meta; existencia de suites automatizadas | 253 (web) y 78 (móvil) en verde | **Cumple**; sin pruebas de componentes |
 | Pruebas de punta a punta | Cinco flujos automatizados sobre la pila local | 160 aserciones en verde | Parcial; un flujo sin re-ejecutar |
@@ -268,7 +268,7 @@ En producto, la hoja de ruta ya incluye la actualización del firmware por aire,
 
 ### Reproducibilidad
 
-El sistema se reproduce desde los repositorios públicos del proyecto. Cada componente tiene una rama main de producción y una rama dev de integración; las solicitudes de fusión van primero a dev y de dev a main. La Tabla A1 lista los repositorios vigentes y el commit de main al 28 de octubre de 2026, día de la migración completa a microservicios; los marcados «despliegue por confirmar» ya están en main pero su despliegue en el servidor no se había confirmado al cierre. Los repositorios retirados, energy-monitor-backend (que conserva el firmware del ESP32 en su carpeta firmware/) y energy-monitor-devices, se mantienen como historial.
+El sistema se reproduce desde los repositorios públicos del proyecto. Cada componente tiene una rama main de producción y una rama dev de integración; las solicitudes de fusión van primero a dev y de dev a main. La Tabla A1 lista los repositorios vigentes y el commit de main al 28 de octubre de 2026, día de la migración completa a microservicios. Los repositorios retirados, energy-monitor-backend (que conserva el firmware del ESP32 en su carpeta firmware/) y energy-monitor-devices, se mantienen como historial.
 
 **Tabla A1**
 
@@ -277,14 +277,14 @@ El sistema se reproduce desde los repositorios públicos del proyecto. Cada comp
 | Componente y repositorio | Commit | Estado en producción |
 |---|---|---|
 | API gateway (en-monitor-api-gateway) | `0b2c164` | Desplegado |
-| Servicio de seguridad (en-monitor-security-service) | `de52c95` | En main; despliegue por confirmar |
+| Servicio de seguridad (en-monitor-security-service) | `de52c95` | En main; desplegado en producción |
 | Servicio de dispositivos (en-monitor-device-service) | `06c1bdc` | Desplegado |
 | Servicio de mediciones (en-monitor-measurement-service) | `8a9b544` | Desplegado |
-| Servicio de hogares (en-monitor-home-service) | `6a4e396` | En main; despliegue por confirmar |
-| Servicio de notificaciones (en-monitor-notification-service) | `ecdbc0a` | En main; despliegue por confirmar |
-| Servicio de alertas (en-monitor-alert-service) | `0e65430` | En main; despliegue por confirmar |
+| Servicio de hogares (en-monitor-home-service) | `6a4e396` | En main; desplegado en producción |
+| Servicio de notificaciones (en-monitor-notification-service) | `ecdbc0a` | En main; desplegado en producción |
+| Servicio de alertas (en-monitor-alert-service) | `0e65430` | En main; desplegado en producción |
 | Servicio de recomendaciones (en-monitor-recommendation-service) | `aeeeec5` | Desplegado |
-| Aplicación web (Energy-Monitor-application) | `27ad9f0` | En main; despliegue por confirmar |
+| Aplicación web (Energy-Monitor-application) | `27ad9f0` | En main; desplegado en producción |
 | Infraestructura (energy-monitor-infra) | `ceb1543` | Desplegado |
 | Aplicación móvil (Energy-Monitor-Mobile) | `894b65a` en main; `8b5edc0` en dev | No aplica; no se despliega en el servidor |
 

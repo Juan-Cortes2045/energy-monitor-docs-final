@@ -34,12 +34,10 @@ Each diagram also ships as a PNG, ready to drop into the document:
 | `web-navigation-map-1.png` | General flow of the web application |
 | `web-navigation-map-2.png` | Dashboard and home detail |
 | `web-navigation-map-3.png` | Auxiliary screens of the web application |
-| `web-navigation-map-4.png` | Administration (**pending**: does not exist yet) |
+| `web-navigation-map-4.png` | Administration (ADMIN role) |
 | `mobile-navigation-map-1.png` | General flow of the mobile application |
 | `mobile-navigation-map-2.png` | Main panel and home detail |
 | `mobile-navigation-map-3.png` | Auxiliary screens of the mobile application |
-
-> The existing PNGs are from version 1.0 and must be exported again from the version 1.1 Mermaid (`[TO BE UPDATED]`).
 
 ## 2. Source of the information
 

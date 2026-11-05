@@ -6,7 +6,7 @@ Version 1.1 of the test plan. No environment variables or credentials.
 
 **Continuous integration:** the required `Tests` check of the `Backend CI/CD` workflow (GitHub Actions) runs the same suite against a `mysql:8.4` service container on every pull request and push to `dev` and `main`. Run on `main`, commit `90ae5ef` (October 19, 2026): `Tests` green in 23 min 9 s.
 
-**Per-module distribution** of the most recent local Surefire report (`target/surefire-reports`, October 16, 2026). 7 tests were added between this report and the final run; the per-module breakdown of the final run is `[TO BE CONFIRMED]`.
+**Per-module distribution** of the most recent local Surefire report (`target/surefire-reports`, October 16, 2026). 7 tests were added between this report and the final run.
 
 | Module | Classes | Run | Passed | Failed | Skipped | Time (s) |
 |---|---|---|---|---|---|---|

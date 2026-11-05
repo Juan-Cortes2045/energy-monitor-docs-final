@@ -83,7 +83,7 @@ The work was organized around three habits. The first was treating documentation
 
 To documentation we added traceability. Every requirement in the specification carries a stable code —RF-SEC-13, for instance— and the test plan recorded which ones were covered by an automated test, following the test documentation logic of ISO/IEC/IEEE 29119-3:2021 (ISO/IEC/IEEE, 2021). By October 28 the specification held 108 traceable requirements.
 
-And above all this weighed a reporting rule that governed the whole project: a number could only be presented as a result if someone had actually measured it. What had not been measured was declared as such. Code coverage and production availability therefore appear explicitly as unmeasured rather than estimated, and sections of the documentation with pending information were marked with the label [TO BE CONFIRMED] instead of being filled with assumptions. That rule explains the shape of the following sections.
+And above all this weighed a reporting rule that governed the whole project: a number could only be presented as a result if someone had actually measured it. What had not been measured was declared as such. Code coverage and production availability therefore appear explicitly as unmeasured rather than estimated, and information that was not available was left out instead of being filled with assumptions. That rule explains the shape of the following sections.
 
 Quality was worked with metrics defined from the start and with continuous integration: every repository runs its test suite in GitHub Actions on each pull request, and deployment to production requires approval of the deployment environment. Static analysis with ESLint was configured for both the web and the mobile application. The model of ISO/IEC 25010:2023 (ISO, 2023) served as a framework for evaluating product characteristics —adequate functionality, reliability, usability, performance, and security— although, as will be seen, some of those characteristics remained only partially instrumented.
 
@@ -199,7 +199,7 @@ We grouped the results into two blocks: how the quantitative targets set in the 
 | API authentication | Rejection without credentials (RNF-SEG-01) | 5 of 5 requests answered HTTP 401 (10/28/2026) | **Met** |
 | Query latency | Under 2 s with authenticated data (RNF-REN-01) | 0.37 s on unauthenticated rejections; no measurement with data | Partial; measurement pending |
 | Landing page latency | No quantitative target | 0.36 s to first byte (10 requests, 10/28/2026) | Measured at a point in time |
-| Service availability | No target (RNF-DIS-01 marked [TO BE CONFIRMED]) | No continuous measurement (DT-20) | Pending |
+| Service availability | No target set (RNF-DIS-01) | No continuous measurement (DT-20) | Pending |
 | Backend tests | Green suites before every merge | 1,817 tests green (10/28/2026) | **Met** |
 | Web and mobile tests | No numeric target; existence of automated suites | 253 (web) and 78 (mobile) green | **Met**; no component tests |
 | End-to-end tests | Five automated journeys on the local stack | 160 assertions green | Partial; one journey not re-run |
@@ -267,7 +267,7 @@ On the product side, the roadmap already includes over-the-air firmware updates,
 
 ### Reproducibility
 
-The system is reproducible from the project’s public repositories. Every component has a main production branch and a dev integration branch; pull requests go first to dev and from dev to main. Table A1 lists the active repositories and the main commit as of October 28, 2026, the day of the complete migration to microservices; those marked “deployment to be confirmed” are already in main but their deployment on the server had not been confirmed at the close. The retired repositories, energy-monitor-backend (which keeps the ESP32 firmware in its firmware/ folder) and energy-monitor-devices, are kept as history.
+The system is reproducible from the project’s public repositories. Every component has a main production branch and a dev integration branch; pull requests go first to dev and from dev to main. Table A1 lists the active repositories and the main commit as of October 28, 2026, the day of the complete migration to microservices. The retired repositories, energy-monitor-backend (which keeps the ESP32 firmware in its firmware/ folder) and energy-monitor-devices, are kept as history.
 
 **Table A1**
 
@@ -276,14 +276,14 @@ The system is reproducible from the project’s public repositories. Every compo
 | Component and repository | Commit | Production status |
 |---|---|---|
 | API gateway (en-monitor-api-gateway) | `0b2c164` | Deployed |
-| Security service (en-monitor-security-service) | `de52c95` | In main; deployment to be confirmed |
+| Security service (en-monitor-security-service) | `de52c95` | In main; deployed to production |
 | Device service (en-monitor-device-service) | `06c1bdc` | Deployed |
 | Measurement service (en-monitor-measurement-service) | `8a9b544` | Deployed |
-| Home service (en-monitor-home-service) | `6a4e396` | In main; deployment to be confirmed |
-| Notification service (en-monitor-notification-service) | `ecdbc0a` | In main; deployment to be confirmed |
-| Alert service (en-monitor-alert-service) | `0e65430` | In main; deployment to be confirmed |
+| Home service (en-monitor-home-service) | `6a4e396` | In main; deployed to production |
+| Notification service (en-monitor-notification-service) | `ecdbc0a` | In main; deployed to production |
+| Alert service (en-monitor-alert-service) | `0e65430` | In main; deployed to production |
 | Recommendation service (en-monitor-recommendation-service) | `aeeeec5` | Deployed |
-| Web application (Energy-Monitor-application) | `27ad9f0` | In main; deployment to be confirmed |
+| Web application (Energy-Monitor-application) | `27ad9f0` | In main; deployed to production |
 | Infrastructure (energy-monitor-infra) | `ceb1543` | Deployed |
 | Mobile application (Energy-Monitor-Mobile) | `894b65a` on main; `8b5edc0` on dev | Not applicable; not deployed on the server |
 

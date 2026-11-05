@@ -307,7 +307,7 @@ The rule is not to adopt a higher level while the lower one is not exhausted. Th
 
 ### Roadmap
 
-Table 13 orders the work in two versions: 1.1, dedicated to paying the quality, security, verification and operations debt, and 2.0, dedicated to functional growth. MP-01, MP-03, MP-05, MP-11, MP-21 and MP-22 were already delivered in October 2026. The remaining dates are tentative and remain to be confirmed with the team.
+Table 13 orders the work in two versions: 1.1, dedicated to paying the quality, security, verification and operations debt, and 2.0, dedicated to functional growth. MP-01, MP-03, MP-05, MP-11, MP-21 and MP-22 were already delivered in October 2026. The remaining dates are tentative.
 
 **Table 13**
 
@@ -315,8 +315,8 @@ Table 13 orders the work in two versions: 1.1, dedicated to paying the quality, 
 
 | Version | Period | Deliverables | Debt it closes |
 |---|---|---|---|
-| 1.1 | Fourth quarter of 2026 `[TO BE CONFIRMED]` | Delivered: MP-01 (error handling), MP-03 (continuous integration), MP-05 (secure cookies) MP-21 (security, device and measurement microservices) and MP-22 (migration of the four remaining modules). Pending: MP-02 (coverage), MP-04 (hermetic tests), MP-17 (off-site backups) and MP-18 (monitoring) | DT-01, DT-04, DT-12 and DT-23 (closed); DT-24 (in progress); DT-07, DT-11, DT-19 and DT-20 |
-| 2.0 | 2027 `[TO BE CONFIRMED]` | MP-06 to MP-10, MP-12 to MP-16, MP-19 and MP-20: lint in CI, mobile tests, shared limiter, QoS 1, history by linkage, requirement coverage, administration requirements, OTA, meters, continuous analysis, staging and faster CI. MP-11 was already delivered | DT-02, DT-03, DT-05, DT-06, DT-13, DT-15 to DT-18, DT-21, DT-22 and DT-25 |
+| 1.1 | Fourth quarter of 2026 | Delivered: MP-01 (error handling), MP-03 (continuous integration), MP-05 (secure cookies) MP-21 (security, device and measurement microservices) and MP-22 (migration of the four remaining modules). Pending: MP-02 (coverage), MP-04 (hermetic tests), MP-17 (off-site backups) and MP-18 (monitoring) | DT-01, DT-04, DT-12 and DT-23 (closed); DT-24 (in progress); DT-07, DT-11, DT-19 and DT-20 |
+| 2.0 | 2027 | MP-06 to MP-10, MP-12 to MP-16, MP-19 and MP-20: lint in CI, mobile tests, shared limiter, QoS 1, history by linkage, requirement coverage, administration requirements, OTA, meters, continuous analysis, staging and faster CI. MP-11 was already delivered | DT-02, DT-03, DT-05, DT-06, DT-13, DT-15 to DT-18, DT-21, DT-22 and DT-25 |
 
 ## Conclusions
 
@@ -348,7 +348,7 @@ International Organization for Standardization. (2023). *Systems and software en
 
 SonarSource. (2025). *SonarQube documentation* [Documentation]. https://docs.sonarsource.com/sonarqube/
 
-## Pending Items to Confirm
+## Open Decisions for the Next Versions
 
 - Responsible person and date for each technical debt item (columns not included so as not to assume them).
 - Minimum test coverage threshold (MP-02).
