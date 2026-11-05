@@ -6,7 +6,7 @@ Versión 1.1 del plan de pruebas. Sin variables de entorno ni credenciales.
 
 **Integración continua:** el *check* obligatorio `Tests` del workflow `Backend CI/CD` (GitHub Actions) ejecuta la misma suite contra un contenedor de servicio `mysql:8.4` en cada *pull request* y *push* a `dev` y `main`. Ejecución sobre `main`, commit `90ae5ef` (19 de octubre de 2026): `Tests` en verde en 23 min 9 s.
 
-**Distribución por módulo** del reporte Surefire local más reciente (`target/surefire-reports`, 16 de octubre de 2026). Entre este reporte y la ejecución final se agregaron 7 pruebas; el desglose por módulo de la ejecución final queda `[POR CONFIRMAR]`.
+**Distribución por módulo** del reporte Surefire local más reciente (`target/surefire-reports`, 16 de octubre de 2026). Entre este reporte y la ejecución final se agregaron 7 pruebas.
 
 | Módulo | Clases | Ejecutadas | Aprobadas | Fallidas | Omitidas | Tiempo (s) |
 |---|---|---|---|---|---|---|

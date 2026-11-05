@@ -44,7 +44,7 @@ Documentar las pruebas que ya existen y se ejecutan en EnergyMonitor, y mostrar 
 
 ### Alcance
 
-Se prueban el API gateway y los siete servicios (seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones), la aplicación web, la ingesta MQTT y la autorización del broker. Hasta la versión 1.1 esos contextos eran los siete módulos del servicio central; desde la 1.2 se repartieron en servicios, el servicio central se retiró el 28 de octubre de 2026 y cada servicio se prueba en su repositorio, y las pruebas de punta a punta de `energy-monitor-infra` verifican la comunicación entre ellos (rutas del gateway, API interna, broker y eventos en RabbitMQ). El firmware del dispositivo, el broker Mosquitto, Bluetooth, las notificaciones push y la aplicación móvil Android quedan fuera de las pruebas automatizadas y se declaran como vacíos conocidos; de la aplicación móvil se ejecutan además la verificación de tipos y el análisis estático, y se define un protocolo de pruebas manuales (versión 1.3). No se prueban el rendimiento, la carga ni la accesibilidad (WCAG), que la especificación deja como `[POR CONFIRMAR]`.
+Se prueban el API gateway y los siete servicios (seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones), la aplicación web, la ingesta MQTT y la autorización del broker. Hasta la versión 1.1 esos contextos eran los siete módulos del servicio central; desde la 1.2 se repartieron en servicios, el servicio central se retiró el 28 de octubre de 2026 y cada servicio se prueba en su repositorio, y las pruebas de punta a punta de `energy-monitor-infra` verifican la comunicación entre ellos (rutas del gateway, API interna, broker y eventos en RabbitMQ). El firmware del dispositivo, el broker Mosquitto, Bluetooth, las notificaciones push y la aplicación móvil Android quedan fuera de las pruebas automatizadas y se declaran como vacíos conocidos; de la aplicación móvil se ejecutan además la verificación de tipos y el análisis estático, y se define un protocolo de pruebas manuales (versión 1.3). No se prueban el rendimiento, la carga ni la accesibilidad (WCAG), para los que la especificación no fija meta.
 
 ### Referencias del documento
 
@@ -108,7 +108,7 @@ Se combinan pruebas de caja blanca (dominio y casos de uso con puertos simulados
 |------------------------------------------------|----------------------------|----------------------------------------------------------------------|
 | Spring Boot / spring-boot-starter-test         | 4.1.1                      | Pruebas de contexto, MockMvc y @MockitoBean (nunca @MockBean)        |
 | JUnit Jupiter                                  | 6.0.3                      | Ejecución y pruebas parametrizadas                                   |
-| Mockito                                        | 5.x [POR CONFIRMAR]        | Puertos simulados (5.20.0 y 5.23.0 en el repositorio local de Maven) |
+| Mockito                                        | 5.x        | Puertos simulados (5.20.0 y 5.23.0 en el repositorio local de Maven) |
 | AssertJ                                        | 3.27.7                     | Aserciones                                                           |
 | Spring Modulith (spring-modulith-starter-test) | 2.1.1                      | ModularityTests: límites de módulo                                   |
 | Vitest / Testing Library (React)               | 5.0.3 / 16.3.3             | Pruebas de la aplicación web (jsdom)                                 |
@@ -532,7 +532,7 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 
 | Requisito  | Descripción                                                                                              | Pruebas automatizadas         | Cobertura     |
 |------------|----------------------------------------------------------------------------------------------------------|-------------------------------|---------------|
-| RNF-DIS-01 | [POR CONFIRMAR] porcentaje de disponibilidad objetivo                                                    | —                             | Sin cobertura |
+| RNF-DIS-01 | No se fija un porcentaje de disponibilidad objetivo para esta versión                                                    | —                             | Sin cobertura |
 | RNF-DIS-02 | El sistema debe tolerar la pérdida ocasional de lecturas                                                 | DeviceConnectivityServiceTest | Automatizada  |
 | RNF-DIS-03 | Si el sistema no está disponible, el dispositivo debe seguir midiendo y conservar hasta 30 muestras (30… | —                             | Sin cobertura |
 | RNF-DIS-04 | El servicio que recibe los datos de los dispositivos debe reintentar conectarse con el sistema cada 10…  | —                             | Sin cobertura |
@@ -578,7 +578,7 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 | Requisito  | Descripción                                                                                                 | Pruebas automatizadas | Cobertura     |
 |------------|-------------------------------------------------------------------------------------------------------------|-----------------------|---------------|
 | RNF-ESC-01 | El sistema debe poder crecer en número de usuarios y de dispositivos sin afectar la experiencia del usuario | —                     | Sin cobertura |
-| RNF-ESC-02 | Las cantidades objetivo de usuarios y dispositivos concurrentes son [POR CONFIRMAR]                         | —                     | Sin cobertura |
+| RNF-ESC-02 | No se fijan cantidades objetivo de usuarios y dispositivos concurrentes para esta versión                         | —                     | Sin cobertura |
 
 **Tabla 31**
 
@@ -600,7 +600,7 @@ Los 107 requisitos de la especificación se cruzan con las clases de prueba. «C
 | RNF-INT-04 | Las notificaciones del navegador solo deben funcionar en una conexión segura y requieren que el sistema…    | —                           | Sin cobertura |
 | RNF-INT-05 | La configuración del dispositivo por Bluetooth debe estar disponible hasta 10 minutos, no debe interrumpir… | —                           | Sin cobertura |
 
-Los requisitos sin cobertura son vacíos conocidos (ver riesgos y limitaciones). La administración de cuentas no tiene requisito en la especificación (DOC-01); su incorporación a la especificación está en curso `[POR CONFIRMAR]`.
+Los requisitos sin cobertura son vacíos conocidos (ver riesgos y limitaciones). La administración de cuentas no tiene requisito en la especificación (DOC-01); la especificación ya la cubre con los requisitos RF-ADM.
 
 ## Resultados
 
@@ -675,7 +675,7 @@ Se escribieron 4 clases para requisitos críticos sin ninguna cobertura automati
 |--------|-----------|----------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | DEF-01 | Baja      | SecuritySupportModelTest.refusesMissingNames                   | La prueba exige que Person rechace un apellido nulo, pero el código lo hizo opcional a propósito (changeset security-023: una cuenta de Google puede no tener apellido). La prueba quedó desactualizada; el código es correcto. No se modificó. Versión 1.1: la prueba se actualizó; exige el nombre y acepta el apellido ausente, y aprueba. | Cerrado |
 | DEF-02 | Media     | RecommendationControllerTest.listRequiresHomeId (prueba nueva) | Un parámetro obligatorio ausente (por ejemplo homeId en GET /api/v1/recommendations o /api/v1/alerts) responde 500 en lugar de 400: SecurityExceptionHandler declara @ExceptionHandler(Exception.class) con alcance global y atrapa MissingServletRequestParameterException. La prueba se dejó fallando; no se ajustó. Versión 1.1: `handleUnexpected` conserva el estado 4xx de las excepciones del framework (`ErrorResponse`) y `TypeMismatchException` responde 400; la prueba aprueba. | Cerrado |
-| DOC-01 | Baja      | Documentación                                                  | La administración de cuentas (rutas /api/v1/admin, permisos USER.READ, USER.MANAGE y ROLE.MANAGE, pantalla /admin/users y notificaciones de administrador) existe en el código pero no tiene requisito en la especificación de requisitos ni está descrita en los manuales técnico y de administrador. Versión 1.1: los manuales técnico y de administrador ya la describen; falta el requisito en la especificación `[POR CONFIRMAR]`. | Parcial |
+| DOC-01 | Baja      | Documentación                                                  | La administración de cuentas (rutas /api/v1/admin, permisos USER.READ, USER.MANAGE y ROLE.MANAGE, pantalla /admin/users y notificaciones de administrador) existe en el código pero no tiene requisito en la especificación de requisitos ni está descrita en los manuales técnico y de administrador. Versión 1.1: los manuales técnico y de administrador ya la describen; la especificación ya incluye el requisito (RF-ADM). | Resuelto |
 
 ### Versión 1.3 (28/10/2026)
 
