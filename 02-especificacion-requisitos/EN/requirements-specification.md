@@ -19,7 +19,7 @@ October 16, 2026 (updated October 28, 2026)
 
 ## Abstract
 
-This document specifies what EnergyMonitor must do, a system that lets households see the electrical consumption of each appliance, receive alerts and get saving recommendations. It is written from the perspective of the user and the business, without defining how the solution will be built. It presents the functional requirements, grouped by system module, the non-functional requirements (security, performance, availability, compatibility, maintainability, internationalization, scalability, usability and interoperability) and 17 user stories and 2 use cases with verifiable acceptance criteria. Requirements are identified with stable codes that are identical in the Spanish and English versions. Data that could not be confirmed in the sources are marked as [TO BE CONFIRMED].
+This document specifies what EnergyMonitor must do, a system that lets households see the electrical consumption of each appliance, receive alerts and get saving recommendations. It is written from the perspective of the user and the business, without defining how the solution will be built. It presents the functional requirements, grouped by system module, the non-functional requirements (security, performance, availability, compatibility, maintainability, internationalization, scalability, usability and interoperability) and 17 user stories and 2 use cases with verifiable acceptance criteria. Requirements are identified with stable codes that are identical in the Spanish and English versions.
 
 *Keywords:* requirements specification, electrical consumption, alerts, saving recommendations, households
 
@@ -83,7 +83,7 @@ Every requirement has a stable code that is identical in the Spanish and English
 | `CU` | Use cases |
 | `CA` | Acceptance criteria |
 
-The prefixes keep their Spanish form in both versions so that codes match exactly. The marker `[TO BE CONFIRMED]` (`[POR CONFIRMAR]` in the Spanish version) flags a value that was not found in the source and must be validated with the team before delivery.
+The prefixes keep their Spanish form in both versions so that codes match exactly.
 
 ### User Types
 
@@ -129,7 +129,7 @@ Table 4 lists the functional requirements of the User and Profile Management Mod
 | RF-SEC-09 | The system must allow knowing the user's permissions. General permissions are evaluated on every query and are not fixed in the session. |
 | RF-SEC-10 | The system must identify the user only from their session and must not accept identities indicated by the application making the request. |
 | RF-SEC-11 | The system must allow the user to delete their account by confirming their password. With a wrong password it must reject the request. An account created with Google has no password: it confirms with a six-digit code that the system sends to its email, and a wrong or expired code rejects the request. Deletion is soft and all-or-nothing: it closes sessions, marks personal data as deleted, releases the email and the Google identity for a new registration and handles memberships in homes. A home of which the account is the only member is deleted. If the account is the only owner of a home with other members, the system rejects the deletion with a readable message until ownership is transferred or the members are removed. Access already granted before deletion may remain valid for at most 15 minutes and cannot be renewed. |
-| RF-SEC-12 | The system must apply a password policy (minimum length of 8 and maximum of 64 characters) and record failed access attempts and security-relevant actions. Account lockout after failed attempts and 90-day password expiration appear in the initial configuration: whether they are enforced is `[TO BE CONFIRMED]`. |
+| RF-SEC-12 | The system must apply a password policy (minimum length of 8 and maximum of 64 characters) and record failed access attempts and security-relevant actions. Failed attempts are counted and logged, and an administrator can block an account, but there is no automatic lockout after failed attempts and the 90-day password expiration is not enforced in this version. |
 | RF-SEC-13 | The system must not allow access to an account that has not accepted the terms and conditions, whatever the method: registration with a password, the first sign-in with Google and the sign-in of an account without acceptance require the user's express acceptance, and without it the system answers asking for it and neither creates nor changes anything. The moment of acceptance is recorded. |
 
 ### Home Management Module
@@ -325,7 +325,7 @@ Table 14 sets the performance requirements.
 
 | Code | Requirement |
 |---|---|
-| RNF-REN-01 | Data queries and charts must respond in under 2 seconds. Measuring this value under the expected load is `[TO BE CONFIRMED]`. |
+| RNF-REN-01 | Data queries and charts must respond in under 2 seconds. This value has not been measured under load. |
 | RNF-REN-02 | The system must process each device's information at a cadence of one reading every 60 seconds. |
 | RNF-REN-03 | Sending emails must not keep the user waiting more than 5 seconds. |
 
@@ -339,7 +339,7 @@ Table 15 sets the availability and fault tolerance requirements.
 
 | Code | Requirement |
 |---|---|
-| RNF-DIS-01 | `[TO BE CONFIRMED]` target availability percentage. |
+| RNF-DIS-01 | No target availability percentage is set for this version. |
 | RNF-DIS-02 | The system must tolerate the occasional loss of readings. One lost reading plus network delay must not cause the offline state: the threshold is 150 seconds. |
 | RNF-DIS-03 | If the system is unavailable, the device must keep measuring and hold up to 30 samples (30 minutes). If full, it drops the oldest. |
 | RNF-DIS-04 | The service that receives the devices' data must retry its connection to the system every 10 seconds while the system is unavailable. |
@@ -402,7 +402,7 @@ Table 19 sets the scalability requirements.
 | Code | Requirement |
 |---|---|
 | RNF-ESC-01 | The system must be able to grow in number of users and devices without affecting the user experience. |
-| RNF-ESC-02 | The target numbers of concurrent users and devices are `[TO BE CONFIRMED]`. |
+| RNF-ESC-02 | No target numbers of concurrent users and devices are set for this version. |
 
 ### Usability
 
@@ -414,7 +414,7 @@ Table 20 sets the usability requirements.
 
 | Code | Requirement |
 |---|---|
-| RNF-USA-01 | The interface must be clear, adaptable to different screen sizes and consistent, with immediate feedback. Compliance with the WCAG guidelines is `[TO BE CONFIRMED]`. |
+| RNF-USA-01 | The interface must be clear, adaptable to different screen sizes and consistent, with immediate feedback. No formal WCAG conformance level is declared. |
 
 ### Interoperability
 
