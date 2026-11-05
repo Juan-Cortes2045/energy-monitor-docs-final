@@ -37,12 +37,10 @@ Cada diagrama incluye además su versión en PNG, lista para insertar en el docu
 | `mapa-navegacion-web-1.png` | Flujo general de la web |
 | `mapa-navegacion-web-2.png` | Panel de hogares y detalle del hogar |
 | `mapa-navegacion-web-3.png` | Pantallas auxiliares de la web |
-| `mapa-navegacion-web-4.png` | Administración (**pendiente**: no existe todavía) |
+| `mapa-navegacion-web-4.png` | Administración (rol ADMIN) |
 | `mapa-navegacion-movil-1.png` | Flujo general del móvil |
 | `mapa-navegacion-movil-2.png` | Panel principal y detalle del hogar |
 | `mapa-navegacion-movil-3.png` | Pantallas auxiliares del móvil |
-
-> Los PNG existentes son de la versión 1.0 y deben exportarse de nuevo desde el Mermaid de la versión 1.1 (`[POR ACTUALIZAR]`).
 
 ## 2. Origen de la información
 

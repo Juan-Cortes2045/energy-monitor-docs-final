@@ -266,8 +266,6 @@ flowchart TD
 
 **Figure 3.** [Download PNG image](web-navigation-map-3.png)
 
-> The PNG Figures 1 to 3 predate version 1.1 (`[TO BE UPDATED]`): export them again from the Mermaid code of this file.
-
 ## 3.1 Map 4 — Administration (ADMIN role)
 
 An account with the global `ADMIN` role only sees the administration, its notifications, the settings and its account. `UserOnlyRoute` sends it back to `/admin/users` when it tries to open the home screens, and `RequirePermission` sends to the dashboard whoever lacks `USER.READ`.
@@ -323,7 +321,7 @@ flowchart TD
   classDef screen fill:#ffffff,stroke:#8a8a8a,color:#222;
 ```
 
-**Figure 4.** PNG image pending: `web-navigation-map-4.png` (export this diagram).
+**Figure 4.** [Download PNG image](web-navigation-map-4.png)
 
 ## 4. How to read the maps
 
