@@ -53,14 +53,14 @@ Commit en `main` de cada repositorio al cierre del 28 de octubre de 2026; el mó
 | Repositorio | Commit | Estado en producción |
 |---|---|---|
 | en-monitor-api-gateway | `0b2c164` | Desplegado |
-| en-monitor-security-service | `de52c95` | En `main` (perfil interno con foto); despliegue por confirmar |
+| en-monitor-security-service | `de52c95` | En `main` (perfil interno con foto); desplegado en producción |
 | en-monitor-device-service | `06c1bdc` | Desplegado |
 | en-monitor-measurement-service | `8a9b544` | Desplegado |
-| en-monitor-home-service | `6a4e396` | En `main` (miembros con foto); despliegue por confirmar |
-| en-monitor-notification-service | `ecdbc0a` | En `main` (texto de la alerta de consumo inusual); despliegue por confirmar |
-| en-monitor-alert-service | `0e65430` | En `main` (alerta de consumo inusual); despliegue por confirmar |
+| en-monitor-home-service | `6a4e396` | En `main` (miembros con foto); desplegado en producción |
+| en-monitor-notification-service | `ecdbc0a` | En `main` (texto de la alerta de consumo inusual); desplegado en producción |
+| en-monitor-alert-service | `0e65430` | En `main` (alerta de consumo inusual); desplegado en producción |
 | en-monitor-recommendation-service | `aeeeec5` | Desplegado |
-| Energy-Monitor-application | `27ad9f0` | En `main` (modales de ayuda, visor de fotos y novedades); despliegue por confirmar |
+| Energy-Monitor-application | `27ad9f0` | En `main` (modales de ayuda, visor de fotos y novedades); desplegado en producción |
 | energy-monitor-infra | `ceb1543` | Desplegado |
 | Energy-Monitor-Mobile (no se despliega en el servidor) | `58f9cbc` en `main`; `cf0fcf7` en `dev` (sincronizados el 2 de noviembre de 2026) | No aplica |
 

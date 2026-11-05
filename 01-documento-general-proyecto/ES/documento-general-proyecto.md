@@ -178,8 +178,8 @@ La Tabla 7 reúne los hitos del proyecto con su fecha estimada.
 | H-03 | Fin de la fase 2: una alerta por superar un límite, visible en web y móvil con su notificación | 31 de agosto de 2026 | Cumplido |
 | H-04 | Fin de la fase 3: recomendación basada en el consumo propio e interfaz en más de un idioma | 30 de septiembre de 2026 | Cumplido |
 | H-05 | Documentación bilingüe completa (acta de constitución y especificación de requisitos) | 12 de octubre de 2026 | En curso |
-| H-06 | Pruebas de extremo a extremo y manuales de usuario, técnico y de instalación | 14 de octubre de 2026 | `[POR CONFIRMAR]`. Las pruebas de extremo a extremo en producción están pendientes de evidencia |
-| H-07 | Informe técnico y de costos, y ensayo de la demostración | 15 de octubre de 2026 | `[POR CONFIRMAR]` |
+| H-06 | Pruebas de extremo a extremo y manuales de usuario, técnico y de instalación | 14 de octubre de 2026 | Cumplido, salvo las pruebas de extremo a extremo en producción, que están pendientes de evidencia |
+| H-07 | Informe técnico y de costos, y ensayo de la demostración | 15 de octubre de 2026 | Cumplido |
 | H-08 | Entrega final y demostración en vivo | 28 de octubre de 2026 | Pendiente |
 | H-09 | Puesta en producción en `https://energy-monitor.tech` con integración y despliegue continuos | 19 de octubre de 2026 | Cumplido |
 

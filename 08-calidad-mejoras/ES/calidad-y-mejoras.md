@@ -307,7 +307,7 @@ La regla es no adoptar un nivel superior mientras el inferior no se agote. La se
 
 ### Hoja de ruta
 
-La Tabla 13 ordena el trabajo en dos versiones: la 1.1, dedicada a pagar la deuda de calidad, seguridad, verificación y operación, y la 2.0, dedicada al crecimiento funcional. MP-01, MP-03, MP-05, MP-11, MP-21 y MP-22 ya se entregaron en octubre de 2026. Las fechas restantes son tentativas y quedan por confirmar con el equipo.
+La Tabla 13 ordena el trabajo en dos versiones: la 1.1, dedicada a pagar la deuda de calidad, seguridad, verificación y operación, y la 2.0, dedicada al crecimiento funcional. MP-01, MP-03, MP-05, MP-11, MP-21 y MP-22 ya se entregaron en octubre de 2026. Las fechas restantes son tentativas.
 
 **Tabla 13**
 
@@ -315,8 +315,8 @@ La Tabla 13 ordena el trabajo en dos versiones: la 1.1, dedicada a pagar la deud
 
 | Versión | Periodo | Entregables | Deuda que cierra |
 |---|---|---|---|
-| 1.1 | Cuarto trimestre de 2026 `[POR CONFIRMAR]` | Entregadas: MP-01 (manejo de errores), MP-03 (integración continua), MP-05 (cookies seguras) MP-21 (microservicios de seguridad, dispositivos y mediciones) y MP-22 (migración de los cuatro módulos restantes). Pendientes: MP-02 (cobertura), MP-04 (pruebas herméticas), MP-17 (respaldos externos) y MP-18 (monitoreo) | DT-01, DT-04, DT-12, DT-23 y DT-24 (cerradas); DT-07, DT-11, DT-19 y DT-20 |
-| 2.0 | 2027 `[POR CONFIRMAR]` | MP-06 a MP-10, MP-12 a MP-16, MP-19 y MP-20: lint en CI, pruebas móviles, limitador compartido, QoS 1, historial por vinculación, cobertura de requisitos, requisitos de administración, OTA, medidores, análisis continuo, *staging* y CI más rápida. MP-11 ya se entregó | DT-02, DT-03, DT-05, DT-06, DT-13, DT-15 a DT-18, DT-21, DT-22 y DT-25 |
+| 1.1 | Cuarto trimestre de 2026 | Entregadas: MP-01 (manejo de errores), MP-03 (integración continua), MP-05 (cookies seguras) MP-21 (microservicios de seguridad, dispositivos y mediciones) y MP-22 (migración de los cuatro módulos restantes). Pendientes: MP-02 (cobertura), MP-04 (pruebas herméticas), MP-17 (respaldos externos) y MP-18 (monitoreo) | DT-01, DT-04, DT-12, DT-23 y DT-24 (cerradas); DT-07, DT-11, DT-19 y DT-20 |
+| 2.0 | 2027 | MP-06 a MP-10, MP-12 a MP-16, MP-19 y MP-20: lint en CI, pruebas móviles, limitador compartido, QoS 1, historial por vinculación, cobertura de requisitos, requisitos de administración, OTA, medidores, análisis continuo, *staging* y CI más rápida. MP-11 ya se entregó | DT-02, DT-03, DT-05, DT-06, DT-13, DT-15 a DT-18, DT-21, DT-22 y DT-25 |
 
 ## Conclusiones
 
@@ -348,7 +348,7 @@ International Organization for Standardization. (2023). *Systems and software en
 
 SonarSource. (2025). *SonarQube documentation* [Documentación]. https://docs.sonarsource.com/sonarqube/
 
-## Pendientes por confirmar
+## Decisiones abiertas para las próximas versiones
 
 - Responsable y fecha de cada elemento de deuda técnica (columnas no incluidas para no suponerlas).
 - Umbral mínimo de cobertura de pruebas (MP-02).

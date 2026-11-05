@@ -17,7 +17,7 @@ Ficha: 3145556
 | **Dato**             | **Información**                                                                 |
 |----------------------|---------------------------------------------------------------------------------|
 | Integrantes          | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga                       |
-| Instructor           | `[POR CONFIRMAR]`                                                               |
+| Instructor           | Equipo de instructores de la ficha 3145556                                                               |
 | Centro de Formación  | Centro de la Industria, la Empresa y los Servicios (CIES) – SENA Regional Huila |
 | Programa             | Tecnología en Análisis y Desarrollo de Software (ADSO)                          |
 | Ficha                | 3145556                                                                         |

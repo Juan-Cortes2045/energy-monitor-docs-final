@@ -17,7 +17,7 @@ Group (Ficha): 3145556
 | **Item**             | **Information**                                                                 |
 |----------------------|---------------------------------------------------------------------------------|
 | Team members         | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga                       |
-| Instructor           | `[TO BE CONFIRMED]`                                                             |
+| Instructor           | Instructor team of ficha 3145556                                |
 | Training center      | Center for Industry, Business and Services (CIES) – SENA Huila Regional         |
 | Program              | Technology in Software Analysis and Development (ADSO)                          |
 | Group (Ficha)        | 3145556                                                                         |
@@ -277,10 +277,26 @@ The seven microservices share the base: spring-boot-starter-webmvc, spring-boot-
 
 The system follows a layered client-server architecture, with the logic split into seven microservices behind an API gateway and an additional channel for the devices. The presentation layer consists of the web application and the mobile application, which only call the gateway; the logic layer consists of the security, device, measurement, home, notification, alert and recommendation microservices, which communicate through internal REST (`/internal/**`) and RabbitMQ events; the data layer is a single shared MySQL database, accessed through JPA/Hibernate and managed with Liquibase, in which each service owns its tables; and the measuring devices publish their readings over MQTT with TLS to a Mosquitto broker that asks the device service to authenticate them. The modular backend energy-monitor-backend no longer runs: the gateway answers 404 to any route no service serves.
 
-> **Images and diagrams (Figures 1 to 11):** all the figures of this document are in the following Google Drive folder.  
-> https://drive.google.com/drive/folders/1tIzih2FKP8xte4vKYEtrWThFmZxR1oBX?usp=sharing
->
-> **Out-of-date figures (`[TO BE UPDATED]`):** Figures 3 and 5 to 8 (ERD) and 4 and 9 to 11 (class diagram) were drawn before the migration; the current PlantUML sources, generated from the code, are in [`06-base-datos/modelo-ER/MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd) and [`Diagrama_clases.wsd`](../../06-base-datos/modelo-ER/Diagrama_clases.wsd) and must be rendered again. Figures 1 and 2 (architecture and authentication sequence) show a single backend or only three microservices; the current architecture is the one described by the tables of this section.
+> **Images and diagrams (Figures 1 to 11):** the figures are part of this document. The PNG images of Figures 3 to 11 are in the `assets/figures` folder, and the PlantUML sources they come from, generated from the Liquibase changelogs and the code, are in `06-base-datos/modelo-ER`.
+
+```mermaid
+flowchart TB
+    U["Browser and mobile app"] -->|HTTPS| N["Server Nginx"]
+    N --> F["Frontend (nginx + SPA)"]
+    F -->|"/api/"| G["API gateway :8080"]
+    G --> SEC["Security :8082"]
+    G --> DEV["Devices :8084"]
+    G --> MEA["Measurements :8085"]
+    G --> HOM["Homes :8086"]
+    G --> NOT["Notifications :8087"]
+    G --> ALE["Alerts :8088"]
+    G --> REC["Recommendations :8089"]
+    SEC & DEV & MEA & HOM & NOT & ALE & REC --> DB[("MySQL 8.4")]
+    SEC & DEV & MEA & HOM & NOT & ALE & REC -.->|events| Q[("RabbitMQ")]
+    M["ESP32 + PZEM-004T"] -->|"MQTT TLS 8883"| B["Mosquitto"]
+    B -->|"authenticates each connection"| DEV
+    B -->|telemetry| MEA
+```
 
 **Figure 1.** *General system architecture (presentation, entry, logic, messaging, data and devices).*
 
@@ -407,6 +423,35 @@ An outbox stops at a message no queue takes (so the order is never lost), which 
 The broker (`iegomez/mosquitto-go-auth` image) stores no users: it authenticates each client against the device service (`/internal/mqtt/auth/user`) with a five-minute cache, and its ACL lets each device use only its own topics (`/internal/mqtt/auth/acl`). There are three MQTT clients: the device service (`MQTT_DEVICE_SERVICE_USER`: reads telemetry and status and is the only one that publishes commands), the measurement service (`MQTT_MEASUREMENT_SERVICE_USER`: only reads telemetry) and each ESP32 module (`device_code` and API key). The services take the `deviceId` from the topic and drop the messages whose body claims another device.
 
 The following figure describes the complete flow of a sign-in and the subsequent access to a protected resource.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Client (web or mobile)
+    participant G as API gateway
+    participant S as Security service
+    participant X as Another service
+    Note over C,S: Sign-in
+    C->>G: Credentials (public endpoint)
+    G->>S: Forwards the request
+    S->>S: Checks password, verified email and accepted terms
+    S-->>G: JWT RS256 (15 minutes) and rotating refresh token
+    G-->>C: Web: HttpOnly cookies em_access and em_refresh. Mobile: tokens kept in the secure store
+    Note over C,X: Protected access
+    C->>G: Request with the cookie (web) or Authorization Bearer (mobile)
+    G->>G: The cookie becomes a Bearer header, validates signature, issuer and expiry with the public key
+    G->>X: Forwards the request with the token
+    X->>X: Validates the token again, the identity is the sub claim, X-User-Id is ignored
+    X->>S: Asks for the permissions through the internal API when the action needs them
+    X-->>C: Response through the gateway
+    Note over C,S: Token renewal
+    C->>G: Request with an expired access token
+    G-->>C: 401
+    C->>G: Refresh request with the refresh token
+    G->>S: Forwards the request
+    S->>S: Marks the generation as used and issues a new access and refresh pair
+    S-->>C: New tokens. A reused refresh token revokes the whole session family
+```
 
 **Figure 2.** *Authentication sequence: sign-in, protected access and token renewal.*
 
@@ -595,10 +640,12 @@ Energy-Monitor-Mobile/
 
 ## 11.1 Entity-relationship diagram
 
-The diagram shows the entities of the system grouped by their owning service, with their attributes, keys and relationships. The dotted relationships between services represent application references (no SQL foreign key). The current source is [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd), generated from the changelogs; the figure published in the Drive folder predates the migration and must be replaced by its rendering (see the note in section 9.1).
+The diagram shows the entities of the system grouped by their owning service, with their attributes, keys and relationships. The dotted relationships between services represent application references (no SQL foreign key). The current source is [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd), generated from the changelogs, and Figure 3 is its rendering.
 
 > **Reading tip:** because of its size, the diagram is shown on a landscape page; in Word it can be enlarged with the zoom to read the attributes of each entity. Annex B includes the same model broken down by context, for better readability.
 >
+![Figure 3](../assets/figures/figure-3-erd-complete.png)
+
 **Figure 3.** *Complete entity-relationship diagram (ERD) of the "Electrical Consumption Monitor" system.*
 
 ## 11.2 Main tables
@@ -1399,8 +1446,10 @@ The backend keeps its seven bounded contexts, each in its microservice, plus the
 
 The class diagram models the domain classes, interfaces and enumerations of each service, together with the design patterns applied: Strategy for role-based authorization in the home (`UserPermissions`, `OwnerPermissions` and `MemberPermissions`), Observer for the reaction to the measurement and device events (RabbitMQ consumers of the alert service) and Factory Method for the creation of alerts, recommendations, memberships and notifications. The current source is [`06-base-datos/modelo-ER/Diagrama_clases.wsd`](../../06-base-datos/modelo-ER/Diagrama_clases.wsd) (copy in `05-diseno-software/*/assets/diagramas`). The patterns are described in [`05.4-design-patterns.md`](../../05-diseno-software/EN/05.4-design-patterns.md) and the classes in [`05.3-class-model.md`](../../05-diseno-software/EN/05.3-class-model.md).
 
-> **Note:** like the ERD, the complete diagram is shown on a landscape page. Annex C breaks it down by domain for easier reading. The figure published in Drive predates the migration (`[TO BE UPDATED]`).
+> **Note:** like the ERD, the complete diagram is shown on a landscape page. Annex C breaks it down by domain for easier reading.
 >
+![Figure 4](../assets/figures/figure-4-class-diagram-complete.png)
+
 **Figure 4.** *Domain class diagram, including the Strategy, Observer and Factory Method patterns.*
 
 ## 12.3 Backend services by context
@@ -2100,22 +2149,36 @@ Before every relevant update, back up the energy_monitor schema, shared by all t
 
 # Annex B. ERD by context
 
-Entity-relationship model broken down by service for easier reading. The conventions (snake_case, VARCHAR(10) primary keys, audit columns and soft delete) are the same as in the complete diagram of section 11.1. The figures must be regenerated from [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd) (`[TO BE UPDATED]`).
+Entity-relationship model broken down by service for easier reading. The conventions (snake_case, VARCHAR(10) primary keys, audit columns and soft delete) are the same as in the complete diagram of section 11.1. Generated from [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd).
+
+![Figure 5](../assets/figures/figure-5-erd-security.png)
 
 **Figure 5.** *Security service: people, users, pending registrations, sessions, tokens, roles, permissions, audit and outbox.*
 
+![Figure 6](../assets/figures/figure-6-erd-home-device.png)
+
 **Figure 6.** *Home and device services: households, members, thresholds, devices and their outboxes.*
 
+![Figure 7](../assets/figures/figure-7-erd-measurement-alert.png)
+
 **Figure 7.** *Measurement and alert services: measurements, consumption levels, alerts and their outboxes.*
+
+![Figure 8](../assets/figures/figure-8-erd-recommendation-notification.png)
 
 **Figure 8.** *Recommendation and notification services: recommendations, delivery log, preferences and push subscriptions.*
 
 # Annex C. Class diagram by domain
 
-The figures must be regenerated from [`Diagrama_clases.wsd`](../../06-base-datos/modelo-ER/Diagrama_clases.wsd) (`[TO BE UPDATED]`).
+Generated from [`Diagrama_clases.wsd`](../../06-base-datos/modelo-ER/Diagrama_clases.wsd).
+
+![Figure 9](../assets/figures/figure-9-classes-security-access.png)
 
 **Figure 9.** *Domain_Security and Domain_Access_Control domains, with the enumerations.*
 
+![Figure 10](../assets/figures/figure-10-classes-home-devices.png)
+
 **Figure 10.** *Domain_Home_Management (with the Strategy pattern) and Domain_Devices domains.*
+
+![Figure 11](../assets/figures/figure-11-classes-measurements-alerts-recommendations-notifications.png)
 
 **Figure 11.** *Domain_Measurements, Domain_Alerts (Observer and Factory Method), Domain_Recommendations and Domain_Notifications domains.*

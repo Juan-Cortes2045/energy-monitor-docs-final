@@ -104,7 +104,7 @@ La aplicación móvil queda **fuera del alcance** de este despliegue.
 | Integración y despliegue     | GitHub Actions (`.github/workflows/ci-cd.yml` en el gateway, los siete servicios, la web y la infraestructura) |
 | Rama desplegada              | `main` en los diez repositorios desplegados                                  |
 | Fecha de consolidación       | 16 de octubre de 2026; despliegue continuo activo desde el 19 de octubre; servicios de seguridad, dispositivos y mediciones desde el 24 de octubre; hogares, notificaciones, alertas y recomendaciones y retiro del backend el 28 de octubre |
-| Etiqueta de release          | `[POR CONFIRMAR]` — se recomienda etiquetar `v1.0.0` en los repositorios     |
+| Etiqueta de release          | Tag anotado `final-delivery-2026` en `main` de cada repositorio (aplicación web en la versión `1.0.0`)     |
 | Versión de este informe      | 1.4                                                                          |
 
 ## 1.2 Historial documental

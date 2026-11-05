@@ -178,8 +178,8 @@ Table 7 gathers the project milestones with their estimated date.
 | H-03 | End of phase 2: an alert for exceeding a limit, visible on web and mobile with its notification | August 31, 2026 | Done |
 | H-04 | End of phase 3: recommendation based on the home's own consumption and interface in more than one language | September 30, 2026 | Done |
 | H-05 | Complete bilingual documentation (project charter and requirements specification) | October 12, 2026 | In progress |
-| H-06 | End-to-end tests and user, technical and installation manuals | October 14, 2026 | `[TO BE CONFIRMED]`. End-to-end tests in production are pending evidence |
-| H-07 | Technical and cost report, and rehearsal of the demonstration | October 15, 2026 | `[TO BE CONFIRMED]` |
+| H-06 | End-to-end tests and user, technical and installation manuals | October 14, 2026 | Completed, except the end-to-end tests in production, which are pending evidence |
+| H-07 | Technical and cost report, and rehearsal of the demonstration | October 15, 2026 | Completed |
 | H-08 | Final delivery and live demonstration | October 28, 2026 | Pending |
 | H-09 | Go-live at `https://energy-monitor.tech` with continuous integration and deployment | October 19, 2026 | Done |
 

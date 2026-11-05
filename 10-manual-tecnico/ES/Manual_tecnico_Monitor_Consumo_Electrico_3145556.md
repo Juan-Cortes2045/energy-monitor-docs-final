@@ -17,7 +17,7 @@ Ficha: 3145556
 | **Dato**             | **Información**                                                                 |
 |----------------------|---------------------------------------------------------------------------------|
 | Integrantes          | Juan Esteban Cortés Parra, Miguel Ángel García Artunduaga                       |
-| Instructor           | `[POR CONFIRMAR]`                                                               |
+| Instructor           | Equipo de instructores de la ficha 3145556                                                               |
 | Centro de Formación  | Centro de la Industria, la Empresa y los Servicios (CIES) – SENA Regional Huila |
 | Programa             | Tecnología en Análisis y Desarrollo de Software (ADSO)                          |
 | Ficha                | 3145556                                                                         |
@@ -277,10 +277,26 @@ Los siete microservicios comparten la base: spring-boot-starter-webmvc, spring-b
 
 El sistema adopta una arquitectura cliente-servidor en capas, con la lógica repartida en siete microservicios detrás de un API gateway y un canal adicional para los dispositivos. La capa de presentación está conformada por la aplicación web y la aplicación móvil, que solo llaman al gateway; la capa de lógica la forman los microservicios de seguridad, dispositivos, mediciones, hogares, notificaciones, alertas y recomendaciones, que se comunican por REST interno (`/internal/**`) y por eventos en RabbitMQ; la capa de datos corresponde a una sola base MySQL compartida, accedida mediante JPA/Hibernate y gestionada con Liquibase, en la que cada servicio es dueño de sus tablas; y los dispositivos de medición publican sus lecturas por MQTT con TLS a un broker Mosquitto que consulta al servicio de dispositivos para autenticarlos. El backend modular energy-monitor-backend ya no existe en ejecución: el gateway responde 404 a cualquier ruta que ningún servicio atienda.
 
-> **Imágenes y diagramas (Figuras 1 a 11):** todas las figuras de este documento se encuentran en la siguiente carpeta de Google Drive.  
-> https://drive.google.com/drive/folders/1tIzih2FKP8xte4vKYEtrWThFmZxR1oBX?usp=sharing
->
-> **Figuras desactualizadas (`[POR ACTUALIZAR]`):** las Figuras 3 y 5 a 8 (MER) y 4 y 9 a 11 (diagrama de clases) se dibujaron antes de la migración; las fuentes PlantUML vigentes, generadas del código, están en [`06-base-datos/modelo-ER/MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd) y [`Diagrama_clases.wsd`](../../06-base-datos/modelo-ER/Diagrama_clases.wsd) y deben renderizarse de nuevo. Las Figuras 1 y 2 (arquitectura y secuencia de autenticación) muestran un backend único o con solo tres microservicios; la arquitectura vigente es la que describen las tablas de esta sección.
+> **Imágenes y diagramas (Figuras 1 a 11):** las figuras hacen parte de este documento. Las imágenes PNG de las Figuras 3 a 11 están en la carpeta `assets/figures`, y las fuentes PlantUML de las que salen, generadas de los changelogs de Liquibase y del código, están en `06-base-datos/modelo-ER`.
+
+```mermaid
+flowchart TB
+    U["Browser and mobile app"] -->|HTTPS| N["Server Nginx"]
+    N --> F["Frontend (nginx + SPA)"]
+    F -->|"/api/"| G["API gateway :8080"]
+    G --> SEC["Security :8082"]
+    G --> DEV["Devices :8084"]
+    G --> MEA["Measurements :8085"]
+    G --> HOM["Homes :8086"]
+    G --> NOT["Notifications :8087"]
+    G --> ALE["Alerts :8088"]
+    G --> REC["Recommendations :8089"]
+    SEC & DEV & MEA & HOM & NOT & ALE & REC --> DB[("MySQL 8.4")]
+    SEC & DEV & MEA & HOM & NOT & ALE & REC -.->|events| Q[("RabbitMQ")]
+    M["ESP32 + PZEM-004T"] -->|"MQTT TLS 8883"| B["Mosquitto"]
+    B -->|"authenticates each connection"| DEV
+    B -->|telemetry| MEA
+```
 
 **Figura 1.** *Arquitectura general del sistema (presentación, entrada, lógica, mensajería, datos y dispositivos).*
 
@@ -407,6 +423,35 @@ Un outbox se detiene ante un mensaje que ninguna cola recibe (para no perder el 
 El broker (imagen `iegomez/mosquitto-go-auth`) no guarda usuarios: autentica a cada cliente contra el servicio de dispositivos (`/internal/mqtt/auth/user`) con una caché de cinco minutos, y su ACL permite a cada dispositivo usar únicamente sus propios tópicos (`/internal/mqtt/auth/acl`). Los clientes MQTT son tres: el servicio de dispositivos (`MQTT_DEVICE_SERVICE_USER`: lee telemetría y estado y es el único que publica comandos), el servicio de mediciones (`MQTT_MEASUREMENT_SERVICE_USER`: solo lee telemetría) y cada módulo ESP32 (`device_code` y API key). Los servicios toman el `deviceId` del tópico y descartan los mensajes cuyo cuerpo declare otro dispositivo.
 
 La figura siguiente describe el flujo completo de un inicio de sesión y el acceso posterior a un recurso protegido.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Cliente (web o móvil)
+    participant G as API gateway
+    participant S as Servicio de seguridad
+    participant X as Otro servicio
+    Note over C,S: Inicio de sesión
+    C->>G: Credenciales (endpoint público)
+    G->>S: Reenvía la petición
+    S->>S: Verifica contraseña, correo verificado y términos aceptados
+    S-->>G: JWT RS256 (15 minutos) y refresh token rotativo
+    G-->>C: Web: cookies HttpOnly em_access y em_refresh. Móvil: tokens en el almacén seguro
+    Note over C,X: Acceso protegido
+    C->>G: Petición con la cookie (web) o Authorization Bearer (móvil)
+    G->>G: La cookie se convierte en encabezado Bearer, valida firma, emisor y vencimiento con la llave pública
+    G->>X: Reenvía la petición con el token
+    X->>X: Valida de nuevo el token, la identidad es el claim sub, X-User-Id se ignora
+    X->>S: Pide los permisos por la API interna cuando la acción los necesita
+    X-->>C: Respuesta a través del gateway
+    Note over C,S: Renovación del token
+    C->>G: Petición con el access token vencido
+    G-->>C: 401
+    C->>G: Petición de renovación con el refresh token
+    G->>S: Reenvía la petición
+    S->>S: Marca la generación como usada y emite un nuevo par de access y refresh
+    S-->>C: Tokens nuevos. Un refresh token reutilizado revoca toda la familia de la sesión
+```
 
 **Figura 2.** *Secuencia de autenticación: inicio de sesión, acceso protegido y renovación de token.*
 
@@ -595,10 +640,12 @@ Energy-Monitor-Mobile/
 
 ## 11.1 Diagrama entidad-relación
 
-El diagrama muestra las entidades del sistema agrupadas por el servicio dueño, con sus atributos, llaves y relaciones. Las relaciones punteadas entre servicios representan referencias de aplicación (sin foreign key en SQL). La fuente vigente es [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd), generada de los changelogs; la figura publicada en la carpeta de Drive es anterior a la migración y debe reemplazarse por su renderizado (ver la nota de la sección 9.1).
+El diagrama muestra las entidades del sistema agrupadas por el servicio dueño, con sus atributos, llaves y relaciones. Las relaciones punteadas entre servicios representan referencias de aplicación (sin foreign key en SQL). La fuente vigente es [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd), generada de los changelogs, y la Figura 3 es su renderizado.
 
 > **Recomendación de lectura:** por su tamaño, el diagrama se presenta en página horizontal; en Word puede ampliarse con el zoom para leer los atributos de cada entidad. En el Anexo B se incluye el mismo modelo desagregado por contexto, con mayor legibilidad.
 >
+![Figura 3](../assets/figures/figure-3-erd-complete.png)
+
 **Figura 3.** *Modelo entidad-relación (MER) completo del sistema «Monitor de Consumo Eléctrico».*
 
 ## 11.2 Tablas principales
@@ -1399,8 +1446,10 @@ El backend del sistema conserva sus siete contextos acotados, cada uno en su mic
 
 El diagrama de clases modela las clases, interfaces y enumeraciones del dominio de cada servicio, junto con los patrones de diseño aplicados: Strategy para la autorización por rol en el hogar (`UserPermissions`, `OwnerPermissions` y `MemberPermissions`), Observer para la reacción a los eventos de mediciones y dispositivos (consumidores de RabbitMQ del servicio de alertas) y Factory Method para la creación de alertas, recomendaciones, membresías y notificaciones. La fuente vigente es [`06-base-datos/modelo-ER/Diagrama_clases.wsd`](../../06-base-datos/modelo-ER/Diagrama_clases.wsd) (copia en `05-diseno-software/*/assets/diagramas`). Los patrones están descritos en [`05.4-patrones-de-diseno.md`](../../05-diseno-software/ES/05.4-patrones-de-diseno.md) y las clases en [`05.3-modelo-de-clases.md`](../../05-diseno-software/ES/05.3-modelo-de-clases.md).
 
-> **Nota:** al igual que el MER, el diagrama completo se presenta en página horizontal. El Anexo C lo desglosa por dominio para facilitar su lectura. La figura publicada en Drive es anterior a la migración (`[POR ACTUALIZAR]`).
+> **Nota:** al igual que el MER, el diagrama completo se presenta en página horizontal. El Anexo C lo desglosa por dominio para facilitar su lectura.
 >
+![Figura 4](../assets/figures/figure-4-class-diagram-complete.png)
+
 **Figura 4.** *Diagrama de clases del dominio, incluyendo los patrones Strategy, Observer y Factory Method.*
 
 ## 12.3 Servicios del backend por contexto
@@ -2100,22 +2149,36 @@ Antes de cada actualización relevante se debe respaldar el esquema energy_monit
 
 # Anexo B. MER por contexto
 
-Modelo entidad-relación desagregado por servicio para facilitar su lectura. Las convenciones (snake_case, llaves primarias VARCHAR(10), columnas de auditoría y borrado lógico) son las mismas del diagrama completo de la sección 11.1. Las figuras deben regenerarse desde [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd) (`[POR ACTUALIZAR]`).
+Modelo entidad-relación desagregado por servicio para facilitar su lectura. Las convenciones (snake_case, llaves primarias VARCHAR(10), columnas de auditoría y borrado lógico) son las mismas del diagrama completo de la sección 11.1. Generadas desde [`MER.wsd`](../../06-base-datos/modelo-ER/MER.wsd).
+
+![Figura 5](../assets/figures/figure-5-erd-security.png)
 
 **Figura 5.** *Servicio de seguridad: personas, usuarios, registros pendientes, sesiones, tokens, roles, permisos, auditoría y outbox.*
 
+![Figura 6](../assets/figures/figure-6-erd-home-device.png)
+
 **Figura 6.** *Servicios de hogares y de dispositivos: hogares, miembros, umbrales, dispositivos y sus outbox.*
 
+![Figura 7](../assets/figures/figure-7-erd-measurement-alert.png)
+
 **Figura 7.** *Servicios de mediciones y de alertas: mediciones, niveles de consumo, alertas y sus outbox.*
+
+![Figura 8](../assets/figures/figure-8-erd-recommendation-notification.png)
 
 **Figura 8.** *Servicios de recomendaciones y de notificaciones: recomendaciones, registro de entregas, preferencias y suscripciones push.*
 
 # Anexo C. Diagrama de clases por dominio
 
-Las figuras deben regenerarse desde [`Diagrama_clases.wsd`](../../06-base-datos/modelo-ER/Diagrama_clases.wsd) (`[POR ACTUALIZAR]`).
+Generadas desde [`Diagrama_clases.wsd`](../../06-base-datos/modelo-ER/Diagrama_clases.wsd).
+
+![Figura 9](../assets/figures/figure-9-classes-security-access.png)
 
 **Figura 9.** *Dominios Domain_Security y Domain_Access_Control, con las enumeraciones.*
 
+![Figura 10](../assets/figures/figure-10-classes-home-devices.png)
+
 **Figura 10.** *Dominios Domain_Home_Management (con el patrón Strategy) y Domain_Devices.*
+
+![Figura 11](../assets/figures/figure-11-classes-measurements-alerts-recommendations-notifications.png)
 
 **Figura 11.** *Dominios Domain_Measurements, Domain_Alerts (Observer y Factory Method), Domain_Recommendations y Domain_Notifications.*
